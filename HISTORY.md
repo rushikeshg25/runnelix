@@ -187,3 +187,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **What:** added React/TypeScript/Vite, a workflow sidebar, bounded list paging, schema-driven configuration fields, draft saving, validation, and publication. The editor preserves local edits when a draft revision conflicts.
 - **Why:** expose server-owned workflow contracts through simple forms without adding a second graph interpreter or state-management framework.
 - **Evidence:** [editor source](web/src/App.tsx), [typed client](web/src/api.ts), [schema forms](web/src/SchemaForm.tsx). Browser verification follows after canvas and inspection wiring.
+
+## 2026-10-17 — canvas and pinned run inspection
+
+- **What:** added the graph canvas, keyboard-accessible connection controls, CEL preview, published-version execution, and a persisted-event run inspector with outputs and attempt records.
+- **Why:** graph layout is an editor preference, while graph meaning and run versions remain server-owned. Inspection must show the version that ran, even after the draft changes.
+- **Decisions:** keep positions in local browser storage. Keep connection editing available through ordinary form controls. Retain the same submission key after an uncertain HTTP response, so a retry does not create another intended run.
+- **Evidence:** [canvas](web/src/Canvas.tsx), [inspector](web/src/RunInspector.tsx), [mapping preview](web/src/MappingPreview.tsx). Production build passed; live browser verification follows.
