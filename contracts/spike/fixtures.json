@@ -1,0 +1,19 @@
+{
+  "base": {"contractVersion":1,"runId":"example-42","nodeVersion":"v1","mode":"safe","fault":"none","waitMs":0,"value":{"message":"hello नमस्ते","nullable":null,"tags":["a","b"],"count":42,"largeInteger":"9007199254740993"}},
+  "cases": [
+    {"name":"base","patch":{},"valid":true},
+    {"name":"v2 unsafe","patch":{"nodeVersion":"v2","mode":"unsafe"},"valid":true},
+    {"name":"wrong contract","patch":{"contractVersion":2},"valid":false},
+    {"name":"unknown field","patch":{"credential":"never accepted"},"valid":false},
+    {"name":"unknown node","patch":{"nodeVersion":"latest"},"valid":false},
+    {"name":"node version array","patch":{"nodeVersion":["v1"]},"valid":false},
+    {"name":"bad run identity","patch":{"runId":"../example"},"valid":false},
+    {"name":"null payload","patch":{"value":null},"valid":false},
+    {"name":"unsafe integer","patch":{"value":{"count":9007199254740992}},"valid":false},
+    {"name":"fractional wait","patch":{"waitMs":1.5},"valid":false},
+    {"name":"negative wait","patch":{"waitMs":-1},"valid":false},
+    {"name":"wait ceiling","patch":{"waitMs":60000},"valid":true},
+    {"name":"wait too long","patch":{"waitMs":60001},"valid":false},
+    {"name":"invalid fault","patch":{"fault":"anything"},"valid":false}
+  ]
+}

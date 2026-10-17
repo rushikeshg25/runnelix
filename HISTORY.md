@@ -22,3 +22,10 @@ Scope: product planning and implementation. Dates use Asia/Kolkata unless stated
 - Which real integrations and pilot workflows come first?
 
 Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestones and links to their evidence.
+
+## 2026-10-17 — shared invocation contract
+
+- **What:** added a bounded Phase 0 request contract, JSON Schema, and shared Go/TypeScript fixtures.
+- **Why:** cross-language workers must agree on required fields, unknown fields, version IDs, numeric limits, Unicode, and payload limits before executing actions.
+- **Evidence:** [contract fixtures](contracts/spike/fixtures.json), [Go validation/tests](internal/spike/contract_test.go), [TypeScript tests](node-worker/contract.test.ts). Go tests and all 15 TypeScript tests passed.
+- **Prior milestone:** tooling commit `cfd2a15`.

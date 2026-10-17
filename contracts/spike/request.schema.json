@@ -1,0 +1,23 @@
+{
+  "$schema":"http://json-schema.org/draft-07/schema#",
+  "title":"Phase 0 invocation (development-only)",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contractVersion","runId","nodeVersion","mode","fault","waitMs","value"],
+  "properties":{
+    "contractVersion":{"const":1},
+    "runId":{"type":"string","pattern":"^[a-zA-Z0-9_-]{1,80}$"},
+    "nodeVersion":{"enum":["v1","v2"]},
+    "mode":{"enum":["safe","unsafe"]},
+    "fault":{"enum":["none","transient-once","disconnect","hold"]},
+    "waitMs":{"type":"integer","minimum":0,"maximum":60000},
+    "value":{"type":"object","additionalProperties":{"$ref":"#/definitions/json"}}
+  },
+  "definitions":{"json":{"anyOf":[
+    {"type":"null"},{"type":"boolean"},{"type":"string"},
+    {"type":"number","minimum":-9007199254740991,"maximum":9007199254740991},
+    {"type":"array","items":{"$ref":"#/definitions/json"}},
+    {"type":"object","additionalProperties":{"$ref":"#/definitions/json"}}
+  ]}},
+  "$comment":"Both runtime validators additionally enforce 8192 serialized UTF-8 bytes and payload depth <=16. This spike is not the product workflow schema."
+}
