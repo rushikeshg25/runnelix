@@ -14,16 +14,26 @@ import (
 )
 
 type Run struct {
-	ID            string    `json:"runId"`
-	WorkflowID    string    `json:"workflowId"`
-	VersionID     string    `json:"workflowVersionId"`
-	State         string    `json:"state"`
-	AcceptedAt    time.Time `json:"acceptedAt"`
-	RuntimeID     *string   `json:"runtimeId"`
-	DispatchState string    `json:"dispatchState"`
+	ID              string    `json:"runId"`
+	WorkflowID      string    `json:"workflowId"`
+	VersionID       string    `json:"workflowVersionId"`
+	State           string    `json:"state"`
+	AcceptedAt      time.Time `json:"acceptedAt"`
+	RuntimeID       *string   `json:"runtimeId"`
+	DispatchState   string    `json:"dispatchState"`
+	ExecutionMode   string    `json:"executionMode"`
+	CancelRequested bool      `json:"cancelRequested"`
+	Checkpoint      int64     `json:"checkpoint"`
+	UpdatedAt       time.Time `json:"updatedAt"`
 }
 
 func (s *Store) Admit(ctx context.Context, workspace, workflow, key string, input []byte) (Run, error) {
+	return s.admit(ctx, workspace, workflow, key, input, "admission")
+}
+func (s *Store) AdmitExecution(ctx context.Context, workspace, workflow, key string, input []byte) (Run, error) {
+	return s.admit(ctx, workspace, workflow, key, input, "execute")
+}
+func (s *Store) admit(ctx context.Context, workspace, workflow, key string, input []byte, mode string) (Run, error) {
 	if !validID(key) {
 		return Run{}, ErrInvalid
 	}
@@ -63,6 +73,9 @@ func (s *Store) Admit(ctx context.Context, workspace, workflow, key string, inpu
 		if e != nil {
 			return Run{}, e
 		}
+		if run.ExecutionMode != mode {
+			return Run{}, ErrConflict
+		}
 		return run, tx.Commit(ctx)
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
@@ -84,7 +97,7 @@ func (s *Store) Admit(ctx context.Context, workspace, workflow, key string, inpu
 		return Run{}, ErrConflict
 	}
 	id := "run_" + uuid.NewString()
-	if _, err = tx.Exec(ctx, "INSERT INTO runs(workspace_id,id,workflow_id,version_id,input) VALUES($1,$2,$3,$4,$5)", workspace, id, workflow, *active, canonical); err != nil {
+	if _, err = tx.Exec(ctx, "INSERT INTO runs(workspace_id,id,workflow_id,version_id,input,execution_mode) VALUES($1,$2,$3,$4,$5,$6)", workspace, id, workflow, *active, canonical, mode); err != nil {
 		return Run{}, err
 	}
 	if _, err = tx.Exec(ctx, "INSERT INTO trigger_inbox(workspace_id,workflow_id,source,trigger_key,fingerprint,run_id) VALUES($1,$2,'manual',$3,$4,$5)", workspace, workflow, key, fingerprint, id); err != nil {
@@ -102,10 +115,10 @@ func (s *Store) Admit(ctx context.Context, workspace, workflow, key string, inpu
 func getRun(ctx context.Context, q querier, workspace, id string) (Run, error) {
 	var run Run
 	err := q.QueryRow(ctx, `SELECT r.id,r.workflow_id,r.version_id,r.state,r.accepted_at,receipt.runtime_id,
- CASE WHEN o.dispatched_at IS NOT NULL THEN 'acknowledged' WHEN receipt.run_id IS NOT NULL THEN 'receipt_recorded' ELSE 'pending' END
+ CASE WHEN o.dispatched_at IS NOT NULL THEN 'acknowledged' WHEN receipt.run_id IS NOT NULL THEN 'receipt_recorded' ELSE 'pending' END, r.execution_mode,r.cancel_requested,r.checkpoint,r.updated_at
  FROM runs r JOIN start_outbox o ON (o.workspace_id,o.run_id)=(r.workspace_id,r.id)
  LEFT JOIN runtime_receipts receipt ON (receipt.workspace_id,receipt.run_id)=(r.workspace_id,r.id)
- WHERE r.workspace_id=$1 AND r.id=$2`, workspace, id).Scan(&run.ID, &run.WorkflowID, &run.VersionID, &run.State, &run.AcceptedAt, &run.RuntimeID, &run.DispatchState)
+ WHERE r.workspace_id=$1 AND r.id=$2`, workspace, id).Scan(&run.ID, &run.WorkflowID, &run.VersionID, &run.State, &run.AcceptedAt, &run.RuntimeID, &run.DispatchState, &run.ExecutionMode, &run.CancelRequested, &run.Checkpoint, &run.UpdatedAt)
 	return run, notFound(err)
 }
 func (s *Store) GetRun(ctx context.Context, workspace, id string) (Run, error) {

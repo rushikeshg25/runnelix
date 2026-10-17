@@ -154,3 +154,9 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Verification:** `make test check integration` and `make integration-phase1` passed. All 33 TypeScript tests, seven Phase 1 live cases, twelve Phase 0 regression cases, and actual PostgreSQL race tests passed. OpenAPI 3.1 validation passed. Document links, evidence hashes, CI YAML, and desktop/narrow HTML previews were checked.
 - **Remaining:** implementation commits are local; hosted CI has not run. Phase 2 has not started. This phase proves admission, not product graph execution or production readiness.
 - **Prior milestone:** failure-window evidence commit `d228d6a`.
+
+## 2026-10-17 — hosted baseline and Phase 2 execution records
+
+- **What:** GitHub Actions passed both Phase 0 and Phase 1 at pushed commit `f4ded52`. Began Phase 2 with an explicit execution mode and PostgreSQL payload/invocation/attempt/event contracts.
+- **Why:** existing admission-only records must retain their meaning, and late attempts must not overwrite the result selected by the runtime.
+- **Evidence:** [Phase 0 CI](https://github.com/rushikeshg25/runnelix/actions/runs/39055529924), [Phase 1 CI](https://github.com/rushikeshg25/runnelix/actions/runs/39055529911), [execution persistence tests](internal/store/execution_test.go), [phase scope](docs/implementation/phase-2.md). Isolated PostgreSQL race tests passed.

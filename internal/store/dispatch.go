@@ -10,10 +10,11 @@ import (
 )
 
 type StartRequest struct {
-	WorkspaceID string `json:"workspaceId"`
-	RunID       string `json:"runId"`
-	VersionID   string `json:"versionId"`
-	PlanDigest  string `json:"planDigest"`
+	ExecutionMode string `json:"executionMode,omitempty"`
+	WorkspaceID   string `json:"workspaceId"`
+	RunID         string `json:"runId"`
+	VersionID     string `json:"versionId"`
+	PlanDigest    string `json:"planDigest"`
 }
 type Claim struct {
 	StartRequest
@@ -22,6 +23,12 @@ type Claim struct {
 }
 
 func RuntimeID(run string) string { return "runnelix/admission/" + run }
+func RuntimeIDFor(r StartRequest) string {
+	if r.ExecutionMode == "execute" {
+		return "runnelix/execute/" + r.RunID
+	}
+	return RuntimeID(r.RunID)
+}
 func (s *Store) Claim(ctx context.Context, lease time.Duration) (Claim, error) {
 	if lease < time.Second || lease > 5*time.Minute {
 		return Claim{}, ErrInvalid
@@ -40,7 +47,7 @@ func (s *Store) Claim(ctx context.Context, lease time.Duration) (Claim, error) {
 	if err != nil {
 		return Claim{}, notFound(err)
 	}
-	err = tx.QueryRow(ctx, `SELECT r.version_id,v.digest FROM runs r JOIN workflow_versions v ON (v.workspace_id,v.workflow_id,v.id)=(r.workspace_id,r.workflow_id,r.version_id) WHERE r.workspace_id=$1 AND r.id=$2`, c.WorkspaceID, c.RunID).Scan(&c.VersionID, &c.PlanDigest)
+	err = tx.QueryRow(ctx, `SELECT r.version_id,v.digest,r.execution_mode FROM runs r JOIN workflow_versions v ON (v.workspace_id,v.workflow_id,v.id)=(r.workspace_id,r.workflow_id,r.version_id) WHERE r.workspace_id=$1 AND r.id=$2`, c.WorkspaceID, c.RunID).Scan(&c.VersionID, &c.PlanDigest, &c.ExecutionMode)
 	if err != nil {
 		return Claim{}, err
 	}
@@ -48,17 +55,17 @@ func (s *Store) Claim(ctx context.Context, lease time.Duration) (Claim, error) {
 }
 func (s *Store) HasReceipt(ctx context.Context, r StartRequest) (bool, error) {
 	var present bool
-	err := s.Pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM runtime_receipts WHERE workspace_id=$1 AND run_id=$2 AND runtime_id=$3)", r.WorkspaceID, r.RunID, RuntimeID(r.RunID)).Scan(&present)
+	err := s.Pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM runtime_receipts WHERE workspace_id=$1 AND run_id=$2 AND runtime_id=$3)", r.WorkspaceID, r.RunID, RuntimeIDFor(r)).Scan(&present)
 	return present, err
 }
 func (s *Store) RecordReceipt(ctx context.Context, r StartRequest, runtimeID string) error {
-	if runtimeID != RuntimeID(r.RunID) {
+	if runtimeID != RuntimeIDFor(r) {
 		return ErrConflict
 	}
 	// Verify the pinned version and digest again inside the runtime's idempotent activity.
 	tag, err := s.Pool.Exec(ctx, `INSERT INTO runtime_receipts(workspace_id,run_id,runtime_id)
  SELECT r.workspace_id,r.id,$5 FROM runs r JOIN workflow_versions v ON (v.workspace_id,v.workflow_id,v.id)=(r.workspace_id,r.workflow_id,r.version_id)
- WHERE r.workspace_id=$1 AND r.id=$2 AND r.version_id=$3 AND v.digest=$4 ON CONFLICT(run_id) DO NOTHING`, r.WorkspaceID, r.RunID, r.VersionID, r.PlanDigest, runtimeID)
+ WHERE r.workspace_id=$1 AND r.id=$2 AND r.version_id=$3 AND v.digest=$4 AND r.execution_mode=$6 ON CONFLICT(run_id) DO NOTHING`, r.WorkspaceID, r.RunID, r.VersionID, r.PlanDigest, runtimeID, mode(r))
 	if err != nil {
 		return err
 	}
@@ -66,7 +73,7 @@ func (s *Store) RecordReceipt(ctx context.Context, r StartRequest, runtimeID str
 		return nil
 	}
 	var valid bool
-	err = s.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM runtime_receipts p JOIN runs r ON (r.workspace_id,r.id)=(p.workspace_id,p.run_id) JOIN workflow_versions v ON (v.workspace_id,v.workflow_id,v.id)=(r.workspace_id,r.workflow_id,r.version_id) WHERE p.workspace_id=$1 AND p.run_id=$2 AND r.version_id=$3 AND v.digest=$4 AND p.runtime_id=$5)`, r.WorkspaceID, r.RunID, r.VersionID, r.PlanDigest, runtimeID).Scan(&valid)
+	err = s.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM runtime_receipts p JOIN runs r ON (r.workspace_id,r.id)=(p.workspace_id,p.run_id) JOIN workflow_versions v ON (v.workspace_id,v.workflow_id,v.id)=(r.workspace_id,r.workflow_id,r.version_id) WHERE p.workspace_id=$1 AND p.run_id=$2 AND r.version_id=$3 AND v.digest=$4 AND p.runtime_id=$5 AND r.execution_mode=$6)`, r.WorkspaceID, r.RunID, r.VersionID, r.PlanDigest, runtimeID, mode(r)).Scan(&valid)
 	if err != nil {
 		return err
 	}
@@ -99,3 +106,10 @@ func (s *Store) Retry(ctx context.Context, c Claim, delay time.Duration) error {
 	return nil
 }
 func IsEmpty(err error) bool { return errors.Is(err, ErrNotFound) || errors.Is(err, pgx.ErrNoRows) }
+
+func mode(r StartRequest) string {
+	if r.ExecutionMode == "execute" {
+		return "execute"
+	}
+	return "admission"
+}
