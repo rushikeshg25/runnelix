@@ -231,7 +231,7 @@ func Compile(data []byte, catalog Catalog) (Graph, Plan, string, error) {
 		if !ok {
 			return bad(path+"/type", "unknown_type", "Node type or version is unavailable")
 		}
-		if d.Kind != "trigger" && d.Kind != "action" && !(d.Kind == "control" && (d.Type == "transform.map" || d.Type == "control.condition")) {
+		if d.Kind != "trigger" && d.Kind != "action" && !(d.Kind == "control" && (d.Type == "transform.map" || d.Type == "control.condition" || d.Type == "control.merge" || d.Type == "control.wait")) {
 			return bad(path, "unsupported_kind", "Control nodes are not supported yet")
 		}
 		if d.ImplementationDigest == "" {
@@ -240,7 +240,7 @@ func Compile(data []byte, catalog Catalog) (Graph, Plan, string, error) {
 		if err := ValidateSchema(d.ConfigSchema, n.Config); err != nil {
 			return bad(path+"/config", "invalid_config", "Configuration does not match the node schema")
 		}
-		if d.Kind == "control" {
+		if d.Type == "transform.map" || d.Type == "control.condition" {
 			expression, _ := n.Config["expression"].(string)
 			if mapping.Validate(expression) != nil {
 				return bad(path+"/config/expression", "invalid_expression", "Expression is invalid or exceeds limits")
@@ -293,7 +293,7 @@ func Compile(data []byte, catalog Catalog) (Graph, Plan, string, error) {
 			ready = append(ready, id)
 		}
 	}
-	p := Plan{FormatVersion: 1, InterpreterVersion: 2, Steps: []Step{}, Edges: append([]Edge{}, g.Edges...)}
+	p := Plan{FormatVersion: 1, InterpreterVersion: 3, Steps: []Step{}, Edges: append([]Edge{}, g.Edges...)}
 	for len(ready) > 0 {
 		sort.Strings(ready)
 		id := ready[0]

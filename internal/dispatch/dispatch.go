@@ -27,10 +27,15 @@ type TemporalStarter struct{ Client client.Client }
 
 func (t TemporalStarter) Start(ctx context.Context, r store.StartRequest) error {
 	name, queue := WorkflowName, Queue
+	deadline := 24 * time.Hour
 	if r.ExecutionMode == "execute" {
 		name, queue = engine.WorkflowName, engine.Queue
+		if r.InterpreterVersion == 3 {
+			name, queue = engine.WorkflowNameV3, engine.QueueV3
+			deadline = 31 * 24 * time.Hour
+		}
 	}
-	_, err := t.Client.ExecuteWorkflow(ctx, client.StartWorkflowOptions{ID: store.RuntimeIDFor(r), TaskQueue: queue, WorkflowIDReusePolicy: enumspb.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE, WorkflowIDConflictPolicy: enumspb.WORKFLOW_ID_CONFLICT_POLICY_USE_EXISTING, WorkflowExecutionTimeout: 24 * time.Hour}, name, r)
+	_, err := t.Client.ExecuteWorkflow(ctx, client.StartWorkflowOptions{ID: store.RuntimeIDFor(r), TaskQueue: queue, WorkflowIDReusePolicy: enumspb.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE, WorkflowIDConflictPolicy: enumspb.WORKFLOW_ID_CONFLICT_POLICY_USE_EXISTING, WorkflowExecutionTimeout: deadline}, name, r)
 	var duplicate *serviceerror.WorkflowExecutionAlreadyStarted
 	if errors.As(err, &duplicate) {
 		return nil

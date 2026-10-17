@@ -205,5 +205,74 @@
         "body": {}
       }
     }
+  },
+  {
+    "type": "control.merge",
+    "version": 1,
+    "kind": "control",
+    "title": "Merge branches",
+    "inputs": [
+      "a",
+      "b"
+    ],
+    "outputs": [
+      "out"
+    ],
+    "retrySafety": "pure",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy"
+      ],
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": [
+            "named",
+            "ordered"
+          ]
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object"
+    }
+  },
+  {
+    "type": "control.wait",
+    "version": 1,
+    "kind": "control",
+    "title": "Durable wait",
+    "inputs": [
+      "in"
+    ],
+    "outputs": [
+      "out"
+    ],
+    "retrySafety": "pure",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "seconds"
+      ],
+      "properties": {
+        "seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2592000
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object"
+    }
   }
 ]

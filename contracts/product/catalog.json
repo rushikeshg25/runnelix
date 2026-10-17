@@ -19,7 +19,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:8b23ecca1e97763ff3afc9982e56931a8c4eed5535357378d6ad0c716c97f89e"
+    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
   },
   {
     "type": "mock.echo",
@@ -43,7 +43,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:8b23ecca1e97763ff3afc9982e56931a8c4eed5535357378d6ad0c716c97f89e"
+    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
   },
   {
     "type": "transform.map",
@@ -77,7 +77,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:8b23ecca1e97763ff3afc9982e56931a8c4eed5535357378d6ad0c716c97f89e"
+    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
   },
   {
     "type": "control.condition",
@@ -112,7 +112,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:8b23ecca1e97763ff3afc9982e56931a8c4eed5535357378d6ad0c716c97f89e"
+    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
   },
   {
     "type": "http.get",
@@ -161,7 +161,7 @@
         "body": {}
       }
     },
-    "implementationDigest": "sha256:8b23ecca1e97763ff3afc9982e56931a8c4eed5535357378d6ad0c716c97f89e"
+    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
   },
   {
     "type": "http.post",
@@ -210,6 +210,77 @@
         "body": {}
       }
     },
-    "implementationDigest": "sha256:8b23ecca1e97763ff3afc9982e56931a8c4eed5535357378d6ad0c716c97f89e"
+    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
+  },
+  {
+    "type": "control.merge",
+    "version": 1,
+    "kind": "control",
+    "title": "Merge branches",
+    "inputs": [
+      "a",
+      "b"
+    ],
+    "outputs": [
+      "out"
+    ],
+    "retrySafety": "pure",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy"
+      ],
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": [
+            "named",
+            "ordered"
+          ]
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
+  },
+  {
+    "type": "control.wait",
+    "version": 1,
+    "kind": "control",
+    "title": "Durable wait",
+    "inputs": [
+      "in"
+    ],
+    "outputs": [
+      "out"
+    ],
+    "retrySafety": "pure",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "seconds"
+      ],
+      "properties": {
+        "seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2592000
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
   }
 ]

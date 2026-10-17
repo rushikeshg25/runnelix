@@ -221,3 +221,9 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Verification:** `make test check integration-phase2` passed, including 36 TypeScript tests, isolated PostgreSQL race tests, seven live execution cases, editor type/format checks, and production editor build. Phase 1's seven live regression cases and Phase 0's twelve runtime cases passed. OpenAPI validation and local documentation links passed. Final source hashes match the execution report. HTML previews at 1100px and 390px reported no console errors.
 - **Evidence:** [phase ledger](docs/implementation/phase-2.md), [execution](docs/implementation/evidence/phase-2-full.json), [browser](docs/implementation/evidence/phase-2-browser.json), [admission regression](docs/implementation/evidence/phase-1-after-phase-2.json), [runtime regression](docs/implementation/evidence/phase-0-after-phase-2.json), [ADR 0003](docs/decisions/0003-execution-data-plane.md).
 - **Limits:** teammate acceptance remains pending. GitHub issues and Slack messages are selected for Phase 4; deployment remains local. Phase 3 semantics, production controls, actual rollout, and a two-week pilot remain unfinished. Hosted Phase 2 CI has not yet run.
+
+## 2026-10-17 — versioned merge and durable wait
+
+- **What:** Phase 2 is pushed at `9cd61d1`. Added interpreter version 3 with explicit two-input merge policies and durable waits; retained the V2 workflow and queue for old histories.
+- **Why:** new control semantics must not silently alter replay of existing executions. Merge waits for deterministic upstream outcomes and ignores skipped branches without waiting for nonexistent work.
+- **Evidence:** [V3 workflow test](internal/engine/v3_test.go), [control activity](internal/engine/controls.go), [Phase 3 plan](docs/implementation/phase-3.md). Compiler/engine/dispatcher checks passed. The durable-clock test covers a one-hour timer and a merge with one skipped input.

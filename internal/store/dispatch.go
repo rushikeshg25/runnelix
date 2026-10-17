@@ -10,11 +10,12 @@ import (
 )
 
 type StartRequest struct {
-	ExecutionMode string `json:"executionMode,omitempty"`
-	WorkspaceID   string `json:"workspaceId"`
-	RunID         string `json:"runId"`
-	VersionID     string `json:"versionId"`
-	PlanDigest    string `json:"planDigest"`
+	InterpreterVersion int    `json:"interpreterVersion,omitempty"`
+	ExecutionMode      string `json:"executionMode,omitempty"`
+	WorkspaceID        string `json:"workspaceId"`
+	RunID              string `json:"runId"`
+	VersionID          string `json:"versionId"`
+	PlanDigest         string `json:"planDigest"`
 }
 type Claim struct {
 	StartRequest
@@ -47,7 +48,7 @@ func (s *Store) Claim(ctx context.Context, lease time.Duration) (Claim, error) {
 	if err != nil {
 		return Claim{}, notFound(err)
 	}
-	err = tx.QueryRow(ctx, `SELECT r.version_id,v.digest,r.execution_mode FROM runs r JOIN workflow_versions v ON (v.workspace_id,v.workflow_id,v.id)=(r.workspace_id,r.workflow_id,r.version_id) WHERE r.workspace_id=$1 AND r.id=$2`, c.WorkspaceID, c.RunID).Scan(&c.VersionID, &c.PlanDigest, &c.ExecutionMode)
+	err = tx.QueryRow(ctx, `SELECT r.version_id,v.digest,r.execution_mode,(v.plan->>'interpreterVersion')::int FROM runs r JOIN workflow_versions v ON (v.workspace_id,v.workflow_id,v.id)=(r.workspace_id,r.workflow_id,r.version_id) WHERE r.workspace_id=$1 AND r.id=$2`, c.WorkspaceID, c.RunID).Scan(&c.VersionID, &c.PlanDigest, &c.ExecutionMode, &c.InterpreterVersion)
 	if err != nil {
 		return Claim{}, err
 	}

@@ -127,6 +127,13 @@ func run() error {
 				return errors.New("engine worker failed to start")
 			}
 			defer w.Stop()
+			v3 := worker.New(c, engine.QueueV3, worker.Options{})
+			v3.RegisterWorkflowWithOptions(engine.ExecuteV3, workflow.RegisterOptions{Name: engine.WorkflowNameV3})
+			v3.RegisterActivity(&engine.Activities{Store: s})
+			if err = v3.Start(); err != nil {
+				return errors.New("version 3 engine failed to start")
+			}
+			defer v3.Stop()
 			<-ctx.Done()
 			return nil
 		}
