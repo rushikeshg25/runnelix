@@ -30,3 +30,14 @@ func TestExpressionBudget(t *testing.T) {
 		t.Fatal("unbounded expression accepted")
 	}
 }
+
+func TestJSONNumberArithmetic(t *testing.T) {
+	input := map[string]any{"priority": float64(5), "fraction": 2.5}
+	value, err := Evaluate(context.Background(), `{"value": input.priority + 1, "fraction": input.fraction + 0.5}`, input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if value.(map[string]any)["value"] != float64(6) || value.(map[string]any)["fraction"] != float64(3) {
+		t.Fatal(value)
+	}
+}

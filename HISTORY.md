@@ -194,3 +194,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** graph layout is an editor preference, while graph meaning and run versions remain server-owned. Inspection must show the version that ran, even after the draft changes.
 - **Decisions:** keep positions in local browser storage. Keep connection editing available through ordinary form controls. Retain the same submission key after an uncertain HTTP response, so a retry does not create another intended run.
 - **Evidence:** [canvas](web/src/Canvas.tsx), [inspector](web/src/RunInspector.tsx), [mapping preview](web/src/MappingPreview.tsx). Production build passed; live browser verification follows.
+
+## 2026-10-17 — live Phase 2 execution evidence
+
+- **What:** seven live cases passed across PostgreSQL, Temporal, the Go engine, the TypeScript worker, and a local HTTP provider fixture.
+- **Observed:** branch/skip execution produced the expected mapped output; GET retried once after 429; unsafe POST paused after one call; pre-dispatch cancellation made no provider call; credential echoes were redacted; signed delivery deduplicated; SSE resumed; engine SIGKILL recovered a queued node.
+- **Fix:** the first run exposed JSON whole-number arithmetic failing in CEL. A focused regression failed before recursive numeric normalization and passed afterward. The full live run then passed with unchanged sources and clean process shutdown.
+- **Evidence:** [live report](docs/implementation/evidence/phase-2-full.json), [harness](tests/integration/phase2.py), [numeric regression](internal/mapping/mapping_test.go). No real provider records were created.

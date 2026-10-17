@@ -29,7 +29,8 @@ class Harness:
         self.env={**os.environ,'RUNNELIX_DATABASE_URL':self.pg.dsn}
         self.address=f'127.0.0.1:{free_port()}';self.api=f'http://127.0.0.1:{free_port()}'
         self.processes={};self.results=[];self.counter=0
-        self.hashes=source_hashes()
+        self.hashes=self.source_hashes()
+    def source_hashes(self):return source_hashes()
     def command(self,*args):
         return subprocess.run([str(APP),*args],env=self.env,cwd=ROOT,capture_output=True,text=True,check=True,timeout=20)
     def start(self,name,args):
@@ -87,8 +88,8 @@ class Harness:
             except Exception as error:cleanup_errors.append(name+': '+type(error).__name__)
         try:self.pg.close()
         except Exception as error:cleanup_errors.append('postgres: '+type(error).__name__)
-        unchanged=self.hashes==source_hashes()
-        report={'timestampUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'scope':'Local PostgreSQL and Temporal development SQLite. Admission only; no graph execution or production deployment.','versions':{'postgres':subprocess.check_output([executable('postgres'),'--version'],text=True).strip(),'temporal':subprocess.check_output([str(CLI),'--version'],text=True).strip(),'go':subprocess.check_output(['go','version'],text=True,cwd=ROOT).strip()},'sourceSha256':self.hashes,'sourcesUnchanged':unchanged,'cleanupErrors':cleanup_errors,'results':self.results}
+        unchanged=self.hashes==self.source_hashes()
+        report={'timestampUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'scope':getattr(self,'scope','Local PostgreSQL and Temporal development SQLite. Admission only; no graph execution or production deployment.'),'versions':{'postgres':subprocess.check_output([executable('postgres'),'--version'],text=True).strip(),'temporal':subprocess.check_output([str(CLI),'--version'],text=True).strip(),'go':subprocess.check_output(['go','version'],text=True,cwd=ROOT).strip()},'sourceSha256':self.hashes,'sourcesUnchanged':unchanged,'cleanupErrors':cleanup_errors,'results':self.results}
         (self.directory/'results.json').write_text(json.dumps(report,indent=2)+'\n')
         print('Evidence:',self.directory.relative_to(ROOT),flush=True)
         if cleanup_errors or not unchanged:raise RuntimeError('Harness cleanup or source consistency failed; inspect results.json')
