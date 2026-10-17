@@ -1,0 +1,66 @@
+{
+  "timestampUtc": "2026-10-17T17:07:15.694057+00:00",
+  "scope": "development Temporal SQLite; not production PostgreSQL",
+  "results": [
+    {
+      "name": "cross-language roundtrip",
+      "status": "passed",
+      "seconds": 1.785,
+      "detail": "Unicode, null, nested arrays, and large integer strings survived Go \u2192 TS \u2192 Go."
+    },
+    {
+      "name": "safe transient retry",
+      "status": "passed",
+      "seconds": 1.072,
+      "detail": "A pre-commit 503 retried once and created one action."
+    },
+    {
+      "name": "safe post-commit response loss",
+      "status": "passed",
+      "seconds": 1.08,
+      "detail": "Provider committed before losing the response; retry returned the original action."
+    },
+    {
+      "name": "unsafe post-commit response loss",
+      "status": "passed",
+      "seconds": 0.058,
+      "detail": "One remote effect, one request, and an explicit uncertain result."
+    },
+    {
+      "name": "worker restart across durable wait",
+      "status": "passed",
+      "seconds": 8.119,
+      "detail": "Both worker processes died; persisted timer resumed and produced one action."
+    },
+    {
+      "name": "worker crash after safe write",
+      "status": "passed",
+      "seconds": 2.997,
+      "detail": "Killed worker after provider commit; safe policy retained one external effect."
+    },
+    {
+      "name": "worker crash after unsafe write",
+      "status": "passed",
+      "seconds": 1.98,
+      "detail": "Killed worker after provider commit; unsafe policy retained one external effect."
+    },
+    {
+      "name": "cancellation during wait",
+      "status": "passed",
+      "seconds": 0.069,
+      "detail": "Cancellation during wait sent no provider request."
+    },
+    {
+      "name": "cancellation during activity",
+      "status": "passed",
+      "seconds": 0.421,
+      "detail": "Cancellation stopped execution; it did not undo an already committed effect."
+    },
+    {
+      "name": "development server crash recovery",
+      "status": "passed",
+      "seconds": 5.073,
+      "detail": "Killed Temporal; SQLite-backed state resumed on the same database."
+    }
+  ]
+}

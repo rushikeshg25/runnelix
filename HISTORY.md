@@ -59,3 +59,12 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Evidence:** [harness](tests/integration/phase0.py). `make build` and Python compilation passed. Live execution is pending the development-server download at this milestone.
 - **Blocker:** the CLI release download was slow; its partial archive was preserved and the remaining ranges were downloaded concurrently. Full-archive SHA-256 verification is required before execution.
 - **Prior milestone:** TypeScript worker commit `b857451`.
+
+## 2026-10-17 — live crash and cancellation evidence
+
+- **What:** ran ten integration cases against Temporal CLI 1.9.1 with embedded Server 1.32.0, real Go and TypeScript workers, and the persistent mock provider.
+- **Why:** validate process failure boundaries rather than infer recovery from unit tests.
+- **Observed:** all ten cases passed: cross-language data, safe transient retry, safe/unsafe response loss, worker restart across a wait, safe/unsafe worker death after commit, waiting/active cancellation, and server crash recovery.
+- **Evidence:** [machine-readable results](docs/implementation/evidence/phase-0-recovery.json), [failure harness](tests/integration/phase0.py). The CLI archive matched its pinned upstream SHA-256.
+- **Limits:** localhost development server and SQLite persistence; no production PostgreSQL restore, throughput target, or production isolation claim.
+- **Prior milestone:** harness commit `dbfed23`.

@@ -175,9 +175,78 @@ def base_cases(h):
         return "One remote effect, one request, and an explicit uncertain result."
     h.record("unsafe post-commit response loss", unsafe)
 
+def recovery_cases(h):
+    def wait_state(request, state):
+        return wait_until(lambda: h.command("query", "--id", request["runId"])["status"] == state,
+                          f"{request['runId']} reaches {state}")
+
+    def effect(request):
+        return wait_until(lambda: h.stats().get(request["runId"], {}).get("actions"), "provider committed action")
+
+    def worker_restart():
+        request = h.request("durable-wait", waitMs=3000)
+        wait_state(request, "waiting")
+        h.stop("go-v1", crash=True)
+        h.stop("node-v1", crash=True)
+        time.sleep(3.1)
+        assert request["runId"] not in h.stats(), "action ran without a worker"
+        h.workers()
+        result = h.result(request)
+        assert result["status"] == "succeeded"
+        assert len(h.stats()[request["runId"]]["actions"]) == 1
+        return "Both worker processes died; persisted timer resumed and produced one action."
+    h.record("worker restart across durable wait", worker_restart)
+
+    def crash_write(mode):
+        request = h.request("crash-" + mode, mode=mode, fault="hold")
+        effect(request)
+        h.stop("node-v1", crash=True)
+        h.node_worker()
+        result = h.result(request)
+        entry = h.stats()[request["runId"]]
+        assert len(entry["actions"]) == 1, entry
+        if mode == "safe":
+            assert result["status"] == "succeeded" and result["attempts"] == 2, result
+            assert entry["requests"] == 2, entry
+        else:
+            assert result["status"] == "needs_attention" and entry["requests"] == 1, (result, entry)
+        return f"Killed worker after provider commit; {mode} policy retained one external effect."
+    h.record("worker crash after safe write", lambda: crash_write("safe"))
+    h.record("worker crash after unsafe write", lambda: crash_write("unsafe"))
+
+    def cancellation(inflight=False):
+        request = h.request("cancel-active" if inflight else "cancel-wait", fault="hold" if inflight else "none", waitMs=0 if inflight else 10000)
+        if inflight:
+            effect(request)
+        else:
+            wait_state(request, "waiting")
+        h.command("cancel", "--id", request["runId"])
+        wait_until(lambda: h.command("describe", "--id", request["runId"])["status"] == "Canceled", "workflow cancellation")
+        entry = h.stats().get(request["runId"])
+        if inflight:
+            assert entry["requests"] == 1 and len(entry["actions"]) == 1, entry
+        else:
+            assert entry is None, entry
+        return "Cancellation stopped execution; it did not undo an already committed effect." if inflight else "Cancellation during wait sent no provider request."
+    h.record("cancellation during wait", cancellation)
+    h.record("cancellation during activity", lambda: cancellation(True))
+
+    def server_restart():
+        request = h.request("server-restart", waitMs=5000)
+        wait_state(request, "waiting")
+        h.stop("temporal", crash=True)
+        h.server()
+        result = h.result(request)
+        assert result["status"] == "succeeded", result
+        assert len(h.stats()[request["runId"]]["actions"]) == 1
+        return "Killed Temporal; SQLite-backed state resumed on the same database."
+    h.record("development server crash recovery", server_restart)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.parse_args()
+    parser.add_argument("--suite", choices=["base", "recovery"], default="recovery")
+    args = parser.parse_args()
     for path in [CLI, SPIKE, PROVIDER, ROOT / "dist/node-worker/main.js"]:
         if not path.is_file():
             raise SystemExit(f"Missing prerequisite {path.relative_to(ROOT)}; run make tools and make build")
@@ -187,6 +256,8 @@ def main():
         h.provider()
         h.workers()
         base_cases(h)
+        if args.suite == "recovery":
+            recovery_cases(h)
     finally:
         h.close()
 
