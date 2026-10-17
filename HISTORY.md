@@ -121,3 +121,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** a successful acceptance response must survive dispatcher downtime without creating duplicate intended runs.
 - **Evidence:** [admission tests](internal/store/admission_test.go). Twelve concurrent duplicate requests returned the same run; a forced final-insert failure left no partial run or receipt. Race-enabled PostgreSQL tests passed.
 - **Boundary:** keys have no automatic expiry yet; input is bounded fake development data. Retention, quotas, and authenticated triggers remain later phases.
+
+## 2026-10-17 — recoverable runtime admission bridge
+
+- **What:** implemented leased outbox dispatch and a receipt-only Temporal workflow with stable identity.
+- **Why:** handle uncertain start responses and dispatcher death without trusting an RPC response as proof of recorded admission.
+- **Evidence:** [dispatcher](internal/dispatch/dispatch.go), [lease tests](internal/store/dispatch_test.go), [workflow identity tests](internal/dispatch/dispatch_test.go). Database fencing and workflow unit tests passed; live process failure tests remain the next evidence step.
+- **Limit:** a runtime receipt does not change the product run from accepted to succeeded.
