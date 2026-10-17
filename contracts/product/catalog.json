@@ -19,7 +19,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:dd0e6efbf877e9dd06c2371bb48787b8015878de113dd66cc43a67ebc3fbf255"
+    "implementationDigest": "sha256:bd80ca5165c418b2e20af13640bc9c37d3219fda11ccbfa13c61e1e40c082f73"
   },
   {
     "type": "mock.echo",
@@ -43,6 +43,6 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:dd0e6efbf877e9dd06c2371bb48787b8015878de113dd66cc43a67ebc3fbf255"
+    "implementationDigest": "sha256:bd80ca5165c418b2e20af13640bc9c37d3219fda11ccbfa13c61e1e40c082f73"
   }
 ]

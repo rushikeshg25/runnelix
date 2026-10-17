@@ -1,0 +1,100 @@
+{
+  "timestampUtc": "2026-10-17T17:44:51.457659+00:00",
+  "scope": "Local PostgreSQL and Temporal development SQLite. Admission only; no graph execution or production deployment.",
+  "versions": {
+    "postgres": "postgres (PostgreSQL) 17.6 (Homebrew)",
+    "temporal": "temporal version 1.9.1 (Server 1.32.0, UI 2.54.1)",
+    "go": "go version go1.26.0 darwin/arm64"
+  },
+  "sourceSha256": {
+    "cmd/runnelix/main.go": "61d49c86c64a1c16d7fa66ad94dcc380746eb0ad077d0d4e9a25cbfcfcfffa31",
+    "contracts/product/activity.fixtures.json": "c5171888cf6afdcdc5864dd41a277fba5ca8c353f74710eef2e1e67735e73f99",
+    "contracts/product/activity.schema.json": "80c921109b2d207a4709d0b5385f65f0772e03b377c61dd57aecae2a9ccbc2d7",
+    "contracts/product/catalog.json": "3c51aaa7f0095878b705f2b9fbe0582a308e575e9c93859b69e1949daa56fa74",
+    "contracts/product/catalog.source.json": "d2a90ff0a602abde12b972ef9dc20d08aa162fbcff2edf8c628da6f5de725ccd",
+    "contracts/product/openapi.json": "6a09dea5638803a69edca2390bb804c66e5961fd16f8d8fe431fb400bcc70a40",
+    "contracts/product/plan.schema.json": "921b2d07e5e6b5e0b947f6c11c6f38912b15c07e65f907626e8b7bc120fddbc3",
+    "contracts/product/workflow.schema.json": "09a3185c4040feb754801fb2b395eada3d05cf4e55019ad00e6978e492f9297c",
+    "go.mod": "697a984982481073e92a59e39012ea6e7f53428749120aa10cf620abd7bb8601",
+    "go.sum": "7c0915aa033c76c8f7098bdc79dfa0ecdfe2de9d43d5c6844e87d2be2d21d9d9",
+    "internal/api/api.go": "2b67a0d296f2e3c870a944c76b790af98e45c3f4612321b17b6d1f1c70604ab8",
+    "internal/api/api_test.go": "d6bc6ce3efa921160b4142ff8e0fa73d726f71c9a58b7bfc46cfacb3b1a22e89",
+    "internal/definition/catalog.go": "f370e5092092816a165b69d3743c845ec90dc4be2e989ffb5f50773fc74ac003",
+    "internal/definition/catalog_test.go": "5849b9b474e39f2044d55be40125ce399ba5c502929c8a9afe9724691988b482",
+    "internal/definition/definition.go": "67f577ba9d71740b652b810d64166d0f08d34ce5c0607cf0b2bc93a06a21933b",
+    "internal/definition/definition_test.go": "4dd88a1ac84e08c44971626fa5d48b3c1dfc80238e8552da552207a2e0bb5193",
+    "internal/dispatch/dispatch.go": "ce2927edde4538ad182a4277e4f5c4b9941a0751f25f6705f1ed310bd529e194",
+    "internal/dispatch/dispatch_test.go": "da9c8e9681bdf850ec433530a1cd64aa566e81868ac1603e762d0dcfae2881ff",
+    "internal/mockprovider/server.go": "b548b4f59a2688aa9dd6b7237358b750d873b05ccaf5f99d4b44512f988e5510",
+    "internal/mockprovider/server_test.go": "d67fe6fdf1a180b5fe583eb1cea3c7c0934e2157909e47b510b8f66d4bd9fcf6",
+    "internal/spike/contract.go": "d15af9c710fb9891489c8f88a874eec2e99068a1d7284d3553d36d70e0ada0ce",
+    "internal/spike/contract_test.go": "0301ff40d4d1c8cdb7f4682fa13b5886e7a1333727f08554d80d0c82e1d936fd",
+    "internal/spike/workflow.go": "7cb83a7be9aa7eda20826924ed432b9616810be15ff78a66896871e4eafdc71b",
+    "internal/spike/workflow_test.go": "b54bf843e027b203a5fd196e0aae3746ebda8b1fa111533230e8636f7329a971",
+    "internal/store/admission.go": "e52963fec6ce73ed82101d88de2cab50b77e55a0c925f8061bfa6ee196efdfad",
+    "internal/store/admission_test.go": "28385b6e464fc02954b92e0a9fb838b8711c8444786ebf593293d13b050d446e",
+    "internal/store/dispatch.go": "00dd9c979ebd76438c7ab318b8673df4ab68a0b081cfa7e878c2092e436f763f",
+    "internal/store/dispatch_test.go": "191847bc68eac59ad83804ff4339f900a8094122c9502f4b214fb6bfb20f0898",
+    "internal/store/migrations/001_initial.sql": "c98fa98c4de20016635c8f3707eb6e4c0284f2879e8a50d0c844ff253e8fdcf2",
+    "internal/store/store.go": "013edb9317e6fc068b5927e61d41ae72c3ecebca8adc1ecec7e88e778ac0111a",
+    "internal/store/store_test.go": "22bc187670e3acb06319af9fc02539eec9cbe20d256c50b7b127651c40b6ca07",
+    "internal/store/workflows.go": "29e46000eb4c0ebf9aae68a1c6c5e993cdb3d8083c90090290685c10d2c85964",
+    "internal/store/workflows_test.go": "79a85a4ed3e658973399ba5ea2b6fff7918e27e08830bbe819eeadc7da39fa01",
+    "node-worker/nodes/index.ts": "0bd7e5b49c31639328bbbcfff2f828c564cca61b438f0942de6712fb7a5fdd7b",
+    "node-worker/nodes/mock-echo.ts": "27d02cd2ff6cd67f9b4f9ae469fac5a9b6fc54e741961b783abf228572ee8a50",
+    "node-worker/product-host.test.ts": "898b385978f560dbe3081a8f33c7912c39a97cf435f50e51274e0dd82f78c223",
+    "node-worker/product-host.ts": "45444041ceb9dac42aad803e1c231554cdcde5ed60c88a4090add7fcc4faabcb",
+    "package.json": "88f9fe279fc0f33cf19dbadd95259fd51879810a0ee22aef4cca6f5956c8f0b2",
+    "pnpm-lock.yaml": "21c96d569f723df5edc9c863a55c7739403890e93ee9b1b254c01535590e5f91",
+    "scripts/build-catalog.py": "c3269716856aa3f31c557727946634e704e4f1d2ed4b2f3c0f1d16b7d72eb277",
+    "tests/integration/phase1.py": "b5086abaccc7f1bc1eab85711323871b02a789acfffc2b9bb08cdfce181ec72f",
+    "tests/integration/phase1probe/main.go": "aea993293523d04cee6e4543e757099654efbb58ed9fbdbfce705145350ff445",
+    "tests/integration/postgres.py": "dafb82f4aed8acb9ea09ff3677715b32373390f356b93d23a255483cffa5af2f"
+  },
+  "sourcesUnchanged": true,
+  "cleanupErrors": [],
+  "results": [
+    {
+      "name": "HTTP contracts and scope boundaries",
+      "status": "passed",
+      "seconds": 0.01,
+      "detail": "HTTP validation, stale revision conflict, workspace isolation, Origin and Host rejection passed."
+    },
+    {
+      "name": "Concurrent admission and publication pinning",
+      "status": "passed",
+      "seconds": 0.059,
+      "detail": "Twelve duplicates share one run; changed input conflicts; later publication does not move the original pinned version."
+    },
+    {
+      "name": "Admission survives process/database restart",
+      "status": "passed",
+      "seconds": 0.371,
+      "detail": "Accepted rows and deduplication survive API death and a PostgreSQL restart before any runtime is started."
+    },
+    {
+      "name": "Concurrent real-runtime dispatch",
+      "status": "passed",
+      "seconds": 1.583,
+      "detail": "Two dispatchers acknowledged two durable receipts; product runs remain accepted, not succeeded."
+    },
+    {
+      "name": "Dispatcher death before runtime start",
+      "status": "passed",
+      "seconds": 3.8,
+      "detail": "SIGKILL after lease acquisition before RPC; another dispatcher reclaimed the lease and recorded one receipt."
+    },
+    {
+      "name": "Dispatcher death after runtime start",
+      "status": "passed",
+      "seconds": 2.217,
+      "detail": "SIGKILL after Temporal accepted start but before receipt; compatible worker and dispatcher recovered the same stable run."
+    },
+    {
+      "name": "Receipt survives acknowledgement loss",
+      "status": "passed",
+      "seconds": 3.436,
+      "detail": "SIGKILL after durable receipt before acknowledgement; reconciliation succeeded with Temporal offline and a starter that fails if called."
+    }
+  ]
+}

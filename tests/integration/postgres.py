@@ -31,13 +31,17 @@ class Postgres:
     def start(self):
         with (self.directory/'initdb.log').open('w') as log:
             subprocess.run([executable('initdb'),'-D',str(self.directory/'data'),'-U','runnelix_test','--auth=trust','--encoding=UTF8','--no-locale'],stdout=log,stderr=subprocess.STDOUT,check=True)
+        self.start_server()
+    def start_server(self):
         # Disable Unix sockets; trust authentication exists only on owned loopback services.
         subprocess.run([executable('pg_ctl'),'-D',str(self.directory/'data'),'-l',str(self.directory/'postgres.log'),'-o',f"-h 127.0.0.1 -p {self.port} -k ''",'-w','start'],check=True,stdout=subprocess.DEVNULL)
         self.started=True
-    def close(self):
+    def stop_server(self):
         if self.started:
             subprocess.run([executable('pg_ctl'),'-D',str(self.directory/'data'),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
             self.started=False
+    def close(self):
+        self.stop_server()
         print('PostgreSQL artifacts:',self.directory.relative_to(ROOT),flush=True)
 
 if __name__=='__main__':

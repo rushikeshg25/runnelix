@@ -41,3 +41,39 @@ func TestMigrations(t *testing.T) {
 		t.Fatalf("migration count %d: %v", count, err)
 	}
 }
+
+func TestMigrationDriftStopsRollout(t *testing.T) {
+	s := database(t)
+	ctx := context.Background()
+	var checksum string
+	if err := s.Pool.QueryRow(ctx, "SELECT checksum FROM schema_migrations WHERE version='001_initial.sql'").Scan(&checksum); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Pool.Exec(ctx, "UPDATE schema_migrations SET checksum='changed' WHERE version='001_initial.sql'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_, err := s.Pool.Exec(ctx, "UPDATE schema_migrations SET checksum=$1 WHERE version='001_initial.sql'", checksum)
+		if err != nil {
+			t.Error(err)
+		}
+	})
+	if err := s.Migrate(ctx); err == nil {
+		t.Fatal("changed migration accepted")
+	}
+	if _, err := s.Pool.Exec(ctx, "UPDATE schema_migrations SET checksum=$1 WHERE version='001_initial.sql'", checksum); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Pool.Exec(ctx, "INSERT INTO schema_migrations(version,checksum) VALUES('999_future.sql','future')"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_, err := s.Pool.Exec(ctx, "DELETE FROM schema_migrations WHERE version='999_future.sql'")
+		if err != nil {
+			t.Error(err)
+		}
+	})
+	if err := s.Migrate(ctx); err == nil {
+		t.Fatal("future migration accepted")
+	}
+}

@@ -71,3 +71,26 @@ func TestStrictJSON(t *testing.T) {
 		}
 	}
 }
+
+func TestSchemaErrorHasSafeFieldPath(t *testing.T) {
+	g := validGraph()
+	g.Nodes[1].Version = 0
+	data, _ := json.Marshal(g)
+	_, _, _, err := Compile(data, testCatalog())
+	var invalid *Invalid
+	if !errors.As(err, &invalid) || invalid.Issues[0].Path != "/nodes/1/version" {
+		t.Fatalf("missing field error: %#v", invalid)
+	}
+}
+func TestUnreachableAction(t *testing.T) {
+	c := testCatalog()
+	c = append(c, Descriptor{Type: "mock.source", Version: 1, Kind: "action", ImplementationDigest: "test", ConfigSchema: map[string]any{"type": "object"}})
+	g := validGraph()
+	g.Nodes = append(g.Nodes, Node{"orphan", "mock.source", 1, map[string]any{}})
+	data, _ := json.Marshal(g)
+	_, _, _, err := Compile(data, c)
+	var invalid *Invalid
+	if !errors.As(err, &invalid) || invalid.Issues[0].Code != "unreachable" {
+		t.Fatal("unreachable action accepted", err)
+	}
+}

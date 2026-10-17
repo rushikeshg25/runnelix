@@ -135,3 +135,13 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** make the persistence slice usable without a canvas while preserving explicit revisions, scope, and durable acceptance semantics.
 - **Evidence:** [API](internal/api/api.go), [boundary tests](internal/api/api_test.go), [OpenAPI](contracts/product/openapi.json), [commands](cmd/runnelix/main.go). Go API/contract checks and command build passed.
 - **Limit:** workspace routes do not authenticate callers. This API supports local fake-data development only; frontend generation and authenticated access remain future work.
+
+## 2026-10-17 — Phase 1 live failure-window evidence
+
+- **What:** seven live HTTP/PostgreSQL/Temporal integration cases passed. Dispatcher SIGKILL tests cover lease acquisition, accepted runtime start, and durable receipt before acknowledgement.
+- **Why:** unit tests cannot establish that database admission and runtime handoff survive process boundaries and lost acknowledgements.
+- **Observed:** twelve duplicate HTTP starts returned one run; delayed dispatch retained the published version; two dispatchers produced one receipt per run. Receipt reconciliation completed with Temporal offline and no new start call.
+- **Evidence:** [machine-readable report](docs/implementation/evidence/phase-1-full.json), [harness](tests/integration/phase1.py), [crash probe](tests/integration/phase1probe/main.go). The report records source hashes, unchanged-source verification, runtime versions, and clean shutdown.
+- **Correction during testing:** the first restart fixture omitted its isolated port and failed to bind default port 5432. Shared startup options fixed the harness; the existing system database remained untouched. The failed artifact directory is recorded in the decision log.
+- **Review fixes:** added future-migration rejection and field-level schema paths; moved node registration outside the generic host. Database race tests and all 33 TypeScript tests passed.
+- **Limits:** actual PostgreSQL restart, but no production backup/PITR or full graph execution. Temporal still uses development SQLite.

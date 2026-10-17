@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { Ajv } from 'ajv';
-import { execute as echo } from './nodes/mock-echo.js';
+import { modules } from './nodes/index.js';
 
 export interface Envelope {
   contractVersion: 1; workspaceId: string; runId: string; nodeId: string;
@@ -12,7 +12,6 @@ const contractRoot = new URL('../../contracts/product/', import.meta.url);
 const ajv = new Ajv({ strict: false });
 const validateEnvelope = ajv.compile(JSON.parse(readFileSync(new URL('activity.schema.json', contractRoot), 'utf8')));
 const catalog: Descriptor[] = JSON.parse(readFileSync(new URL('catalog.json', contractRoot), 'utf8'));
-const modules = new Map<string, typeof echo>([['mock.echo@1', echo]]);
 
 export class NodeFailure extends Error {
   constructor(public readonly code: 'InvalidInput' | 'VersionMismatch' | 'PayloadUnavailable' | 'InvalidOutput', message: string) { super(message); }

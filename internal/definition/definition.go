@@ -6,9 +6,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"sort"
+	"strings"
 
 	product "github.com/rushikeshg25/runnelix/contracts/product"
 	"github.com/santhosh-tekuri/jsonschema/v6"
@@ -155,6 +157,39 @@ func ValidateSchema(schema, value any) error {
 	}
 	return s.Validate(value)
 }
+
+// SchemaError exposes field paths without echoing values or schema error details.
+func SchemaError(err error, prefix string) *Invalid {
+	issues := []Issue{}
+	var validation *jsonschema.ValidationError
+	if errors.As(err, &validation) {
+		var visit func(*jsonschema.ValidationError)
+		visit = func(v *jsonschema.ValidationError) {
+			if len(issues) >= 10 {
+				return
+			}
+			if len(v.Causes) > 0 {
+				for _, c := range v.Causes {
+					visit(c)
+				}
+				return
+			}
+			path := prefix
+			for _, part := range v.InstanceLocation {
+				path += "/" + strings.ReplaceAll(strings.ReplaceAll(part, "~", "~0"), "/", "~1")
+			}
+			if path == "" {
+				path = "/"
+			}
+			issues = append(issues, Issue{path, "schema", "Value does not match the declared schema"})
+		}
+		visit(validation)
+	}
+	if len(issues) == 0 {
+		issues = append(issues, Issue{prefix, "schema", "Invalid schema or value"})
+	}
+	return &Invalid{issues}
+}
 func (c Catalog) Find(kind string, version int) (Descriptor, bool) {
 	for _, d := range c {
 		if d.Type == kind && d.Version == version {
@@ -173,7 +208,7 @@ func Compile(data []byte, catalog Catalog) (Graph, Plan, string, error) {
 		return bad("/", "invalid_json", err.Error())
 	}
 	if err := Schema("workflow.schema.json", raw); err != nil {
-		return bad("/", "schema", "Graph does not match workflow format version 1")
+		return Graph{}, Plan{}, "", SchemaError(err, "")
 	}
 	if err := Decode(data, &g); err != nil {
 		return bad("/", "invalid_json", "Invalid workflow fields")

@@ -62,6 +62,30 @@ func (s *Store) Migrate(ctx context.Context) error {
 		return err
 	}
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
+	known := make(map[string]bool, len(entries))
+	for _, entry := range entries {
+		known[entry.Name()] = true
+	}
+	rows, err := tx.Query(ctx, "SELECT version FROM schema_migrations")
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		var version string
+		if err = rows.Scan(&version); err != nil {
+			rows.Close()
+			return err
+		}
+		if !known[version] {
+			rows.Close()
+			return fmt.Errorf("database has an unsupported migration version")
+		}
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return err
+	}
 	for _, entry := range entries {
 		data, err := migrations.ReadFile("migrations/" + entry.Name())
 		if err != nil {

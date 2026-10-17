@@ -73,7 +73,7 @@ func validateDraft(graph []byte) error {
 		return &definition.Invalid{Issues: []definition.Issue{{Path: "/graph", Code: "invalid_json", Message: err.Error()}}}
 	}
 	if err := definition.Schema("workflow.schema.json", raw); err != nil {
-		return &definition.Invalid{Issues: []definition.Issue{{Path: "/graph", Code: "schema", Message: "Draft does not match workflow format version 1"}}}
+		return definition.SchemaError(err, "/graph")
 	}
 	return nil
 }

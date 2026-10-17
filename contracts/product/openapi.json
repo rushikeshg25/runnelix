@@ -3,7 +3,7 @@
   "info": {
     "title": "Runnelix development API",
     "version": "0.1.0",
-    "description": "Phase 1 loopback-only API. No authentication. Workspace paths scope data but do not authorize users. Use fake data. The runtime records admission only; accepted does not mean executed. Browser Origin headers are rejected. Request JSON <=256 KiB; admitted input and resolved mock-node payloads <=8 KiB. No list or pagination API yet."
+    "description": "Phase 1 loopback-only API. No authentication. Workspace paths scope data but do not authorize users. Use fake data. The runtime records admission only; accepted does not mean executed. Browser Origin headers are rejected. Request JSON <=256 KiB; admitted input and resolved mock-node payloads <=8 KiB. No list or pagination API yet. A literal loopback Host header is required."
   },
   "servers": [
     {
@@ -139,6 +139,16 @@
                   "type": "string"
                 },
                 "description": "Server-generated support identifier"
+              }
+            }
+          },
+          "503": {
+            "description": "Database unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
               }
             }
           }
