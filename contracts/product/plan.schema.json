@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "formatVersion",
+    "interpreterVersion",
+    "steps",
+    "edges"
+  ],
+  "properties": {
+    "formatVersion": {
+      "const": 1
+    },
+    "interpreterVersion": {
+      "const": 1
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type",
+          "version",
+          "config",
+          "implementationDigest"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/definitions/id"
+          },
+          "type": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "config": {
+            "type": "object",
+            "maxProperties": 64
+          },
+          "implementationDigest": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/definitions/edge"
+      }
+    }
+  },
+  "definitions": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$"
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "version",
+        "config"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/id"
+        },
+        "type": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "config": {
+          "type": "object",
+          "maxProperties": 64
+        }
+      }
+    },
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "port"
+      ],
+      "properties": {
+        "node": {
+          "$ref": "#/definitions/id"
+        },
+        "port": {
+          "$ref": "#/definitions/id"
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+        "from": {
+          "$ref": "#/definitions/endpoint"
+        },
+        "to": {
+          "$ref": "#/definitions/endpoint"
+        }
+      }
+    }
+  }
+}

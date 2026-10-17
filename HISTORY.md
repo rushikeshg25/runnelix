@@ -128,3 +128,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** handle uncertain start responses and dispatcher death without trusting an RPC response as proof of recorded admission.
 - **Evidence:** [dispatcher](internal/dispatch/dispatch.go), [lease tests](internal/store/dispatch_test.go), [workflow identity tests](internal/dispatch/dispatch_test.go). Database fencing and workflow unit tests passed; live process failure tests remain the next evidence step.
 - **Limit:** a runtime receipt does not change the product run from accepted to succeeded.
+
+## 2026-10-17 — development HTTP contract
+
+- **What:** added a loopback-only API and separate operational commands, plus an OpenAPI baseline and compiled-plan schema.
+- **Why:** make the persistence slice usable without a canvas while preserving explicit revisions, scope, and durable acceptance semantics.
+- **Evidence:** [API](internal/api/api.go), [boundary tests](internal/api/api_test.go), [OpenAPI](contracts/product/openapi.json), [commands](cmd/runnelix/main.go). Go API/contract checks and command build passed.
+- **Limit:** workspace routes do not authenticate callers. This API supports local fake-data development only; frontend generation and authenticated access remain future work.
