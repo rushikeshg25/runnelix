@@ -181,3 +181,9 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** the editor needs a complete author-to-inspection path, while cancellation and webhook delivery must survive lost responses.
 - **Decisions:** persist cancellation intent before the dispatcher calls Temporal. Repeat cancellation until a terminal projection exists. Sign timestamp, delivery key, and raw webhook body; reject old/future signatures and isolate webhook deduplication from manual requests. EventSource reconnects from persisted sequence IDs.
 - **Evidence:** [API implementation](internal/api/execution.go), [signature tests](internal/api/execution_test.go), [trigger-source tests](internal/store/execution_test.go), [OpenAPI](contracts/product/openapi.json). OpenAPI validation passed; live runtime checks follow in slice 7.
+
+## 2026-10-17 — local editor foundation
+
+- **What:** added React/TypeScript/Vite, a workflow sidebar, bounded list paging, schema-driven configuration fields, draft saving, validation, and publication. The editor preserves local edits when a draft revision conflicts.
+- **Why:** expose server-owned workflow contracts through simple forms without adding a second graph interpreter or state-management framework.
+- **Evidence:** [editor source](web/src/App.tsx), [typed client](web/src/api.ts), [schema forms](web/src/SchemaForm.tsx). Browser verification follows after canvas and inspection wiring.

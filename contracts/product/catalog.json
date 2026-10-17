@@ -19,7 +19,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
+    "implementationDigest": "sha256:b4e7840805f383b85aa695f4adb206c5324769c52e3b7c46bb3b092fafb5b183"
   },
   {
     "type": "mock.echo",
@@ -43,7 +43,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
+    "implementationDigest": "sha256:b4e7840805f383b85aa695f4adb206c5324769c52e3b7c46bb3b092fafb5b183"
   },
   {
     "type": "transform.map",
@@ -77,7 +77,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
+    "implementationDigest": "sha256:b4e7840805f383b85aa695f4adb206c5324769c52e3b7c46bb3b092fafb5b183"
   },
   {
     "type": "control.condition",
@@ -112,7 +112,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
+    "implementationDigest": "sha256:b4e7840805f383b85aa695f4adb206c5324769c52e3b7c46bb3b092fafb5b183"
   },
   {
     "type": "http.get",
@@ -161,7 +161,7 @@
         "body": {}
       }
     },
-    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
+    "implementationDigest": "sha256:b4e7840805f383b85aa695f4adb206c5324769c52e3b7c46bb3b092fafb5b183"
   },
   {
     "type": "http.post",
@@ -210,6 +210,6 @@
         "body": {}
       }
     },
-    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
+    "implementationDigest": "sha256:b4e7840805f383b85aa695f4adb206c5324769c52e3b7c46bb3b092fafb5b183"
   }
 ]
