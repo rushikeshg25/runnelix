@@ -94,3 +94,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** publication needs a stable, validated execution definition before persistence or dispatch can be safe.
 - **Evidence:** [phase scope](docs/implementation/phase-1.md), [compiler tests](internal/definition/definition_test.go). `go test ./internal/definition` passed.
 - **Boundary:** manual trigger and mock actions only; the phase's runtime records admission, not graph completion. PostgreSQL 17.6 is installed locally; integration will use a separate cluster.
+
+## 2026-10-17 — internal node host and activity contract
+
+- **What:** added the mock.echo module, shared activity fixtures, scoped resolver boundary, and generated catalog with a source-bundle digest.
+- **Why:** internal actions should be added through their module and catalog, while the host enforces validation and pinned identity.
+- **Evidence:** [host tests](node-worker/product-host.test.ts), [Go fixture tests](internal/definition/catalog_test.go), [catalog generator](scripts/build-catalog.py). TypeScript and Go contract checks passed.
+- **Limit:** the fixture host does not provide a production payload service, credentials, or a product graph interpreter.

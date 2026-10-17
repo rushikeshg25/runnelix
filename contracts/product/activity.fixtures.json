@@ -1,0 +1,140 @@
+[
+  {
+    "name": "valid",
+    "value": {
+      "contractVersion": 1,
+      "workspaceId": "workspace_test",
+      "runId": "run_test",
+      "nodeId": "echo",
+      "invocationId": "invocation_test",
+      "nodeType": "mock.echo",
+      "nodeVersion": 1,
+      "implementationDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "inputRef": "payload_input",
+      "configRef": "payload_config",
+      "logicalActionKey": "run_test/echo/root"
+    },
+    "valid": true
+  },
+  {
+    "name": "wrong version",
+    "value": {
+      "contractVersion": 2,
+      "workspaceId": "workspace_test",
+      "runId": "run_test",
+      "nodeId": "echo",
+      "invocationId": "invocation_test",
+      "nodeType": "mock.echo",
+      "nodeVersion": 1,
+      "implementationDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "inputRef": "payload_input",
+      "configRef": "payload_config",
+      "logicalActionKey": "run_test/echo/root"
+    },
+    "valid": false
+  },
+  {
+    "name": "unknown field",
+    "value": {
+      "contractVersion": 1,
+      "workspaceId": "workspace_test",
+      "runId": "run_test",
+      "nodeId": "echo",
+      "invocationId": "invocation_test",
+      "nodeType": "mock.echo",
+      "nodeVersion": 1,
+      "implementationDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "inputRef": "payload_input",
+      "configRef": "payload_config",
+      "logicalActionKey": "run_test/echo/root",
+      "code": "execute"
+    },
+    "valid": false
+  },
+  {
+    "name": "unsafe version",
+    "value": {
+      "contractVersion": 1,
+      "workspaceId": "workspace_test",
+      "runId": "run_test",
+      "nodeId": "echo",
+      "invocationId": "invocation_test",
+      "nodeType": "mock.echo",
+      "nodeVersion": 9007199254740992,
+      "implementationDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "inputRef": "payload_input",
+      "configRef": "payload_config",
+      "logicalActionKey": "run_test/echo/root"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad reference",
+    "value": {
+      "contractVersion": 1,
+      "workspaceId": "workspace_test",
+      "runId": "run_test",
+      "nodeId": "echo",
+      "invocationId": "invocation_test",
+      "nodeType": "mock.echo",
+      "nodeVersion": 1,
+      "implementationDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "inputRef": "../secret",
+      "configRef": "payload_config",
+      "logicalActionKey": "run_test/echo/root"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad digest",
+    "value": {
+      "contractVersion": 1,
+      "workspaceId": "workspace_test",
+      "runId": "run_test",
+      "nodeId": "echo",
+      "invocationId": "invocation_test",
+      "nodeType": "mock.echo",
+      "nodeVersion": 1,
+      "implementationDigest": "latest",
+      "inputRef": "payload_input",
+      "configRef": "payload_config",
+      "logicalActionKey": "run_test/echo/root"
+    },
+    "valid": false
+  },
+  {
+    "name": "array version",
+    "value": {
+      "contractVersion": 1,
+      "workspaceId": "workspace_test",
+      "runId": "run_test",
+      "nodeId": "echo",
+      "invocationId": "invocation_test",
+      "nodeType": "mock.echo",
+      "nodeVersion": [
+        1
+      ],
+      "implementationDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "inputRef": "payload_input",
+      "configRef": "payload_config",
+      "logicalActionKey": "run_test/echo/root"
+    },
+    "valid": false
+  },
+  {
+    "name": "missing scope",
+    "value": {
+      "contractVersion": 1,
+      "runId": "run_test",
+      "nodeId": "echo",
+      "invocationId": "invocation_test",
+      "nodeType": "mock.echo",
+      "nodeVersion": 1,
+      "implementationDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "inputRef": "payload_input",
+      "configRef": "payload_config",
+      "logicalActionKey": "run_test/echo/root"
+    },
+    "valid": false
+  }
+]

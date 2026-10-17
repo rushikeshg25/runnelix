@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.5.0",
-  "engines": { "node": ">=24.2.0" },
+  "engines": {
+    "node": ">=24.2.0"
+  },
   "scripts": {
     "build": "tsc",
     "check": "tsc --noEmit",
@@ -13,7 +15,8 @@
   "dependencies": {
     "@temporalio/activity": "1.24.0",
     "@temporalio/common": "1.24.0",
-    "@temporalio/worker": "1.24.0"
+    "@temporalio/worker": "1.24.0",
+    "ajv": "8.17.1"
   },
   "devDependencies": {
     "@types/node": "24.19.2",

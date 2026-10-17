@@ -1,0 +1,4 @@
+[
+ {"type":"trigger.manual","version":1,"kind":"trigger","title":"Manual trigger","inputs":[],"outputs":["out"],"retrySafety":"pure","configSchema":{"type":"object","additionalProperties":false},"inputSchema":{"type":"object"},"outputSchema":{"type":"object"}},
+ {"type":"mock.echo","version":1,"kind":"action","title":"Mock echo","inputs":["in"],"outputs":["out"],"retrySafety":"pure","configSchema":{"type":"object","additionalProperties":false},"inputSchema":{"type":"object"},"outputSchema":{"type":"object"}}
+]
