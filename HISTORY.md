@@ -108,3 +108,9 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** test actual transaction/locking behavior without changing existing databases or relying on an in-memory substitute.
 - **Evidence:** [migration](internal/store/migrations/001_initial.sql), [migration test](internal/store/store_test.go), [harness](tests/integration/postgres.py). `python3 tests/integration/postgres.py go test -race ./internal/store` passed on PostgreSQL 17.6.
 - **Limit:** schema creation is not a production migration or recovery drill.
+
+## 2026-10-17 — draft and publication transactions
+
+- **What:** implemented optimistic draft revisions and immutable, validated publication with pinned plans.
+- **Why:** concurrent editors must see conflicts, and later edits must not alter published execution definitions.
+- **Evidence:** [store methods](internal/store/workflows.go), [PostgreSQL tests](internal/store/workflows_test.go). Race-enabled database tests passed, including direct SQL immutability and cross-workspace FK rejection.
