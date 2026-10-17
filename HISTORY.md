@@ -160,3 +160,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **What:** GitHub Actions passed both Phase 0 and Phase 1 at pushed commit `f4ded52`. Began Phase 2 with an explicit execution mode and PostgreSQL payload/invocation/attempt/event contracts.
 - **Why:** existing admission-only records must retain their meaning, and late attempts must not overwrite the result selected by the runtime.
 - **Evidence:** [Phase 0 CI](https://github.com/rushikeshg25/runnelix/actions/runs/39055529924), [Phase 1 CI](https://github.com/rushikeshg25/runnelix/actions/runs/39055529911), [execution persistence tests](internal/store/execution_test.go), [phase scope](docs/implementation/phase-2.md). Isolated PostgreSQL race tests passed.
+
+## 2026-10-17 — first pinned graph interpreter
+
+- **What:** added a separate execution workflow with branch/skip behavior, structured events, cancellation, and reference-based node invocation. Added bounded CEL mapping and condition evaluation.
+- **Why:** execute the published plan deterministically while keeping database/network work in activities and payload values outside workflow history.
+- **Evidence:** [engine tests](internal/engine/engine_test.go), [mapping tests](internal/mapping/mapping_test.go), and [compiler](internal/definition/definition.go). Go and PostgreSQL checks passed. CEL is pinned at `cel.dev/cel-go v0.32.0`.
+- **Boundary:** the real TypeScript data-plane connection and UI are still being built; this milestone is not an end-to-end execution claim.

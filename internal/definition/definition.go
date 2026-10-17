@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	product "github.com/rushikeshg25/runnelix/contracts/product"
+	"github.com/rushikeshg25/runnelix/internal/mapping"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
@@ -52,6 +53,8 @@ type Descriptor struct {
 }
 type Catalog []Descriptor
 type Step struct {
+	Kind        string `json:"kind,omitempty"`
+	RetrySafety string `json:"retrySafety,omitempty"`
 	Node
 	ImplementationDigest string `json:"implementationDigest"`
 }
@@ -228,7 +231,7 @@ func Compile(data []byte, catalog Catalog) (Graph, Plan, string, error) {
 		if !ok {
 			return bad(path+"/type", "unknown_type", "Node type or version is unavailable")
 		}
-		if d.Kind != "trigger" && d.Kind != "action" {
+		if d.Kind != "trigger" && d.Kind != "action" && !(d.Kind == "control" && (d.Type == "transform.map" || d.Type == "control.condition")) {
 			return bad(path, "unsupported_kind", "Control nodes are not supported yet")
 		}
 		if d.ImplementationDigest == "" {
@@ -236,6 +239,12 @@ func Compile(data []byte, catalog Catalog) (Graph, Plan, string, error) {
 		}
 		if err := ValidateSchema(d.ConfigSchema, n.Config); err != nil {
 			return bad(path+"/config", "invalid_config", "Configuration does not match the node schema")
+		}
+		if d.Kind == "control" {
+			expression, _ := n.Config["expression"].(string)
+			if mapping.Validate(expression) != nil {
+				return bad(path+"/config/expression", "invalid_expression", "Expression is invalid or exceeds limits")
+			}
 		}
 		nodes[n.ID] = n
 		descriptors[n.ID] = d
@@ -284,12 +293,12 @@ func Compile(data []byte, catalog Catalog) (Graph, Plan, string, error) {
 			ready = append(ready, id)
 		}
 	}
-	p := Plan{FormatVersion: 1, InterpreterVersion: 1, Steps: []Step{}, Edges: append([]Edge{}, g.Edges...)}
+	p := Plan{FormatVersion: 1, InterpreterVersion: 2, Steps: []Step{}, Edges: append([]Edge{}, g.Edges...)}
 	for len(ready) > 0 {
 		sort.Strings(ready)
 		id := ready[0]
 		ready = ready[1:]
-		p.Steps = append(p.Steps, Step{nodes[id], descriptors[id].ImplementationDigest})
+		p.Steps = append(p.Steps, Step{Node: nodes[id], ImplementationDigest: descriptors[id].ImplementationDigest, Kind: descriptors[id].Kind, RetrySafety: descriptors[id].RetrySafety})
 		for _, next := range adjacency[id] {
 			incoming[next]--
 			if incoming[next] == 0 {

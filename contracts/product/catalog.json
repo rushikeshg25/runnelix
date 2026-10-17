@@ -19,7 +19,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:bd80ca5165c418b2e20af13640bc9c37d3219fda11ccbfa13c61e1e40c082f73"
+    "implementationDigest": "sha256:7bd63c1cb9903be91c34379113ffba5023e8a5726673ef4042cc4f8c9d17b06f"
   },
   {
     "type": "mock.echo",
@@ -43,6 +43,75 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:bd80ca5165c418b2e20af13640bc9c37d3219fda11ccbfa13c61e1e40c082f73"
+    "implementationDigest": "sha256:7bd63c1cb9903be91c34379113ffba5023e8a5726673ef4042cc4f8c9d17b06f"
+  },
+  {
+    "type": "transform.map",
+    "version": 1,
+    "kind": "control",
+    "title": "Map fields",
+    "inputs": [
+      "in"
+    ],
+    "outputs": [
+      "out"
+    ],
+    "retrySafety": "pure",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expression"
+      ],
+      "properties": {
+        "expression": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "implementationDigest": "sha256:7bd63c1cb9903be91c34379113ffba5023e8a5726673ef4042cc4f8c9d17b06f"
+  },
+  {
+    "type": "control.condition",
+    "version": 1,
+    "kind": "control",
+    "title": "Condition",
+    "inputs": [
+      "in"
+    ],
+    "outputs": [
+      "true",
+      "false"
+    ],
+    "retrySafety": "pure",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expression"
+      ],
+      "properties": {
+        "expression": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "implementationDigest": "sha256:7bd63c1cb9903be91c34379113ffba5023e8a5726673ef4042cc4f8c9d17b06f"
   }
 ]

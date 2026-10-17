@@ -13,7 +13,10 @@
       "const": 1
     },
     "interpreterVersion": {
-      "const": 1
+      "enum": [
+        1,
+        2
+      ]
     },
     "steps": {
       "type": "array",
@@ -49,6 +52,16 @@
           "implementationDigest": {
             "type": "string",
             "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "kind": {
+            "enum": [
+              "trigger",
+              "action",
+              "control"
+            ]
+          },
+          "retrySafety": {
+            "type": "string"
           }
         }
       }
