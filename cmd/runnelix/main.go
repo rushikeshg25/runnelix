@@ -175,9 +175,14 @@ func run() error {
 				if err := dispatch.ReconcileCancellation(ctx, s, c); err != nil && ctx.Err() == nil {
 					log.Print("cancellation reconciliation incomplete; retained for retry")
 				}
-				_, err := dispatch.Once(ctx, s, dispatch.TemporalStarter{Client: c})
-				if err != nil && ctx.Err() == nil {
-					log.Print("dispatch attempt incomplete; retained for retry")
+				for range 16 {
+					worked, err := dispatch.Once(ctx, s, dispatch.TemporalStarter{Client: c})
+					if err != nil && ctx.Err() == nil {
+						log.Print("dispatch attempt incomplete; retained for retry")
+					}
+					if !worked || err != nil {
+						break
+					}
 				}
 			}
 		}

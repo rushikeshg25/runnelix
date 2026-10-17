@@ -263,3 +263,9 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Decisions:** inspect runtime closure before querying a worker; completed executions expose their journal directly through the stored result. Rotate recovery candidates by a separate checked timestamp so long waits do not starve other repairs.
 - **Evidence:** [journal regression](internal/engine/v3_test.go), [reconciler](internal/dispatch/recovery.go), [artifact report](internal/store/recovery.go). Engine and PostgreSQL checks passed. Phase 2 hosted CI passed for Phase 0, Phase 1, and Phase 2 workflows at `9cd61d1`.
 - **Limit:** forced Temporal termination/history deletion is not normal product completion and still needs operator recovery; no external-effect reconciliation is inferred from runtime status alone.
+
+## 2026-10-18 — live Phase 3 failure and compatibility evidence
+
+- **What:** eight live cases passed with isolated PostgreSQL, Temporal, and fixture providers. Checks cover bounded Map, engine-crash wait recovery, immutable operator reconciliation, offline-engine projection repair, schedules, actual DST calendar matching, retained V2 workers, and concurrent admission.
+- **Why:** unit tests alone cannot prove behavior across process crashes or runtime/database boundaries. A bounded dispatcher batch removes the one-start-per-tick bottleneck while yielding to reconciliation on each tick.
+- **Evidence:** [generated report](docs/implementation/evidence/phase-3-full.json), [harness](tests/integration/phase3.py), [V2 fixture builder](scripts/build-compat-v2.py). Thirty single-action runs completed in 2.390 seconds (12.554 runs/second) with ten HTTP clients. This is local smoke-load evidence, not production capacity acceptance.
