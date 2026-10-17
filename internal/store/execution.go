@@ -16,13 +16,14 @@ type Snapshot struct {
 	CancelRequested bool            `json:"cancelRequested"`
 }
 type Event struct {
-	Sequence  int64  `json:"sequence"`
-	State     string `json:"state"`
-	NodeID    string `json:"nodeId,omitempty"`
-	NodeState string `json:"nodeState,omitempty"`
-	OutputRef string `json:"outputRef,omitempty"`
-	Port      string `json:"port,omitempty"`
-	ErrorCode string `json:"errorCode,omitempty"`
+	InvocationID string `json:"invocationId,omitempty"`
+	Sequence     int64  `json:"sequence"`
+	State        string `json:"state"`
+	NodeID       string `json:"nodeId,omitempty"`
+	NodeState    string `json:"nodeState,omitempty"`
+	OutputRef    string `json:"outputRef,omitempty"`
+	Port         string `json:"port,omitempty"`
+	ErrorCode    string `json:"errorCode,omitempty"`
 }
 type RecordedEvent struct {
 	Event
@@ -79,6 +80,13 @@ func (s *Store) Payload(ctx context.Context, workspace, run, ref string) (json.R
 	return data, notFound(err)
 }
 func (s *Store) PrepareInvocation(ctx context.Context, r StartRequest, step definition.Step, inputRef string) (definition.Envelope, error) {
+	return s.PrepareScopedInvocation(ctx, r, step, inputRef, "root")
+}
+func (s *Store) PrepareScopedInvocation(ctx context.Context, r StartRequest, step definition.Step, inputRef, scope string) (definition.Envelope, error) {
+	if !validID(scope) {
+		return definition.Envelope{}, ErrInvalid
+	}
+
 	if _, err := s.Payload(ctx, r.WorkspaceID, r.RunID, inputRef); err != nil {
 		return definition.Envelope{}, err
 	}
@@ -86,7 +94,7 @@ func (s *Store) PrepareInvocation(ctx context.Context, r StartRequest, step defi
 	if err != nil {
 		return definition.Envelope{}, err
 	}
-	envelope := definition.Envelope{ContractVersion: 1, WorkspaceID: r.WorkspaceID, RunID: r.RunID, NodeID: step.ID, InvocationID: "invocation_" + step.ID, NodeType: step.Type, NodeVersion: step.Version, ImplementationDigest: step.ImplementationDigest, InputRef: inputRef, ConfigRef: configRef, LogicalActionKey: r.RunID + "/" + step.ID + "/root"}
+	envelope := definition.Envelope{ContractVersion: 1, WorkspaceID: r.WorkspaceID, RunID: r.RunID, NodeID: step.ID, InvocationID: "invocation_" + step.ID + mapScope(scope), NodeType: step.Type, NodeVersion: step.Version, ImplementationDigest: step.ImplementationDigest, InputRef: inputRef, ConfigRef: configRef, LogicalActionKey: r.RunID + "/" + step.ID + "/" + scope}
 	data, err := json.Marshal(envelope)
 	if err != nil {
 		return envelope, err
@@ -278,4 +286,11 @@ func (s *Store) Attempts(ctx context.Context, workspace, run string) ([]Attempt,
 		result = append(result, a)
 	}
 	return result, rows.Err()
+}
+
+func mapScope(scope string) string {
+	if scope == "root" {
+		return ""
+	}
+	return "_" + scope
 }

@@ -1,0 +1,2 @@
+ALTER TABLE node_invocations DROP CONSTRAINT node_invocations_workspace_id_run_id_node_id_key;
+CREATE INDEX node_invocations_node_idx ON node_invocations(workspace_id,run_id,node_id);

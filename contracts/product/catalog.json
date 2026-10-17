@@ -19,7 +19,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
+    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
   },
   {
     "type": "mock.echo",
@@ -43,7 +43,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
+    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
   },
   {
     "type": "transform.map",
@@ -77,7 +77,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
+    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
   },
   {
     "type": "control.condition",
@@ -112,7 +112,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
+    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
   },
   {
     "type": "http.get",
@@ -161,7 +161,7 @@
         "body": {}
       }
     },
-    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
+    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
   },
   {
     "type": "http.post",
@@ -210,7 +210,7 @@
         "body": {}
       }
     },
-    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
+    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
   },
   {
     "type": "control.merge",
@@ -247,7 +247,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
+    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
   },
   {
     "type": "control.wait",
@@ -281,6 +281,67 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:7ef2027154593958c9b82208843653743a6b073aa9c834f9208e9e7c28b59a8a"
+    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
+  },
+  {
+    "type": "control.map",
+    "version": 1,
+    "kind": "control",
+    "title": "For each item",
+    "inputs": [
+      "in"
+    ],
+    "outputs": [
+      "out"
+    ],
+    "retrySafety": "pure",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "collectionExpression",
+        "bodyType",
+        "bodyVersion",
+        "bodyConfig",
+        "maxItems",
+        "concurrency"
+      ],
+      "properties": {
+        "collectionExpression": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "bodyType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "bodyVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bodyConfig": {
+          "type": "object"
+        },
+        "maxItems": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
   }
 ]

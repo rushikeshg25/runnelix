@@ -53,6 +53,7 @@ type Descriptor struct {
 }
 type Catalog []Descriptor
 type Step struct {
+	Body        *Step  `json:"body,omitempty"`
 	Kind        string `json:"kind,omitempty"`
 	RetrySafety string `json:"retrySafety,omitempty"`
 	Node
@@ -231,7 +232,7 @@ func Compile(data []byte, catalog Catalog) (Graph, Plan, string, error) {
 		if !ok {
 			return bad(path+"/type", "unknown_type", "Node type or version is unavailable")
 		}
-		if d.Kind != "trigger" && d.Kind != "action" && !(d.Kind == "control" && (d.Type == "transform.map" || d.Type == "control.condition" || d.Type == "control.merge" || d.Type == "control.wait")) {
+		if d.Kind != "trigger" && d.Kind != "action" && !(d.Kind == "control" && (d.Type == "transform.map" || d.Type == "control.condition" || d.Type == "control.merge" || d.Type == "control.wait" || d.Type == "control.map")) {
 			return bad(path, "unsupported_kind", "Control nodes are not supported yet")
 		}
 		if d.ImplementationDigest == "" {
@@ -244,6 +245,19 @@ func Compile(data []byte, catalog Catalog) (Graph, Plan, string, error) {
 			expression, _ := n.Config["expression"].(string)
 			if mapping.Validate(expression) != nil {
 				return bad(path+"/config/expression", "invalid_expression", "Expression is invalid or exceeds limits")
+			}
+		}
+		if d.Type == "control.map" {
+			expression, _ := n.Config["collectionExpression"].(string)
+			if mapping.Validate(expression) != nil {
+				return bad(path+"/config/collectionExpression", "invalid_expression", "Invalid collection expression")
+			}
+			typ, _ := n.Config["bodyType"].(string)
+			version, _ := n.Config["bodyVersion"].(float64)
+			config, _ := n.Config["bodyConfig"].(map[string]any)
+			body, ok := catalog.Find(typ, int(version))
+			if !ok || body.Kind != "action" || ValidateSchema(body.ConfigSchema, config) != nil {
+				return bad(path+"/config", "invalid_map_body", "Map body must be one available action with valid configuration")
 			}
 		}
 		nodes[n.ID] = n
@@ -298,7 +312,14 @@ func Compile(data []byte, catalog Catalog) (Graph, Plan, string, error) {
 		sort.Strings(ready)
 		id := ready[0]
 		ready = ready[1:]
-		p.Steps = append(p.Steps, Step{Node: nodes[id], ImplementationDigest: descriptors[id].ImplementationDigest, Kind: descriptors[id].Kind, RetrySafety: descriptors[id].RetrySafety})
+		step := Step{Node: nodes[id], ImplementationDigest: descriptors[id].ImplementationDigest, Kind: descriptors[id].Kind, RetrySafety: descriptors[id].RetrySafety}
+		if step.Type == "control.map" {
+			version := int(step.Config["bodyVersion"].(float64))
+			typ := step.Config["bodyType"].(string)
+			body, _ := catalog.Find(typ, version)
+			step.Body = &Step{Node: Node{ID: id, Type: typ, Version: version, Config: step.Config["bodyConfig"].(map[string]any)}, Kind: "action", RetrySafety: body.RetrySafety, ImplementationDigest: body.ImplementationDigest}
+		}
+		p.Steps = append(p.Steps, step)
 		for _, next := range adjacency[id] {
 			incoming[next]--
 			if incoming[next] == 0 {

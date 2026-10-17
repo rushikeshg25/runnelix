@@ -23,7 +23,12 @@ func ExecuteV3(ctx workflow.Context, r store.StartRequest) (result string, err e
 		return "", err
 	}
 	sequence := int64(0)
+	projectionLock := workflow.NewMutex(ctx)
 	project := func(c workflow.Context, e store.Event) error {
+		if err := projectionLock.Lock(c); err != nil {
+			return err
+		}
+		defer projectionLock.Unlock()
 		sequence++
 		e.Sequence = sequence
 		return workflow.ExecuteActivity(c, "Project", Projection{r, e}).Get(c, nil)
@@ -100,36 +105,14 @@ func ExecuteV3(ctx workflow.Context, r store.StartRequest) (result string, err e
 			ref = inputRef
 		} else if step.Type == "control.merge" {
 			err = workflow.ExecuteActivity(ctx, "Merge", MergeRequest{Run: r, Inputs: mergeInputs, Policy: step.Config["policy"].(string)}).Get(ctx, &ref)
+		} else if step.Type == "control.map" {
+			ref, err = mapV3(ctx, request, project)
 		} else if step.Kind == "control" {
 			var out ControlResult
 			err = workflow.ExecuteActivity(ctx, "Control", request).Get(ctx, &out)
 			ref, port = out.OutputRef, out.Port
 		} else {
-			var envelope definition.Envelope
-			if err = workflow.ExecuteActivity(ctx, "Prepare", request).Get(ctx, &envelope); err != nil {
-				return "", err
-			}
-			attempts := int32(1)
-			if step.RetrySafety == "pure" || step.RetrySafety == "read-only" || step.RetrySafety == "provider-idempotent" {
-				attempts = 3
-			}
-			nodeCtx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{TaskQueue: NodeQueue(step.ImplementationDigest), StartToCloseTimeout: 10 * time.Second, ScheduleToCloseTimeout: 45 * time.Second, HeartbeatTimeout: 2 * time.Second, WaitForCancellation: true, RetryPolicy: &temporal.RetryPolicy{MaximumAttempts: attempts, InitialInterval: time.Second, MaximumInterval: 5 * time.Second}})
-			var completion Completion
-			err = workflow.ExecuteActivity(nodeCtx, NodeActivity, envelope).Get(nodeCtx, &completion)
-			if err == nil {
-				err = workflow.ExecuteActivity(ctx, "Select", Selection{envelope, completion}).Get(ctx, &ref)
-			}
-			if err != nil && !temporal.IsCanceledError(err) && attempts == 1 {
-				var failure *temporal.ApplicationError
-				knownPreSend := errors.As(err, &failure) && (failure.Type() == "InvalidInput" || failure.Type() == "VersionMismatch")
-				if !knownPreSend {
-					if projectErr := project(ctx, store.Event{State: "needs_attention", NodeID: step.ID, NodeState: "uncertain", ErrorCode: "UncertainOutcome"}); projectErr != nil {
-						return "", projectErr
-					}
-					err = workflow.Await(ctx, func() bool { return false })
-					return "", err
-				}
-			}
+			ref, err = actionV3(ctx, request, "root", project)
 		}
 		if err != nil {
 			code := "ActionFailed"

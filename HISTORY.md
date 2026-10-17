@@ -227,3 +227,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **What:** Phase 2 is pushed at `9cd61d1`. Added interpreter version 3 with explicit two-input merge policies and durable waits; retained the V2 workflow and queue for old histories.
 - **Why:** new control semantics must not silently alter replay of existing executions. Merge waits for deterministic upstream outcomes and ignores skipped branches without waiting for nonexistent work.
 - **Evidence:** [V3 workflow test](internal/engine/v3_test.go), [control activity](internal/engine/controls.go), [Phase 3 plan](docs/implementation/phase-3.md). Compiler/engine/dispatcher checks passed. The durable-clock test covers a one-hour timer and a merge with one skipped input.
+
+## 2026-10-18 — bounded per-item action execution
+
+- **What:** added explicit Map bodies containing one pinned trusted action, per-item invocation identity, bounded batches, and ordered output assembly. Empty Maps schedule no body action; nested controls are rejected as bodies.
+- **Why:** arrays must expand only through an explicit construct, and retries must retain the same logical action identity for each item.
+- **Decisions:** maximum 1,000 items and 10 concurrent bodies, with the existing 8 KiB payload boundary. Serialize projection calls so concurrently completed items cannot create event-sequence gaps. Map output is `{items:[...]}` in input order.
+- **Evidence:** [Map execution](internal/engine/map.go), [ordering/concurrency tests](internal/engine/v3_test.go), [identity test](internal/store/execution_test.go). Runtime and PostgreSQL verification accompany this slice.

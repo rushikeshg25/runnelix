@@ -274,5 +274,65 @@
     "outputSchema": {
       "type": "object"
     }
+  },
+  {
+    "type": "control.map",
+    "version": 1,
+    "kind": "control",
+    "title": "For each item",
+    "inputs": [
+      "in"
+    ],
+    "outputs": [
+      "out"
+    ],
+    "retrySafety": "pure",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "collectionExpression",
+        "bodyType",
+        "bodyVersion",
+        "bodyConfig",
+        "maxItems",
+        "concurrency"
+      ],
+      "properties": {
+        "collectionExpression": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "bodyType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "bodyVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bodyConfig": {
+          "type": "object"
+        },
+        "maxItems": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object"
+    }
   }
 ]

@@ -149,3 +149,25 @@ func TestWebhookSourceIsolation(t *testing.T) {
 		t.Fatal("changed signed delivery accepted")
 	}
 }
+
+func TestMapInvocationIdentity(t *testing.T) {
+	s := database(t)
+	ctx := context.Background()
+	r, snapshot := executable(t, s)
+	step := snapshot.Plan.Steps[1]
+	first, err := s.PrepareScopedInvocation(ctx, r, step, snapshot.InputRef, "item_0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := s.PrepareScopedInvocation(ctx, r, step, snapshot.InputRef, "item_1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if first.InvocationID == second.InvocationID || first.LogicalActionKey == second.LogicalActionKey {
+		t.Fatal("items share identity")
+	}
+	replay, err := s.PrepareScopedInvocation(ctx, r, step, snapshot.InputRef, "item_0")
+	if err != nil || replay != first {
+		t.Fatal("unstable identity", err)
+	}
+}
