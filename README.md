@@ -6,22 +6,23 @@ Runnelix is a self-hosted workflow platform under development for internal teams
 
 The design uses a **Go backend**, a **TypeScript interface and node workers**, and an internal node architecture that developers can extend. Adding an ordinary integration action should not require changes to the execution engine or canvas.
 
-> **Project status: Phase 0 development proof.** A Go workflow now executes a TypeScript activity against a durable mock provider. Twelve live integration cases cover retries, crashes, cancellation, version routing, and a development-state restore. The product DAG engine, UI, credentials, and production deployment are not implemented. Production capacity and recovery targets remain unverified.
+> **Project status: Phase 1 development slice.** Workflow JSON can be validated, saved with revisions, published immutably, and admitted durably through PostgreSQL and Temporal. Seven live admission/recovery cases pass. The runtime records admission only; the product graph engine, UI, authentication, and production deployment remain unfinished.
 
-## Run the development proof
+## Run the development checks
 
-Prerequisites: Go with automatic toolchain downloads enabled, Node 24, pnpm 11.5.0, Python 3, curl, and make. Supported CLI download targets: macOS/Linux on ARM64 or AMD64. Docker is not required for this development proof.
+Prerequisites: Go with automatic toolchain downloads enabled, Node 24, pnpm 11.5.0, Python 3, curl, and make. Supported CLI download targets: macOS/Linux on ARM64 or AMD64. PostgreSQL server/client binaries are also required for Phase 1. Docker is not required.
 
 ```sh
 make tools
 make deps
 make test check
 make integration
+make integration-phase1
 ```
 
 `make tools` downloads a checksum-pinned Temporal CLI into this checkout. `make integration` builds the programs, starts isolated loopback services, runs the twelve cases, and stops its own processes. It preserves fake provider/runtime state and reports under `artifacts/phase0/` for inspection.
 
-Read the [setup and limitations](docs/implementation/phase-0.md), [implementation status](docs/implementation/README.md), [history](HISTORY.md), and [runtime decision](docs/decisions/0001-temporal-development-runtime.md).
+Read the [Phase 1 setup and API examples](docs/implementation/phase-1.md), [Phase 0 runtime proof](docs/implementation/phase-0.md), [implementation status](docs/implementation/README.md), [history](HISTORY.md), and [runtime decision](docs/decisions/0001-temporal-development-runtime.md).
 
 ## Read the plan
 
@@ -41,7 +42,7 @@ For a visual introduction, download [the standalone HTML overview](docs/plans/pr
 
 ## Next engineering phase
 
-[Phase 1](docs/plans/08-delivery-plan.md#phase-1-contracts-and-persistence) adds the product workflow contracts, PostgreSQL persistence, validation, immutable publication, and durable admission/outbox. The Phase 0 evidence supports continued development with Temporal; production operations approval remains open.
+[Phase 2](docs/plans/08-delivery-plan.md#phase-2-first-complete-workflow) adds the first actual execution path, minimal editor, HTTP action, condition, and run inspector. [ADR 0002](docs/decisions/0002-postgresql-admission-and-receipts.md) explains why Phase 1 admission is separate from execution. Production operations approval remains open.
 
 ## About the name
 

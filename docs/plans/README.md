@@ -4,7 +4,7 @@
 
 This directory defines what Runnelix should do, how its parts should interact, and what evidence is required before release. It is intended for a developer, reviewer, or operator joining the project without the original conversation.
 
-For completed work and current limits, read the [implementation records](../implementation/README.md). The plan below remains the target product design. The runtime gate was refined by [ADR 0001](../decisions/0001-temporal-development-runtime.md): technical development evidence exists; production operations approval is still open.
+For completed work and current limits, read the [implementation records](../implementation/README.md). Phase 1 now has local evidence for contracts, persistence, and recoverable admission; [ADR 0002](../decisions/0002-postgresql-admission-and-receipts.md) describes its boundary. The plan below remains the target product design. The runtime gate was refined by [ADR 0001](../decisions/0001-temporal-development-runtime.md): technical development evidence exists; production operations approval is still open.
 
 The Markdown documents are the detailed source of truth. [product-plan.html](product-plan.html) is a self-contained visual overview. Update the relevant Markdown document first, then update the overview when scope or architecture changes.
 

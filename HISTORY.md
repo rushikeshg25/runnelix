@@ -145,3 +145,12 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Correction during testing:** the first restart fixture omitted its isolated port and failed to bind default port 5432. Shared startup options fixed the harness; the existing system database remained untouched. The failed artifact directory is recorded in the decision log.
 - **Review fixes:** added future-migration rejection and field-level schema paths; moved node registration outside the generic host. Database race tests and all 33 TypeScript tests passed.
 - **Limits:** actual PostgreSQL restart, but no production backup/PITR or full graph execution. Temporal still uses development SQLite.
+
+## 2026-10-17 — Phase 1 development deliverables completed
+
+- **What:** completed nine meaningful implementation commits for contracts, persistence, publication, durable admission, runtime receipts, and a local API. Added CI and reproducible setup/verification instructions.
+- **Why:** the next phase can build actual workflow execution on tested admission and version boundaries instead of combining every failure mode at once.
+- **Evidence:** [phase record and commit ledger](docs/implementation/phase-1.md), [ADR 0002](docs/decisions/0002-postgresql-admission-and-receipts.md), [PostgreSQL test record](docs/implementation/evidence/phase-1-postgres.json), [Phase 1 live report](docs/implementation/evidence/phase-1-full.json), and [Phase 0 regression report](docs/implementation/evidence/phase-0-after-phase-1.json).
+- **Verification:** `make test check integration` and `make integration-phase1` passed. All 33 TypeScript tests, seven Phase 1 live cases, twelve Phase 0 regression cases, and actual PostgreSQL race tests passed. OpenAPI 3.1 validation passed. Document links, evidence hashes, CI YAML, and desktop/narrow HTML previews were checked.
+- **Remaining:** implementation commits are local; hosted CI has not run. Phase 2 has not started. This phase proves admission, not product graph execution or production readiness.
+- **Prior milestone:** failure-window evidence commit `d228d6a`.
