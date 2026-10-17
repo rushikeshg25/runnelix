@@ -93,7 +93,8 @@ func (s Service) Handler() (http.Handler, error) {
 				failure(w, 400, "InvalidInput", false)
 				return
 			}
-			if !approvedRequest(task.Envelope.NodeType, config, task.Request) {
+			descriptor, found := s.Store.Catalog.Find(task.Envelope.NodeType, task.Envelope.NodeVersion)
+			if !found || !approvedPolicy(descriptor.HTTPPolicy, config, task.Request) {
 				failure(w, 403, "EgressDenied", false)
 				return
 			}
@@ -119,6 +120,7 @@ func (s Service) Handler() (http.Handler, error) {
 				}
 				return
 			}
+			task.Request.Headers = descriptor.HTTPPolicy.Headers
 			result, err := s.Egress.Do(r.Context(), task.Request, credential)
 			if err != nil {
 				var provider *ProviderError
@@ -153,10 +155,13 @@ func (s Service) Handler() (http.Handler, error) {
 		}
 	}), nil
 }
-func approvedRequest(nodeType string, config map[string]any, request Request) bool {
-	method := map[string]string{"http.get": "GET", "http.post": "POST"}[nodeType]
-	target, ok := config["url"].(string)
-	return ok && method != "" && method == request.Method && target == request.URL
+func approvedPolicy(policy *definition.HTTPPolicy, config map[string]any, request Request) bool {
+	if policy == nil {
+		return false
+	}
+	target, err := policy.Target(config)
+	ref, _ := config["credentialRef"].(string)
+	return err == nil && policy.Method == request.Method && target == request.URL && (!policy.CredentialRequired || ref != "")
 }
 func allowedCode(s string) bool {
 	switch s {

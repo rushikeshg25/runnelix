@@ -19,7 +19,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
+    "implementationDigest": "sha256:18f8694c5477200c8330a6ac3b4e0d5a878312d528110cc7f4098ef99ddb1c4b"
   },
   {
     "type": "mock.echo",
@@ -43,7 +43,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
+    "implementationDigest": "sha256:18f8694c5477200c8330a6ac3b4e0d5a878312d528110cc7f4098ef99ddb1c4b"
   },
   {
     "type": "transform.map",
@@ -77,7 +77,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
+    "implementationDigest": "sha256:18f8694c5477200c8330a6ac3b4e0d5a878312d528110cc7f4098ef99ddb1c4b"
   },
   {
     "type": "control.condition",
@@ -112,7 +112,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
+    "implementationDigest": "sha256:18f8694c5477200c8330a6ac3b4e0d5a878312d528110cc7f4098ef99ddb1c4b"
   },
   {
     "type": "http.get",
@@ -161,7 +161,11 @@
         "body": {}
       }
     },
-    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
+    "httpPolicy": {
+      "method": "GET",
+      "urlConfig": "url"
+    },
+    "implementationDigest": "sha256:18f8694c5477200c8330a6ac3b4e0d5a878312d528110cc7f4098ef99ddb1c4b"
   },
   {
     "type": "http.post",
@@ -210,7 +214,11 @@
         "body": {}
       }
     },
-    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
+    "httpPolicy": {
+      "method": "POST",
+      "urlConfig": "url"
+    },
+    "implementationDigest": "sha256:18f8694c5477200c8330a6ac3b4e0d5a878312d528110cc7f4098ef99ddb1c4b"
   },
   {
     "type": "control.merge",
@@ -247,7 +255,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
+    "implementationDigest": "sha256:18f8694c5477200c8330a6ac3b4e0d5a878312d528110cc7f4098ef99ddb1c4b"
   },
   {
     "type": "control.wait",
@@ -281,7 +289,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
+    "implementationDigest": "sha256:18f8694c5477200c8330a6ac3b4e0d5a878312d528110cc7f4098ef99ddb1c4b"
   },
   {
     "type": "control.map",
@@ -342,6 +350,6 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
+    "implementationDigest": "sha256:18f8694c5477200c8330a6ac3b4e0d5a878312d528110cc7f4098ef99ddb1c4b"
   }
 ]

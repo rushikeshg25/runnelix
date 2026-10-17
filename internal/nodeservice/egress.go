@@ -22,9 +22,10 @@ type ProviderError struct {
 func (e *ProviderError) Error() string { return e.Code }
 
 type Request struct {
-	URL    string `json:"url"`
-	Method string `json:"method"`
-	Body   any    `json:"body,omitempty"`
+	Headers map[string]string `json:"-"` // Only trusted catalog metadata can set headers.
+	URL     string            `json:"url"`
+	Method  string            `json:"method"`
+	Body    any               `json:"body,omitempty"`
 }
 type HTTPResult struct {
 	Status int `json:"status"`
@@ -111,6 +112,12 @@ func (e Egress) Do(ctx context.Context, request Request, credential string) (HTT
 		return HTTPResult{}, &ProviderError{"InvalidInput", false}
 	}
 	req.Header.Set("Accept", "application/json")
+	for name, value := range request.Headers {
+		if strings.EqualFold(name, "Authorization") || strings.EqualFold(name, "Cookie") || strings.EqualFold(name, "Host") {
+			return HTTPResult{}, &ProviderError{"InvalidInput", false}
+		}
+		req.Header.Set(name, value)
+	}
 	if len(body) > 0 {
 		req.Header.Set("Content-Type", "application/json")
 	}

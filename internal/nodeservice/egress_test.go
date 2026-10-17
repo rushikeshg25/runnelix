@@ -3,6 +3,7 @@ package nodeservice
 import (
 	"context"
 	"encoding/json"
+	"github.com/rushikeshg25/runnelix/internal/definition"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -66,11 +67,11 @@ func TestEgressResponsesAndCredentialEcho(t *testing.T) {
 func TestPublishedRequestBinding(t *testing.T) {
 	config := map[string]any{"url": "https://example.com/one"}
 	for _, request := range []Request{{URL: "https://example.com/two", Method: "GET"}, {URL: "https://example.com/one", Method: "POST"}} {
-		if approvedRequest("http.get", config, request) {
+		if approvedPolicy(&definition.HTTPPolicy{Method: "GET", URLConfig: "url"}, config, request) {
 			t.Fatal("request escaped published capability")
 		}
 	}
-	if approvedRequest("mock.echo", config, Request{URL: "https://example.com/one", Method: "GET"}) {
+	if approvedPolicy(nil, config, Request{URL: "https://example.com/one", Method: "GET"}) {
 		t.Fatal("echo acquired network capability")
 	}
 }
@@ -88,5 +89,20 @@ func TestAuthenticationRequiresBearer(t *testing.T) {
 		if w.Code != 401 {
 			t.Fatal(w.Code)
 		}
+	}
+}
+
+func TestRequiredCredentialAndVersionedPolicy(t *testing.T) {
+	policy := &definition.HTTPPolicy{Method: "POST", URL: "https://api.example.com/issues", CredentialRequired: true}
+	request := Request{URL: "https://api.example.com/issues", Method: "POST"}
+	if approvedPolicy(policy, map[string]any{}, request) {
+		t.Fatal("missing credential accepted")
+	}
+	if !approvedPolicy(policy, map[string]any{"credentialRef": "credential_test"}, request) {
+		t.Fatal("valid policy rejected")
+	}
+	request.Method = "GET"
+	if approvedPolicy(policy, map[string]any{"credentialRef": "credential_test"}, request) {
+		t.Fatal("method override accepted")
 	}
 }

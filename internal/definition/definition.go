@@ -39,6 +39,7 @@ type Graph struct {
 	Edges         []Edge `json:"edges"`
 }
 type Descriptor struct {
+	HTTPPolicy           *HTTPPolicy    `json:"httpPolicy,omitempty"`
 	Type                 string         `json:"type"`
 	Version              int            `json:"version"`
 	Kind                 string         `json:"kind"`

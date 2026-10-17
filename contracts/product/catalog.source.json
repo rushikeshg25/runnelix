@@ -156,6 +156,10 @@
         },
         "body": {}
       }
+    },
+    "httpPolicy": {
+      "method": "GET",
+      "urlConfig": "url"
     }
   },
   {
@@ -204,6 +208,10 @@
         },
         "body": {}
       }
+    },
+    "httpPolicy": {
+      "method": "POST",
+      "urlConfig": "url"
     }
   },
   {

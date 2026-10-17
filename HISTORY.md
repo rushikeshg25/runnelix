@@ -289,3 +289,9 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** an indefinite signal receive does not wake on cancellation automatically. A cancelled uncertain action must stop waiting without sending another provider request.
 - **Evidence:** [cancellation regression](internal/engine/resolutions_test.go), [Phase 2 regression report](docs/implementation/evidence/phase-2-after-phase-3.json), [Phase 3 report](docs/implementation/evidence/phase-3-full.json), [Phase 1 regression report](docs/implementation/evidence/phase-1-after-phase-3.json). The first nine Phase 3 commits were pushed through `e316d2a`; this final slice includes the fix and documentation.
 - **Limits:** production load, independent teammate acceptance, a different developer's node-authoring trial, and the two-week pilot remain open. Local schedule policy uses skip overlap, with no coalesced pending occurrence.
+
+## 2026-10-18 — declarative action request policies
+
+- **What:** moved HTTP request authorization from provider-name switches into trusted catalog descriptors. Policies pin method, fixed URL or a generic URL field, escaped path fields, fixed headers, and required credential presence.
+- **Why:** new provider actions need the same network boundary without changes to the interpreter or ordinary editor. Workflow authors cannot set authorization headers or replace a fixed provider host.
+- **Evidence:** [policy tests](internal/definition/http_policy_test.go), [network boundary tests](internal/nodeservice/egress_test.go), [Phase 4 plan](docs/implementation/phase-4.md). Generic HTTP remains compatible; the existing worker envelope is unchanged.
