@@ -1,0 +1,106 @@
+{
+  "timestampUtc": "2026-10-17T17:09:41.117093+00:00",
+  "scope": "development Temporal SQLite; not production PostgreSQL",
+  "versions": {
+    "temporal": "temporal version 1.9.1 (Server 1.32.0, UI 2.54.1)",
+    "go": "go version go1.26.0 darwin/arm64",
+    "node": "v24.2.0",
+    "typescriptSdk": "1.24.0"
+  },
+  "sourceSha256": {
+    "internal/mockprovider/server.go": "b548b4f59a2688aa9dd6b7237358b750d873b05ccaf5f99d4b44512f988e5510",
+    "internal/mockprovider/server_test.go": "d67fe6fdf1a180b5fe583eb1cea3c7c0934e2157909e47b510b8f66d4bd9fcf6",
+    "internal/spike/contract_test.go": "0301ff40d4d1c8cdb7f4682fa13b5886e7a1333727f08554d80d0c82e1d936fd",
+    "internal/spike/workflow_test.go": "b54bf843e027b203a5fd196e0aae3746ebda8b1fa111533230e8636f7329a971",
+    "internal/spike/contract.go": "d15af9c710fb9891489c8f88a874eec2e99068a1d7284d3553d36d70e0ada0ce",
+    "internal/spike/workflow.go": "7cb83a7be9aa7eda20826924ed432b9616810be15ff78a66896871e4eafdc71b",
+    "cmd/mock-provider/main.go": "b5f355c0acc6973fa5fa068025d45109548bdda297c51e4366d50784da5c928f",
+    "cmd/spike/main.go": "10389b3c0e9f7c49e8e5fb634851d8557d9be71c381a890154e5222a3b5e8d86",
+    "node-worker/contract.ts": "178fe11ceb4dad7ef40789d69229ae5cd3d9ec46a2adac92011dbcc3a94904e2",
+    "node-worker/main.ts": "4e389ef2b244815d242e63b79e38248440e90d5226c86bf24188b3f914549af6",
+    "node-worker/activity.test.ts": "c0996d4765d9d7c79dc92172ef9a45f2cb3bac7c2c57cf79240e8748ecf8db91",
+    "node-worker/activity.ts": "64d463f691baf040848982f499855a15a10b328fab371ac23056148008c5885d",
+    "node-worker/contract.test.ts": "98b7891dffe76ad63fa7ce7ca084322052c5e5d4b85f94aee4399642112a178d",
+    "contracts/spike/request.schema.json": "4389c363a10c363e28161266ad0299f590fa9d0a4041326b5a1e90c3524e6aed",
+    "contracts/spike/fixtures.json": "ec363681c521c7903009ccbdd29f775ccef8fc27e19e111f325e9315c6cbd673",
+    "tests/integration/phase0.py": "3b5e0a1a4d8560680ff3dcf5c7dc34da41956eda31ab656d9d6330eed0173248",
+    "go.mod": "472e647b013e62a07d03d8375329412f3101a19dc6be51f460e133adada5c979",
+    "go.sum": "ba2c3564cb3219aa28b76284bed9cc0ffab224dc803ed1010eda74bb609ada2b",
+    "package.json": "29749f866531993854975ce04136b91c64962f710a6e675ea8a0bebf9627bfca",
+    "pnpm-lock.yaml": "d4c0baa2a29be48c5bf38a4d2ffb4e8d65f11501cb32a7e9adb8d26406aceb73"
+  },
+  "results": [
+    {
+      "name": "cross-language roundtrip",
+      "status": "passed",
+      "seconds": 0.758,
+      "detail": "Unicode, null, nested arrays, and large integer strings survived Go \u2192 TS \u2192 Go."
+    },
+    {
+      "name": "safe transient retry",
+      "status": "passed",
+      "seconds": 1.074,
+      "detail": "A pre-commit 503 retried once and created one action."
+    },
+    {
+      "name": "safe post-commit response loss",
+      "status": "passed",
+      "seconds": 1.076,
+      "detail": "Provider committed before losing the response; retry returned the original action."
+    },
+    {
+      "name": "unsafe post-commit response loss",
+      "status": "passed",
+      "seconds": 0.054,
+      "detail": "One remote effect, one request, and an explicit uncertain result."
+    },
+    {
+      "name": "worker restart across durable wait",
+      "status": "passed",
+      "seconds": 8.124,
+      "detail": "Both worker processes died; persisted timer resumed and produced one action."
+    },
+    {
+      "name": "worker crash after safe write",
+      "status": "passed",
+      "seconds": 2.821,
+      "detail": "Killed worker after provider commit; safe policy retained one external effect."
+    },
+    {
+      "name": "worker crash after unsafe write",
+      "status": "passed",
+      "seconds": 1.048,
+      "detail": "Killed worker after provider commit; unsafe policy retained one external effect."
+    },
+    {
+      "name": "cancellation during wait",
+      "status": "passed",
+      "seconds": 0.07,
+      "detail": "Cancellation during wait sent no provider request."
+    },
+    {
+      "name": "cancellation during activity",
+      "status": "passed",
+      "seconds": 0.425,
+      "detail": "Cancellation stopped execution; it did not undo an already committed effect."
+    },
+    {
+      "name": "development server crash recovery",
+      "status": "passed",
+      "seconds": 5.091,
+      "detail": "Killed Temporal; SQLite-backed state resumed on the same database."
+    },
+    {
+      "name": "version-specific workflow and action routing",
+      "status": "passed",
+      "seconds": 4.389,
+      "detail": "Application-level v1/v2 queues isolate both workflow and action versions; old compatible workers are still required."
+    },
+    {
+      "name": "cold development-state restore with live external state",
+      "status": "passed",
+      "seconds": 6.793,
+      "detail": "Restored an earlier SQLite snapshot into a separate directory; the live provider deduplicated the replayed safe action. Not a PostgreSQL or unsafe-write restore guarantee."
+    }
+  ]
+}

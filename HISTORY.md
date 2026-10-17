@@ -68,3 +68,12 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Evidence:** [machine-readable results](docs/implementation/evidence/phase-0-recovery.json), [failure harness](tests/integration/phase0.py). The CLI archive matched its pinned upstream SHA-256.
 - **Limits:** localhost development server and SQLite persistence; no production PostgreSQL restore, throughput target, or production isolation claim.
 - **Prior milestone:** harness commit `dbfed23`.
+
+## 2026-10-17 — version routing and cold restore
+
+- **What:** all twelve live integration cases passed. Added v1/v2 workflow/action queue isolation and a cold SQLite backup restored into a separate directory.
+- **Why:** old runs must retain compatible workers; restoring runtime state can replay a remote action that happened after the snapshot.
+- **Observed:** v2 workers did not consume the old v1 run/action. Restoring an earlier runtime snapshot caused a second provider request, but provider idempotency retained the same single external effect.
+- **Evidence:** [full report with versions and source hashes](docs/implementation/evidence/phase-0-full.json), [harness](tests/integration/phase0.py).
+- **Limits:** application-level versioned queues, not Temporal deployment-version APIs; SQLite cold backup, not production PostgreSQL PITR or unsafe-write reconciliation.
+- **Prior milestone:** crash/cancellation commit `2f2f063`.

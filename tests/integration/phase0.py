@@ -2,11 +2,13 @@
 """Real Go/TypeScript/Temporal boundary checks. Own processes; preserve artifacts."""
 import argparse
 import datetime
+import hashlib
 import json
 import os
 import pathlib
 import signal
 import socket
+import sqlite3
 import subprocess
 import time
 import urllib.request
@@ -45,6 +47,11 @@ class Harness:
         self.processes = {}
         self.results = []
         self.counter = 0
+        self.source_hashes = {
+            str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
+            for pattern in ["internal/**/*.go", "cmd/**/*.go", "node-worker/*.ts", "contracts/spike/*.json", "tests/integration/phase0.py", "go.mod", "go.sum", "package.json", "pnpm-lock.yaml"]
+            for path in ROOT.glob(pattern)
+        }
 
     def start(self, name, args, extra_env=None):
         assert name not in self.processes, f"process already running: {name}"
@@ -75,6 +82,11 @@ class Harness:
             self.stop(name)
         report = {"timestampUtc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                   "scope": "development Temporal SQLite; not production PostgreSQL",
+                  "versions": {"temporal": subprocess.check_output([str(CLI), "--version"], text=True).strip(),
+                               "go": subprocess.check_output(["go", "version"], cwd=ROOT, text=True).strip(),
+                               "node": subprocess.check_output(["node", "--version"], text=True).strip(),
+                               "typescriptSdk": "1.24.0"},
+                  "sourceSha256": self.source_hashes,
                   "results": self.results}
         (self.directory / "results.json").write_text(json.dumps(report, indent=2) + "\n")
         print(f"Evidence: {self.directory.relative_to(ROOT)}", flush=True)
@@ -243,9 +255,67 @@ def recovery_cases(h):
     h.record("development server crash recovery", server_restart)
 
 
+def version_and_restore_cases(h):
+    def version_routing():
+        old = h.request("pinned-old", waitMs=3000)
+        wait_until(lambda: h.command("query", "--id", old["runId"])["status"] == "waiting", "old version waiting")
+        h.stop("go-v1")
+        h.stop("node-v1")
+        h.workers("v2")
+        new = h.request("new-version", nodeVersion="v2")
+        assert h.result(new)["workerVersion"] == "v2"
+        time.sleep(3.1)
+        assert old["runId"] not in h.stats(), "new Go worker consumed old workflow queue"
+        h.start("go-v1", [SPIKE, "worker", "--address", h.address, "--version", "v1"])
+        wait_until(lambda: h.command("query", "--id", old["runId"])["status"] == "executing", "old action queued")
+        time.sleep(0.5)
+        assert old["runId"] not in h.stats(), "new node worker consumed pinned old action"
+        h.node_worker("v1")
+        assert h.result(old)["workerVersion"] == "v1"
+        h.stop("go-v2")
+        h.stop("node-v2")
+        return "Application-level v1/v2 queues isolate both workflow and action versions; old compatible workers are still required."
+    h.record("version-specific workflow and action routing", version_routing)
+
+    def restore():
+        request = h.request("restored-safe", waitMs=5000)
+        wait_until(lambda: h.command("query", "--id", request["runId"])["status"] == "waiting", "snapshot run waiting")
+        h.stop("node-v1")
+        h.stop("go-v1")
+        h.stop("temporal")
+        destination = h.directory / "restore" / "temporal.sqlite"
+        destination.parent.mkdir()
+        source = sqlite3.connect((h.directory / "temporal.sqlite").as_uri() + "?mode=ro", uri=True)
+        backup = sqlite3.connect(destination)
+        try:
+            source.backup(backup)
+            assert backup.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+        finally:
+            backup.close()
+            source.close()
+        # Complete against the original runtime after the snapshot. The provider
+        # is an external system and is deliberately NOT rolled back with Temporal.
+        h.server()
+        h.workers()
+        first = h.result(request)
+        assert first["status"] == "succeeded"
+        assert h.stats()[request["runId"]]["requests"] == 1
+        h.stop("node-v1")
+        h.stop("go-v1")
+        h.stop("temporal")
+        h.server(destination)
+        h.workers()
+        restored = h.result(request)
+        entry = h.stats()[request["runId"]]
+        assert restored["status"] == "succeeded" and restored["actionId"] == first["actionId"], restored
+        assert entry["requests"] == 2 and len(entry["actions"]) == 1, entry
+        return "Restored an earlier SQLite snapshot into a separate directory; the live provider deduplicated the replayed safe action. Not a PostgreSQL or unsafe-write restore guarantee."
+    h.record("cold development-state restore with live external state", restore)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--suite", choices=["base", "recovery"], default="recovery")
+    parser.add_argument("--suite", choices=["base", "recovery", "full"], default="full")
     args = parser.parse_args()
     for path in [CLI, SPIKE, PROVIDER, ROOT / "dist/node-worker/main.js"]:
         if not path.is_file():
@@ -256,8 +326,10 @@ def main():
         h.provider()
         h.workers()
         base_cases(h)
-        if args.suite == "recovery":
+        if args.suite in ("recovery", "full"):
             recovery_cases(h)
+        if args.suite == "full":
+            version_and_restore_cases(h)
     finally:
         h.close()
 
