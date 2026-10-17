@@ -1,0 +1,10 @@
+.tools/
+.local/
+node_modules/
+dist/
+artifacts/
+*.test
+.DS_Store
+.env
+.env.*
+!.env.example

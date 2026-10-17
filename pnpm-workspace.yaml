@@ -1,0 +1,4 @@
+allowBuilds:
+  '@swc/core': true
+  '@temporalio/core-bridge': true
+  protobufjs: true
