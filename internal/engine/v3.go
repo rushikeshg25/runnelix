@@ -24,11 +24,21 @@ func ExecuteV3(ctx workflow.Context, r store.StartRequest) (result string, err e
 	}
 	sequence := int64(0)
 	projectionLock := workflow.NewMutex(ctx)
+	uncertain := map[string]bool{}
 	project := func(c workflow.Context, e store.Event) error {
 		if err := projectionLock.Lock(c); err != nil {
 			return err
 		}
 		defer projectionLock.Unlock()
+		if e.NodeState == "uncertain" {
+			uncertain[e.InvocationID] = true
+		}
+		if e.NodeState == "resolved" {
+			delete(uncertain, e.InvocationID)
+		}
+		if len(uncertain) > 0 && (e.State == "running" || e.State == "waiting") {
+			e.State = "needs_attention"
+		}
 		sequence++
 		e.Sequence = sequence
 		return workflow.ExecuteActivity(c, "Project", Projection{r, e}).Get(c, nil)

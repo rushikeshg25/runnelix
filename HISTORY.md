@@ -234,3 +234,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** arrays must expand only through an explicit construct, and retries must retain the same logical action identity for each item.
 - **Decisions:** maximum 1,000 items and 10 concurrent bodies, with the existing 8 KiB payload boundary. Serialize projection calls so concurrently completed items cannot create event-sequence gaps. Map output is `{items:[...]}` in input order.
 - **Evidence:** [Map execution](internal/engine/map.go), [ordering/concurrency tests](internal/engine/v3_test.go), [identity test](internal/store/execution_test.go). Runtime and PostgreSQL verification accompany this slice.
+
+## 2026-10-18 — durable uncertain-outcome reconciliation
+
+- **What:** added immutable operator decisions for an uncertain invocation. An operator can confirm a schema-valid provider result or end the run; the runtime consumes the decision through a retried signal.
+- **Why:** an uncertain write must not be retried merely because a response was lost. Decision persistence must survive API or dispatcher failure.
+- **Decisions:** no automatic resend option. Confirmed results fence late worker results. Concurrent Map completions retain the needs-attention state while any item remains unresolved. The local operator identity is explicit; production role enforcement follows in hardening.
+- **Evidence:** [resolution persistence tests](internal/store/resolutions_test.go), [runtime reconciliation test](internal/engine/resolutions_test.go). Tests cover immutable choices, durable delivery, late-attempt fencing, and resumption without another provider request.

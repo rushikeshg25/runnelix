@@ -155,6 +155,9 @@ func run() error {
 			case <-ctx.Done():
 				return nil
 			case <-ticker.C:
+				if err := dispatch.ReconcileResolutions(ctx, s, c); err != nil && ctx.Err() == nil {
+					log.Print("resolution delivery incomplete; retained for retry")
+				}
 				if err := dispatch.ReconcileCancellation(ctx, s, c); err != nil && ctx.Err() == nil {
 					log.Print("cancellation reconciliation incomplete; retained for retry")
 				}

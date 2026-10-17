@@ -101,10 +101,28 @@ func actionV3(ctx workflow.Context, r StepRequest, scope string, project project
 		var failure *temporal.ApplicationError
 		known := errors.As(err, &failure) && (failure.Type() == "InvalidInput" || failure.Type() == "VersionMismatch" || failure.Type() == "EgressDenied" || failure.Type() == "CredentialUnavailable")
 		if !known {
+			if persistErr := workflow.ExecuteActivity(ctx, "MarkUncertain", e).Get(ctx, nil); persistErr != nil {
+				return "", persistErr
+			}
 			if persistErr := project(ctx, store.Event{State: "needs_attention", NodeID: r.Step.ID, InvocationID: e.InvocationID, NodeState: "uncertain", ErrorCode: "UncertainOutcome"}); persistErr != nil {
 				return "", persistErr
 			}
-			err = workflow.Await(ctx, func() bool { return false })
+			var signal bool
+			workflow.GetSignalChannel(ctx, "resolve/"+e.InvocationID).Receive(ctx, &signal)
+			if ctx.Err() != nil {
+				return "", ctx.Err()
+			}
+			var decision store.Resolution
+			if err = workflow.ExecuteActivity(ctx, "Resolve", e).Get(ctx, &decision); err != nil {
+				return "", err
+			}
+			if decision.Action == "fail" {
+				return "", temporal.NewNonRetryableApplicationError("Operator ended uncertain action", "OperatorFailed", nil)
+			}
+			if err = project(ctx, store.Event{State: "running", NodeID: r.Step.ID, InvocationID: e.InvocationID, NodeState: "resolved", OutputRef: decision.OutputRef}); err != nil {
+				return "", err
+			}
+			return decision.OutputRef, nil
 		}
 	}
 	return ref, err

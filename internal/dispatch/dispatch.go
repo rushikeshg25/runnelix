@@ -110,3 +110,16 @@ func ReconcileCancellation(ctx context.Context, s *store.Store, c client.Client)
 	}
 	return nil
 }
+
+func ReconcileResolutions(ctx context.Context, s *store.Store, c client.Client) error {
+	pending, err := s.PendingResolutions(ctx)
+	if err != nil {
+		return err
+	}
+	for _, r := range pending {
+		if err = c.SignalWorkflow(ctx, store.RuntimeIDFor(store.StartRequest{RunID: r.RunID, ExecutionMode: "execute"}), "", "resolve/"+r.InvocationID, true); err != nil {
+			return err
+		}
+	}
+	return nil
+}

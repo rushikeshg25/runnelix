@@ -207,3 +207,21 @@ func (a API) webhook(w http.ResponseWriter, r *http.Request) {
 	}
 	respond(w, 202, v)
 }
+
+func (a API) resolve(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Action string `json:"action"`
+		Output any    `json:"output"`
+		Note   string `json:"note"`
+	}
+	if err := body(w, r, &req); err != nil {
+		fail(w, r, err)
+		return
+	}
+	result, err := a.Store.ResolveUncertain(r.Context(), store.Resolution{WorkspaceID: r.PathValue("workspace"), RunID: r.PathValue("run"), InvocationID: r.PathValue("invocation"), Action: req.Action, Actor: "local-development-operator", Note: req.Note}, req.Output)
+	if err != nil {
+		fail(w, r, err)
+		return
+	}
+	respond(w, 202, result)
+}
