@@ -101,3 +101,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** internal actions should be added through their module and catalog, while the host enforces validation and pinned identity.
 - **Evidence:** [host tests](node-worker/product-host.test.ts), [Go fixture tests](internal/definition/catalog_test.go), [catalog generator](scripts/build-catalog.py). TypeScript and Go contract checks passed.
 - **Limit:** the fixture host does not provide a production payload service, credentials, or a product graph interpreter.
+
+## 2026-10-17 — PostgreSQL foundation
+
+- **What:** added schema constraints, immutable publication storage, checksum-verified migrations, and an isolated PostgreSQL test harness.
+- **Why:** test actual transaction/locking behavior without changing existing databases or relying on an in-memory substitute.
+- **Evidence:** [migration](internal/store/migrations/001_initial.sql), [migration test](internal/store/store_test.go), [harness](tests/integration/postgres.py). `python3 tests/integration/postgres.py go test -race ./internal/store` passed on PostgreSQL 17.6.
+- **Limit:** schema creation is not a production migration or recovery drill.
