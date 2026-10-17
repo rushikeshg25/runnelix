@@ -255,3 +255,11 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** the scheduling wrapper can finish while the product run is still active. Admission must enforce no overlap under the same database locks as manual starts.
 - **Policy:** daily schedules use an IANA timezone; nonexistent local times are skipped by Temporal, repeated daily wall times share one occurrence key. Interval schedules use UTC and a minimum 60-second interval. Overlap is skipped, catch-up is limited to Temporal's one-minute window, and no pending-occurrence coalescing is claimed.
 - **Evidence:** [schedule store tests](internal/store/schedules_test.go), [runtime adapter](internal/scheduling/scheduling.go). Tests cover repeated DST-hour identity, active-run exclusion, terminal release, disabled/stale revisions, and desired/observed replay. Actual schedule delivery is verified in the live Phase 3 suite.
+
+## 2026-10-18 — independent projection recovery and artifact references
+
+- **What:** V3 retains an ordered execution journal and returns it with terminal product results. Projection writes are best-effort; a separate reconciler copies missing runtime-owned events back to PostgreSQL. Added a report of worker digests still referenced by active versions or runs.
+- **Why:** a database status-write outage must not erase known execution outcomes or create a second scheduler. Closed-run repair must work without an available workflow worker.
+- **Decisions:** inspect runtime closure before querying a worker; completed executions expose their journal directly through the stored result. Rotate recovery candidates by a separate checked timestamp so long waits do not starve other repairs.
+- **Evidence:** [journal regression](internal/engine/v3_test.go), [reconciler](internal/dispatch/recovery.go), [artifact report](internal/store/recovery.go). Engine and PostgreSQL checks passed. Phase 2 hosted CI passed for Phase 0, Phase 1, and Phase 2 workflows at `9cd61d1`.
+- **Limit:** forced Temporal termination/history deletion is not normal product completion and still needs operator recovery; no external-effect reconciliation is inferred from runtime status alone.

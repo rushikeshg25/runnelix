@@ -133,3 +133,38 @@ func TestV3MapOrderingEmptyAndBounds(t *testing.T) {
 		})
 	}
 }
+
+func TestV3RetainsJournalWhenProjectionFails(t *testing.T) {
+	var suite testsuite.WorkflowTestSuite
+	env := suite.NewTestWorkflowEnvironment()
+	r := store.StartRequest{WorkspaceID: "w", RunID: "run_recovery", ExecutionMode: "execute"}
+	env.SetStartWorkflowOptions(client.StartWorkflowOptions{ID: store.RuntimeIDFor(r)})
+	env.RegisterActivityWithOptions(func(context.Context, store.StartRequest) (store.Snapshot, error) {
+		return store.Snapshot{Plan: definition.Plan{InterpreterVersion: 3, Steps: []definition.Step{{Node: definition.Node{ID: "start"}, Kind: "trigger"}}}, InputRef: "payload_in"}, nil
+	}, activity.RegisterOptions{Name: "Bootstrap"})
+	env.RegisterActivityWithOptions(func(context.Context, Projection) error { return fmt.Errorf("projection unavailable") }, activity.RegisterOptions{Name: "Project"})
+	env.ExecuteWorkflow(ExecuteV3, r)
+	if err := env.GetWorkflowError(); err != nil {
+		t.Fatal(err)
+	}
+	var result ExecutionResult
+	if err := env.GetWorkflowResult(&result); err != nil {
+		t.Fatal(err)
+	}
+	if result.State != "succeeded" || len(result.Events) != 3 {
+		t.Fatal("journal lost", result)
+	}
+	for i, event := range result.Events {
+		if event.Sequence != int64(i+1) {
+			t.Fatal("journal gap")
+		}
+	}
+	value, err := env.QueryWorkflow("ProjectionJournal", int64(1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var events []store.Event
+	if err = value.Get(&events); err != nil || len(events) != 2 {
+		t.Fatal("query cursor", err)
+	}
+}

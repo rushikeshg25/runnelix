@@ -163,6 +163,9 @@ func run() error {
 			case <-ctx.Done():
 				return nil
 			case <-ticker.C:
+				if err := dispatch.RepairProjection(ctx, s, c); err != nil && ctx.Err() == nil {
+					log.Print("projection reconciliation incomplete; runtime remains authoritative")
+				}
 				if err := scheduling.Reconcile(ctx, s, c); err != nil && ctx.Err() == nil {
 					log.Print("schedule reconciliation incomplete; retained for retry")
 				}

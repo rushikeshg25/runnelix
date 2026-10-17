@@ -13,14 +13,34 @@ import (
 const WorkflowNameV3 = "RunnelixExecuteV3"
 const QueueV3 = "runnelix-engine-v3"
 
-func ExecuteV3(ctx workflow.Context, r store.StartRequest) (result string, err error) {
+type ExecutionResult struct {
+	State  string        `json:"state"`
+	Events []store.Event `json:"events"`
+}
+
+func ExecuteV3(ctx workflow.Context, r store.StartRequest) (result ExecutionResult, err error) {
 	if r.ExecutionMode != "execute" || workflow.GetInfo(ctx).WorkflowExecution.ID != store.RuntimeIDFor(r) {
-		return "", temporal.NewNonRetryableApplicationError("Invalid execution identity", "InvalidInput", nil)
+		return ExecutionResult{}, temporal.NewNonRetryableApplicationError("Invalid execution identity", "InvalidInput", nil)
 	}
 	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{StartToCloseTimeout: 10 * time.Second, ScheduleToCloseTimeout: time.Minute, RetryPolicy: &temporal.RetryPolicy{MaximumAttempts: 5, InitialInterval: time.Second}})
 	var snapshot store.Snapshot
 	if err = workflow.ExecuteActivity(ctx, "Bootstrap", r).Get(ctx, &snapshot); err != nil {
-		return "", err
+		return ExecutionResult{}, err
+	}
+	journal := []store.Event{}
+	if err = workflow.SetQueryHandler(ctx, "ProjectionJournal", func(after int64) ([]store.Event, error) {
+		result := []store.Event{}
+		for _, e := range journal {
+			if e.Sequence > after {
+				result = append(result, e)
+			}
+			if len(result) == 200 {
+				break
+			}
+		}
+		return result, nil
+	}); err != nil {
+		return ExecutionResult{}, err
 	}
 	sequence := int64(0)
 	projectionLock := workflow.NewMutex(ctx)
@@ -41,7 +61,12 @@ func ExecuteV3(ctx workflow.Context, r store.StartRequest) (result string, err e
 		}
 		sequence++
 		e.Sequence = sequence
-		return workflow.ExecuteActivity(c, "Project", Projection{r, e}).Get(c, nil)
+		journal = append(journal, e)
+		projectionCtx := workflow.WithActivityOptions(c, workflow.ActivityOptions{StartToCloseTimeout: 2 * time.Second, ScheduleToCloseTimeout: 3 * time.Second, RetryPolicy: &temporal.RetryPolicy{MaximumAttempts: 1}})
+		if projectionErr := workflow.ExecuteActivity(projectionCtx, "Project", Projection{r, e}).Get(projectionCtx, nil); projectionErr != nil {
+			workflow.GetLogger(c).Warn("Run projection delayed; journal retained for reconciliation")
+		}
+		return nil
 	}
 	// Terminal projection uses a disconnected context so cancellation can be recorded durably.
 	defer func() {
@@ -60,23 +85,24 @@ func ExecuteV3(ctx workflow.Context, r store.StartRequest) (result string, err e
 		if persistErr := project(disconnected, store.Event{State: state, ErrorCode: code}); persistErr != nil {
 			err = persistErr
 		}
-		result = state
+		result = ExecutionResult{State: state, Events: journal}
+		err = nil // Product failures are durable results; the journal remains available after closure.
 	}()
 	if snapshot.Plan.InterpreterVersion != 3 {
-		return "", temporal.NewNonRetryableApplicationError("Unsupported interpreter version", "VersionMismatch", nil)
+		return ExecutionResult{}, temporal.NewNonRetryableApplicationError("Unsupported interpreter version", "VersionMismatch", nil)
 	}
 	if snapshot.CancelRequested {
-		return "", temporal.NewCanceledError("Cancellation requested before execution")
+		return ExecutionResult{}, temporal.NewCanceledError("Cancellation requested before execution")
 	}
 	if err = project(ctx, store.Event{State: "running"}); err != nil {
-		return "", err
+		return ExecutionResult{}, err
 	}
 	outputs := map[definition.Endpoint]string{}
 	for _, step := range snapshot.Plan.Steps {
 		if step.Kind == "trigger" {
 			outputs[definition.Endpoint{Node: step.ID, Port: "out"}] = snapshot.InputRef
 			if err = project(ctx, store.Event{State: "running", NodeID: step.ID, NodeState: "succeeded", OutputRef: snapshot.InputRef, Port: "out"}); err != nil {
-				return "", err
+				return ExecutionResult{}, err
 			}
 			continue
 		}
@@ -93,12 +119,12 @@ func ExecuteV3(ctx workflow.Context, r store.StartRequest) (result string, err e
 		}
 		if inputRef == "" {
 			if err = project(ctx, store.Event{State: "running", NodeID: step.ID, NodeState: "skipped"}); err != nil {
-				return "", err
+				return ExecutionResult{}, err
 			}
 			continue
 		}
 		if err = project(ctx, store.Event{State: "running", NodeID: step.ID, NodeState: "executing"}); err != nil {
-			return "", err
+			return ExecutionResult{}, err
 		}
 		var ref, port string
 		port = "out"
@@ -106,10 +132,10 @@ func ExecuteV3(ctx workflow.Context, r store.StartRequest) (result string, err e
 		if step.Type == "control.wait" {
 			seconds, _ := step.Config["seconds"].(float64)
 			if seconds < 1 || seconds > 2592000 {
-				return "", temporal.NewNonRetryableApplicationError("Invalid wait", "InvalidInput", nil)
+				return ExecutionResult{}, temporal.NewNonRetryableApplicationError("Invalid wait", "InvalidInput", nil)
 			}
 			if err = project(ctx, store.Event{State: "waiting", NodeID: step.ID, NodeState: "waiting"}); err != nil {
-				return "", err
+				return ExecutionResult{}, err
 			}
 			err = workflow.Sleep(ctx, time.Duration(seconds)*time.Second)
 			ref = inputRef
@@ -135,15 +161,15 @@ func ExecuteV3(ctx workflow.Context, r store.StartRequest) (result string, err e
 			}
 			if !temporal.IsCanceledError(err) {
 				if persistErr := project(ctx, store.Event{State: "running", NodeID: step.ID, NodeState: "failed", ErrorCode: code}); persistErr != nil {
-					return "", persistErr
+					return ExecutionResult{}, persistErr
 				}
 			}
-			return "", err
+			return ExecutionResult{}, err
 		}
 		outputs[definition.Endpoint{Node: step.ID, Port: port}] = ref
 		if err = project(ctx, store.Event{State: "running", NodeID: step.ID, NodeState: "succeeded", OutputRef: ref, Port: port}); err != nil {
-			return "", err
+			return ExecutionResult{}, err
 		}
 	}
-	return "succeeded", nil
+	return ExecutionResult{State: "succeeded", Events: journal}, nil
 }

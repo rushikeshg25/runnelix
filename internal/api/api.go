@@ -62,6 +62,7 @@ func (a API) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/workspaces/{workspace}/runs/{run}/payloads/{ref}", a.payload)
 	mux.HandleFunc("POST /v1/mapping-preview", a.preview)
 	mux.HandleFunc("GET /v1/workspaces/{workspace}/schedules", a.schedules)
+	mux.HandleFunc("GET /v1/workspaces/{workspace}/required-artifacts", a.requiredArtifacts)
 	mux.HandleFunc("POST /v1/workspaces/{workspace}/schedules", a.saveSchedule)
 	mux.HandleFunc("PUT /v1/workspaces/{workspace}/schedules/{schedule}", a.saveSchedule)
 	mux.HandleFunc("GET /v1/workspaces/{workspace}/credentials", a.credentials)

@@ -259,3 +259,12 @@ func (a API) saveSchedule(w http.ResponseWriter, r *http.Request) {
 	}
 	respond(w, 200, result)
 }
+
+func (a API) requiredArtifacts(w http.ResponseWriter, r *http.Request) {
+	result, err := a.Store.RequiredArtifacts(r.Context(), r.PathValue("workspace"))
+	if err != nil {
+		fail(w, r, err)
+		return
+	}
+	respond(w, 200, result)
+}

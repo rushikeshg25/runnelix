@@ -37,7 +37,7 @@ func TestMigrations(t *testing.T) {
 		t.Fatal(err)
 	}
 	var count int
-	if err := s.Pool.QueryRow(context.Background(), "SELECT count(*) FROM schema_migrations").Scan(&count); err != nil || count != 8 {
+	if err := s.Pool.QueryRow(context.Background(), "SELECT count(*) FROM schema_migrations").Scan(&count); err != nil || count != 9 {
 		t.Fatalf("migration count %d: %v", count, err)
 	}
 }
