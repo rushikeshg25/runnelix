@@ -42,3 +42,31 @@ func TestUncertainActionResumesOnlyFromRecordedDecision(t *testing.T) {
 		t.Fatal("operator decision retried provider", calls)
 	}
 }
+
+func TestUncertainActionCanBeCancelledWithoutResolution(t *testing.T) {
+	var suite testsuite.WorkflowTestSuite
+	env := suite.NewTestWorkflowEnvironment()
+	calls := 0
+	envelope := definition.Envelope{InvocationID: "invocation_post"}
+	env.RegisterActivityWithOptions(func(context.Context, ScopedRequest) (definition.Envelope, error) { return envelope, nil }, activity.RegisterOptions{Name: "PrepareScoped"})
+	env.RegisterActivityWithOptions(func(context.Context, definition.Envelope) (Completion, error) {
+		calls++
+		return Completion{}, temporal.NewNonRetryableApplicationError("Unknown provider outcome", "ProviderNetwork", nil)
+	}, activity.RegisterOptions{Name: NodeActivity})
+	env.RegisterActivityWithOptions(func(context.Context, definition.Envelope) error { return nil }, activity.RegisterOptions{Name: "MarkUncertain"})
+	env.RegisterActivityWithOptions(func(context.Context, definition.Envelope) (store.Resolution, error) {
+		return store.Resolution{Action: "confirm", OutputRef: "verified_output"}, nil
+	}, activity.RegisterOptions{Name: "Resolve"})
+	env.SetTestTimeout(3 * time.Second)
+	env.RegisterDelayedCallback(func() { env.CancelWorkflow() }, time.Second)
+	env.ExecuteWorkflow(func(ctx workflow.Context) (string, error) {
+		ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{StartToCloseTimeout: time.Second})
+		return actionV3(ctx, StepRequest{Step: definition.Step{Node: definition.Node{ID: "post"}, RetrySafety: "unsafe"}}, "root", func(workflow.Context, store.Event) error { return nil })
+	})
+	if err := env.GetWorkflowError(); !temporal.IsCanceledError(err) {
+		t.Fatalf("expected cancellation, got %v", err)
+	}
+	if calls != 1 {
+		t.Fatal("operator decision retried provider", calls)
+	}
+}

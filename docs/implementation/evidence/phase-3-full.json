@@ -1,5 +1,5 @@
 {
-  "timestampUtc": "2026-10-17T18:47:37.460324+00:00",
+  "timestampUtc": "2026-10-17T19:03:09.457508+00:00",
   "scope": "Local Phase 3 control/recovery/schedule/load checks using PostgreSQL, Temporal development SQLite, and fixture providers. Not production load or pilot evidence.",
   "versions": {
     "postgres": "postgres (PostgreSQL) 17.6 (Homebrew)",
@@ -12,7 +12,7 @@
     "contracts/product/activity.schema.json": "80c921109b2d207a4709d0b5385f65f0772e03b377c61dd57aecae2a9ccbc2d7",
     "contracts/product/catalog.json": "83420fd14845b59f263a8b40e739996e9255f8e754a86949cc00ca31447e4f52",
     "contracts/product/catalog.source.json": "e935628e3b3a6503aa6ff7c3e7ed3b5f9e055fc162014b62233a8a74add3e884",
-    "contracts/product/openapi.json": "1a2957319e8fec80d90e255ee91b7354975386a51d9bb8e172a0127c5a6a93e3",
+    "contracts/product/openapi.json": "0b761bf5ff0f13a1a887adf08086f28c1edb613a63ea343442dfa75043af4880",
     "contracts/product/plan.schema.json": "241f4cef82cdc9c7499a3e913b4344cbbe9b68ad8b1a99acee63be1ebc14f7de",
     "contracts/product/workflow.schema.json": "09a3185c4040feb754801fb2b395eada3d05cf4e55019ad00e6978e492f9297c",
     "go.mod": "557a1137a2ce66e1424b2ea933fea105022d00c7130fe1c6fd1c00d870fd1ada",
@@ -32,9 +32,9 @@
     "internal/engine/controls.go": "21ddda795ae5a6c84bbd84e89559635ac822fcced0c0fa17007e6dbfe17e5a9a",
     "internal/engine/engine.go": "c2b7db9c6e65c36c56919371ca299a8ecd658488b8e95d23972aabb56d31f159",
     "internal/engine/engine_test.go": "b4cc8091ecafd986e8a2c1c31aa0397a7652659a36c0e8c05b4a1b851bc66a28",
-    "internal/engine/map.go": "1f235cd4d45bf93b0e1656373e1f03c974ebf3c1107b58ab7085ee8612123e8a",
+    "internal/engine/map.go": "62879636f07f728172d7caed051f551d1744d96c65642dce67bc18d388d2fe3c",
     "internal/engine/resolutions.go": "2178c854e8ca0afe2b75062ca253550ff0282b16a9f791cac0f99abfeda0b813",
-    "internal/engine/resolutions_test.go": "0acdb2ed04b9870ba6b5cedb744c4733eb67db162644ea82fdf07768974675c1",
+    "internal/engine/resolutions_test.go": "29f9bef76fc4fd7fcf306ba0ea38596fb15a23aa758a3dd5cb4a01e5b16f617a",
     "internal/engine/v3.go": "e153cbda47ab161e27d2db5670f179af1c190c68affb3bf6f82fbb7eba9b9ceb",
     "internal/engine/v3_test.go": "23bf174a6a8f03c11ae1cc2f728c7a0bb7588f3c2cc13b167b90189864aec823",
     "internal/mapping/mapping.go": "075f532044c28f67cf0153e62614cf648a46f96c5952249cdc8f55c0bc8f3b17",
@@ -95,18 +95,21 @@
     "tests/integration/phase1probe/main.go": "aea993293523d04cee6e4543e757099654efbb58ed9fbdbfce705145350ff445",
     "tests/integration/postgres.py": "dafb82f4aed8acb9ea09ff3677715b32373390f356b93d23a255483cffa5af2f",
     "tests/integration/phase2.py": "1d7182b434e505259941b29bc66d45227a2c641089c72c33728e6e9f40ad7bc9",
-    "web/src/App.tsx": "4fa2f44445947f06b519af8d0928e26ef3d7d2f090b923a0161be212f2bf5014",
+    "web/src/App.tsx": "04175987aefb478df20ab2c2ce42a7ef14cb71a7d66ee111fe73c8b8ff7c122e",
     "web/src/main.tsx": "66b13a05278f63bed198dea75bb54b40da58be51ddd3b04e412d91ce464e6555",
-    "web/src/RunInspector.tsx": "23f70c00b33bd59a338da9351d19f12e2577242a7d7f39ac4e826daa66db12b0",
+    "web/src/ResolutionForm.tsx": "04cc19822eb310158df1f7615b823950a83bba04212c07a60aefa525078fe36b",
+    "web/src/RunInspector.tsx": "0c5cc500cc187ce2308d388222a983c1e92667d7eee83d0df4dc70e42ea845e0",
     "web/src/MappingPreview.tsx": "a7fc98ccdd52546aa642e32dbb738277e1c669f563a09131f7614c0133e9e4e5",
-    "web/src/SchemaForm.tsx": "0dd8b988424cc77e2a40eee7dd11a2c1bb55e3318e5d5874d972605bb8757b8b",
-    "web/src/api.ts": "0f4d67ef5f67f02f1e1794765992224b090e3c11ba5504fa83c1e75ec5a0be87",
-    "web/src/style.css": "9df59837ffe7a67041742b200f469598b08cfea986118fb8614562c83b8c3143",
+    "web/src/SchemaForm.tsx": "82dd77701d29f1996dd1e0bf09fb31d168fbe6d00723dcec9744d7b78bac4f41",
+    "web/src/JsonField.tsx": "da59f15f6d87a7d59d24c0a1e969d01244fb86380674726cbd9e234b8e954c0e",
+    "web/src/api.ts": "1caa6979bf54481f5d0b80c4d5068137079d1dd118b55da71ae559e595a6bff7",
+    "web/src/Schedules.tsx": "746ec097e979cc4a4ef972813df54d80baf51a283dd734cbf6fcc5cec75e1e2a",
+    "web/src/style.css": "7e3632c80a558f7cd99170bafcfe7db60d33733adb86df65f8218cbcae028df6",
     "web/src/Canvas.tsx": "4cccc17d3630e3cc98e22189886e5b18e890589d95fd88c791abcfe9e88482a9",
     "web/package.json": "693a763b640acf810dda1da0f2a4ca4b75b984d4ab84bcfcad8d9aee021d2faa",
     "web/tsconfig.json": "ca5e8a5921aed78276520c24d7894b9bc06c8f7260a4eac7032b6b0d5ae1ce56",
     "web/vite.config.ts": "bcfde95d9ff687a34797f8731b56319a0b10052e78dc6a0f038d0066c785f36c",
-    "tests/integration/phase3.py": "17be566b0cb221f263ed03d960ac8732d0544f4b172a7fa410710805e238dade",
+    "tests/integration/phase3.py": "79b6cf40e326924c3de15a3dda768c786c26e06a98c377ed2fb571c2b018a9ff",
     "scripts/build-compat-v2.py": "1509163b0fd678360e364d8ede65e8bc200b711718a43db4e3b8a0e563368f6f"
   },
   "sourcesUnchanged": true,
@@ -115,37 +118,37 @@
     {
       "name": "Bounded Map ordering identity and empty/oversized collections",
       "status": "passed",
-      "seconds": 1.432,
+      "seconds": 1.415,
       "detail": "Five ordered item outputs have distinct invocation IDs; empty collection runs no action; expansion beyond maxItems fails before action dispatch."
     },
     {
       "name": "Merge skip behavior and durable-wait restart",
       "status": "passed",
-      "seconds": 8.834,
+      "seconds": 8.795,
       "detail": "Merge ignored the skipped false input; a durable timer and output survived engine SIGKILL and restart."
     },
     {
       "name": "Durable operator reconciliation without resend",
       "status": "passed",
-      "seconds": 0.465,
+      "seconds": 0.571,
       "detail": "Operator result persisted with dispatcher stopped, then resumed after restart without another unsafe provider call."
     },
     {
       "name": "Projection outage recovers with engine offline",
       "status": "passed",
-      "seconds": 0.662,
+      "seconds": 0.692,
       "detail": "Every projection insert failed while execution completed. With engine offline, dispatcher rebuilt all five events from the closed runtime result, with no repeated action."
     },
     {
       "name": "Actual Temporal schedule delivery overlap and disable",
       "status": "passed",
-      "seconds": 9.013,
+      "seconds": 9.01,
       "detail": "Temporal Schedule triggered the admission wrapper; second occurrence was skipped while the main run waited. Desired disable revision reached the runtime."
     },
     {
       "name": "Actual Temporal calendar DST gap and repeated hour",
       "status": "passed",
-      "seconds": 0.588,
+      "seconds": 0.58,
       "detail": {
         "springMatches": [
           "2026-03-07T07:30:00Z",
@@ -163,20 +166,20 @@
     {
       "name": "V2 workflow and action artifacts coexist with V3",
       "status": "passed",
-      "seconds": 0.463,
+      "seconds": 0.811,
       "detail": "Pushed Phase 2 API/worker fixture at 9cd61d1 published V2; current dispatcher/engine executed it on the retained V2 route and old digest queue."
     },
     {
       "name": "Bounded concurrent admission and execution load",
       "status": "passed",
-      "seconds": 2.393,
+      "seconds": 1.766,
       "detail": {
         "runs": 30,
         "concurrentHTTPClients": 10,
         "nodeWorkerConcurrency": 4,
         "inputBytes": 22,
-        "seconds": 2.39,
-        "completedRunsPerSecond": 12.554,
+        "seconds": 1.762,
+        "completedRunsPerSecond": 17.028,
         "workload": "single pure echo action; no provider latency; local development services",
         "claim": "bounded smoke load, not production operating-envelope acceptance"
       }

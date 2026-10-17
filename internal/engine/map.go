@@ -108,7 +108,10 @@ func actionV3(ctx workflow.Context, r StepRequest, scope string, project project
 				return "", persistErr
 			}
 			var signal bool
-			workflow.GetSignalChannel(ctx, "resolve/"+e.InvocationID).Receive(ctx, &signal)
+			selector := workflow.NewSelector(ctx)
+			selector.AddReceive(workflow.GetSignalChannel(ctx, "resolve/"+e.InvocationID), func(channel workflow.ReceiveChannel, _ bool) { channel.Receive(ctx, &signal) })
+			selector.AddReceive(ctx.Done(), func(workflow.ReceiveChannel, bool) {})
+			selector.Select(ctx)
 			if ctx.Err() != nil {
 				return "", ctx.Err()
 			}

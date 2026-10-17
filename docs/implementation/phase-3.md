@@ -1,8 +1,8 @@
 # Phase 3: execution semantics and recovery
 
-Status: in progress. Phase 2 is pushed at `9cd61d1`.
+Status: local implementation complete in ten commits. The release gate remains open for representative load and independent acceptance. Phase 2 is pushed at `9cd61d1`.
 
-Nine implementation slices:
+Implementation slices (nine planned, plus one evidence-driven test correction):
 
 1. Interpreter version 3, deterministic named/ordered merge, durable wait, and compatibility routing.
 2. Bounded Map with explicit single-action item bodies, stable item identities, ordering, and concurrency limits. Nested Map is rejected.
@@ -62,3 +62,38 @@ Forced runtime termination, timeout outside normal product completion, or delete
 The live harness verifies Map ordering/empty/bounds, merge with a skipped branch, wait recovery after SIGKILL, durable operator resolution, complete projection loss with offline-engine repair, actual Temporal schedule delivery/overlap/disable, and V2/V3 coexistence. A bounded smoke load uses 30 single-action runs and ten concurrent HTTP clients.
 
 The smoke load does not establish the proposed 20-starts/second burst, ten-action average, 1,000 simultaneous waits, 50-user/10-workspace access profile, or p95 dispatch target. Keep those release gates open until the representative workload is measured on the chosen installation.
+
+## Local author and operator procedure
+
+Start `make dev`. Add “For each item” to use an explicit Map; configure its collection and body action, then connect the ports. `bodyConfig` accepts a JSON object. Invalid text remains visible and blocks publication. Save and publish before executing.
+
+Open Schedules on a published workflow. Choose interval or daily time, enter fixture input, and create the paused schedule. Review it, then enable it. “Synchronization pending” means PostgreSQL has accepted a desired revision that Temporal has not yet observed. Pause prevents new admission immediately, even if synchronization is delayed. Pausing does not cancel a run already accepted.
+
+For a needs-attention run, inspect the invocation ID and verify the remote result. Enter the verification note. Confirm with the exact output schema or end the run as failed. The decision is permanent. Do not guess a successful result to clear an alert. The local API identity is suitable only for this loopback development installation.
+
+Run `make integration-phase3` for isolated PostgreSQL, runtime controls, schedules, projection recovery, and the pushed V2 compatibility fixture. CI fetches full Git history so the fixture can be built without changing the working branch.
+
+## Commit ledger
+
+| Slice | Commit | Result |
+| --- | --- | --- |
+| 1 | `0060988` | V3, merge, wait, compatibility routes. |
+| 2 | `9e309b1` | Bounded Map and stable item identity. |
+| 3 | `79f9f20` | Durable uncertain-action decisions. |
+| 4 | `8c43a4b` | Transactional budgets and shared provider limits. |
+| 5 | `26f9bff` | Temporal schedules and no-overlap admission. |
+| 6 | `a4b10f8` | Independent projection repair and artifact report. |
+| 7 | `2d5cc5d` | Eight live cases, V2 fixture, bounded dispatcher drain. |
+| 8 | `1524a9e` | Editor controls, browser fixes, API contract, CI. |
+| 9 | `e316d2a` | Distinct schedule-occurrence fixture timing after retained-history diagnosis. |
+| 10 | This completion commit | Cancellation regression fix, verification records, operating instructions, ADR, status updates. |
+
+See [ADR 0004](../decisions/0004-versioned-controls-and-recovery.md). All reported provider actions use local fixtures. No production rollout or real pilot is claimed.
+
+## Regression findings
+
+Full regression found a cancellation defect in the new operator wait. Temporal's blocking signal receive did not observe context cancellation. The fixed V3 action selects between a resolution signal and cancellation, then checks the context before reading a decision. A focused test reproduces the old timeout and passes after the fix. The live Phase 2 unsafe-action cancellation check also passes.
+
+The schedule test originally sent two manual triggers in the same second. Temporal's scheduled-start attribute gave both the same occurrence identity. Admission correctly deduplicated them. The corrected fixture separates their scheduled seconds and still requires an overlap record. Failed artifacts remain available locally; they were not overwritten.
+
+Final local verification: `make test check integration-phase3 integration-phase2 integration-phase1 integration` passed. This includes Go race/static checks, 36 TypeScript checks, editor formatting/type checks, real PostgreSQL tests, eight Phase 3 cases, seven Phase 2 cases, seven Phase 1 cases, and twelve runtime-spike cases. OpenAPI 3.1 validation passed. The HTML plan rendered at 1100 and 390 pixels without console errors. [Runtime regression evidence](evidence/phase-0-after-phase-3.json) includes the isolated cold restore.

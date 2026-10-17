@@ -282,3 +282,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **What:** a repeat of the live suite exposed two manual triggers within the same Temporal scheduled second. The database correctly stored one occurrence; the test expected two distinct occurrences.
 - **Why:** duplicate delivery and overlap are separate contracts. The overlap fixture now crosses a second boundary before its second trigger and avoids automatic minute ticks during the test.
 - **Evidence:** failed evidence remains at `artifacts/phase1/20261017T185721Z-5a4f94`; retained PostgreSQL and Temporal recentActions confirmed the shared second identity. The test still requires one accepted run and one overlap outcome.
+
+## 2026-10-18 — close Phase 3 regressions and document local limits
+
+- **What:** fixed cancellation while waiting for an operator decision by selecting the resolution signal or context cancellation. Added a focused test that failed with ScheduleToClose before the fix. The live Phase 2 cancellation regression now passes.
+- **Why:** an indefinite signal receive does not wake on cancellation automatically. A cancelled uncertain action must stop waiting without sending another provider request.
+- **Evidence:** [cancellation regression](internal/engine/resolutions_test.go), [Phase 2 regression report](docs/implementation/evidence/phase-2-after-phase-3.json), [Phase 3 report](docs/implementation/evidence/phase-3-full.json), [Phase 1 regression report](docs/implementation/evidence/phase-1-after-phase-3.json). The first nine Phase 3 commits were pushed through `e316d2a`; this final slice includes the fix and documentation.
+- **Limits:** production load, independent teammate acceptance, a different developer's node-authoring trial, and the two-week pilot remain open. Local schedule policy uses skip overlap, with no coalesced pending occurrence.
