@@ -44,3 +44,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Evidence:** [workflow tests](internal/spike/workflow_test.go), [CLI](cmd/spike/main.go). Go tests prove safe retry, unsafe non-retry, pre-send failure handling, and cancellation during a durable wait.
 - **Limit:** needs-attention is a completed spike result, not the product's eventual paused reconciliation state.
 - **Prior milestone:** provider commit `8eb08f6`.
+
+## 2026-10-17 — TypeScript action worker
+
+- **What:** added the Temporal activity worker, fixed loopback destination, request/result validation, response-size cap, cancellation, heartbeats, and sanitized typed failures.
+- **Why:** provider-specific work belongs outside replayed Go workflow code; raw network errors must not leak into execution history.
+- **Evidence:** [activity tests](node-worker/activity.test.ts), [worker](node-worker/main.ts). All 21 TypeScript tests pass; cross-process runtime checks follow.
+- **Prior milestone:** Go orchestration commit `b9fa212`.
