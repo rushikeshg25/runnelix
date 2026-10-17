@@ -87,3 +87,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Verification:** `make test check` passed: Go race tests, all 21 TypeScript tests, Go vet, type checks, and whitespace checks. All 20 source hashes still match the twelve-case integration report. Checked 98 local document links/anchors. Desktop and narrow HTML previews rendered without console errors.
 - **Limits:** implementation commits are local; hosted CI has not run. Phase 1 has not started. This is not a production release.
 - **Prior milestone:** version/restore commit `bf513cf`.
+
+## 2026-10-17 — Phase 1 contracts begin
+
+- **What:** established nine Phase 1 slices and implemented bounded workflow parsing and deterministic plan compilation.
+- **Why:** publication needs a stable, validated execution definition before persistence or dispatch can be safe.
+- **Evidence:** [phase scope](docs/implementation/phase-1.md), [compiler tests](internal/definition/definition_test.go). `go test ./internal/definition` passed.
+- **Boundary:** manual trigger and mock actions only; the phase's runtime records admission, not graph completion. PostgreSQL 17.6 is installed locally; integration will use a separate cluster.
