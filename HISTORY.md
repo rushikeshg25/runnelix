@@ -36,3 +36,11 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** recovery tests need an observable external effect independent of Temporal's activity result.
 - **Evidence:** [provider tests](internal/mockprovider/server_test.go), [server](internal/mockprovider/server.go). `go test -race ./internal/mockprovider` passed, including concurrent deduplication and post-commit disconnect/reload.
 - **Prior milestone:** shared-contract commit `da5a1b8`.
+
+## 2026-10-17 — Go runtime orchestration
+
+- **What:** implemented one durable wait followed by a version-routed TypeScript activity, plus start/query/result/cancel/describe commands.
+- **Why:** prove the runtime boundary before building a graph engine. Unsafe actions receive one attempt; ambiguous failures return a distinct needs-attention result.
+- **Evidence:** [workflow tests](internal/spike/workflow_test.go), [CLI](cmd/spike/main.go). Go tests prove safe retry, unsafe non-retry, pre-send failure handling, and cancellation during a durable wait.
+- **Limit:** needs-attention is a completed spike result, not the product's eventual paused reconciliation state.
+- **Prior milestone:** provider commit `8eb08f6`.
