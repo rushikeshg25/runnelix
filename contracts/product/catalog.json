@@ -19,7 +19,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:7bd63c1cb9903be91c34379113ffba5023e8a5726673ef4042cc4f8c9d17b06f"
+    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
   },
   {
     "type": "mock.echo",
@@ -43,7 +43,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:7bd63c1cb9903be91c34379113ffba5023e8a5726673ef4042cc4f8c9d17b06f"
+    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
   },
   {
     "type": "transform.map",
@@ -77,7 +77,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:7bd63c1cb9903be91c34379113ffba5023e8a5726673ef4042cc4f8c9d17b06f"
+    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
   },
   {
     "type": "control.condition",
@@ -112,6 +112,104 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:7bd63c1cb9903be91c34379113ffba5023e8a5726673ef4042cc4f8c9d17b06f"
+    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
+  },
+  {
+    "type": "http.get",
+    "version": 1,
+    "kind": "action",
+    "title": "HTTP GET",
+    "inputs": [
+      "in"
+    ],
+    "outputs": [
+      "out"
+    ],
+    "retrySafety": "read-only",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "credentialRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "status",
+        "body"
+      ],
+      "properties": {
+        "status": {
+          "type": "integer"
+        },
+        "body": {}
+      }
+    },
+    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
+  },
+  {
+    "type": "http.post",
+    "version": 1,
+    "kind": "action",
+    "title": "HTTP POST",
+    "inputs": [
+      "in"
+    ],
+    "outputs": [
+      "out"
+    ],
+    "retrySafety": "unsafe",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "credentialRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "status",
+        "body"
+      ],
+      "properties": {
+        "status": {
+          "type": "integer"
+        },
+        "body": {}
+      }
+    },
+    "implementationDigest": "sha256:947de1a3dc38148a25ea6ff44517dd6051b2e416cd430ae6befc2ee7471a0b99"
   }
 ]

@@ -167,3 +167,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** execute the published plan deterministically while keeping database/network work in activities and payload values outside workflow history.
 - **Evidence:** [engine tests](internal/engine/engine_test.go), [mapping tests](internal/mapping/mapping_test.go), and [compiler](internal/definition/definition.go). Go and PostgreSQL checks passed. CEL is pinned at `cel.dev/cel-go v0.32.0`.
 - **Boundary:** the real TypeScript data-plane connection and UI are still being built; this milestone is not an end-to-end execution claim.
+
+## 2026-10-17 — protected node execution data plane
+
+- **What:** added a token-protected node service, digest-routed TypeScript worker, and HTTP GET/POST modules. Added encrypted credentials with workflow grants and destination binding.
+- **Why:** node modules need scoped input, output recording, and approved network calls without database credentials or plaintext provider secrets.
+- **Decisions:** GET may retry; POST is unsafe and cannot retry automatically. Requests must match the published URL and node method. DNS results are checked before dialing; redirects and proxy environment settings are disabled. Decoded credential echoes are redacted before storage.
+- **Evidence:** [egress tests](internal/nodeservice/egress_test.go), [credential tests](internal/store/credentials_test.go), [worker tests](node-worker/product-activity.test.ts). Focused Go tests and isolated PostgreSQL race tests passed. Full runtime wiring follows in the next slice.

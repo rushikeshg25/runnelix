@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { Ajv } from 'ajv';
-import { modules } from './nodes/index.js';
+import { modules, type Capabilities } from './nodes/index.js';
 
 export interface Envelope {
   contractVersion: 1; workspaceId: string; runId: string; nodeId: string;
@@ -29,6 +29,7 @@ function bounded(value: unknown, depth = 0): boolean {
 }
 export interface HostContext {
   signal: AbortSignal;
+  capabilities?: Capabilities;
   // The resolver MUST enforce both workspace and run scope, independently of the reference.
   resolve: (workspaceId: string, runId: string, ref: string) => Promise<unknown>;
 }
@@ -45,7 +46,7 @@ export async function executeNode(raw: unknown, context: HostContext): Promise<u
   } catch { context.signal.throwIfAborted(); throw new NodeFailure('PayloadUnavailable', 'Scoped payload unavailable'); }
   if (!bounded(input) || !bounded(config) || !ajv.validate(descriptor.inputSchema, input) || !ajv.validate(descriptor.configSchema, config)) throw new NodeFailure('InvalidInput', 'Invalid node input or configuration');
   context.signal.throwIfAborted();
-  const output = await execute(input, config, context.signal);
+  const output = await execute(input, config, context.signal, context.capabilities);
   if (!bounded(output) || !ajv.validate(descriptor.outputSchema, output)) throw new NodeFailure('InvalidOutput', 'Invalid node output');
   return output;
 }

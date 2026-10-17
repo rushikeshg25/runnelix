@@ -148,6 +148,18 @@ func (s *Store) Publish(ctx context.Context, workspace, id string, revision int6
 	if err != nil {
 		return Version{}, err
 	}
+	for _, step := range plan.Steps {
+		if ref, ok := step.Config["credentialRef"].(string); ok && ref != "" {
+			var allowed bool
+			err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM credentials c JOIN credential_grants g ON (g.workspace_id,g.credential_id)=(c.workspace_id,c.id) WHERE c.workspace_id=$1 AND c.id=$2 AND g.workflow_id=$3 AND NOT c.revoked AND c.kind='bearer')", workspace, ref, id).Scan(&allowed)
+			if err != nil {
+				return Version{}, err
+			}
+			if !allowed {
+				return Version{}, ErrInvalid
+			}
+		}
+	}
 	planJSON, err := json.Marshal(plan)
 	if err != nil {
 		return Version{}, err
