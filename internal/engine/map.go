@@ -99,7 +99,7 @@ func actionV3(ctx workflow.Context, r StepRequest, scope string, project project
 	}
 	if err != nil && !temporal.IsCanceledError(err) && attempts == 1 {
 		var failure *temporal.ApplicationError
-		known := errors.As(err, &failure) && (failure.Type() == "InvalidInput" || failure.Type() == "VersionMismatch" || failure.Type() == "EgressDenied" || failure.Type() == "CredentialUnavailable")
+		known := errors.As(err, &failure) && (failure.Type() == "InvalidInput" || failure.Type() == "VersionMismatch" || failure.Type() == "RateLimited" || failure.Type() == "EgressDenied" || failure.Type() == "CredentialUnavailable")
 		if !known {
 			if persistErr := workflow.ExecuteActivity(ctx, "MarkUncertain", e).Get(ctx, nil); persistErr != nil {
 				return "", persistErr

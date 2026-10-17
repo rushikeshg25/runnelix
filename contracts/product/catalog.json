@@ -19,7 +19,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
+    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
   },
   {
     "type": "mock.echo",
@@ -43,7 +43,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
+    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
   },
   {
     "type": "transform.map",
@@ -77,7 +77,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
+    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
   },
   {
     "type": "control.condition",
@@ -112,7 +112,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
+    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
   },
   {
     "type": "http.get",
@@ -161,7 +161,7 @@
         "body": {}
       }
     },
-    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
+    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
   },
   {
     "type": "http.post",
@@ -210,7 +210,7 @@
         "body": {}
       }
     },
-    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
+    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
   },
   {
     "type": "control.merge",
@@ -247,7 +247,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
+    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
   },
   {
     "type": "control.wait",
@@ -281,7 +281,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
+    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
   },
   {
     "type": "control.map",
@@ -342,6 +342,6 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:53ef102290f7e00fbba3170d620fc14c27da6caa1c4eebf98d61a2e15cf6174f"
+    "implementationDigest": "sha256:d2351a2e101920a7a42fd2176398e85db45f6420797e937325a9932875e19774"
   }
 ]

@@ -114,6 +114,9 @@ func safe(err error) error {
 	if err == nil {
 		return nil
 	}
+	if errors.Is(err, store.ErrLimit) {
+		return temporal.NewNonRetryableApplicationError("Execution limit reached", "LimitExceeded", nil)
+	}
 	if errors.Is(err, store.ErrConflict) || errors.Is(err, store.ErrInvalid) || errors.Is(err, store.ErrNotFound) {
 		return temporal.NewNonRetryableApplicationError("Execution contract rejected", "InvalidInput", nil)
 	}

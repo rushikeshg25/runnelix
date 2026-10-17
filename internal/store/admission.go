@@ -59,6 +59,10 @@ func (s *Store) admit(ctx context.Context, workspace, workflow, key string, inpu
 		return Run{}, err
 	}
 	defer tx.Rollback(ctx)
+	var workspaceLock string
+	if err = tx.QueryRow(ctx, "SELECT id FROM workspaces WHERE id=$1 FOR UPDATE", workspace).Scan(&workspaceLock); err != nil {
+		return Run{}, notFound(err)
+	}
 	var active *string
 	if err = tx.QueryRow(ctx, "SELECT active_version_id FROM workflows WHERE workspace_id=$1 AND id=$2 FOR UPDATE", workspace, workflow).Scan(&active); err != nil {
 		return Run{}, notFound(err)
@@ -80,6 +84,15 @@ func (s *Store) admit(ctx context.Context, workspace, workflow, key string, inpu
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return Run{}, err
+	}
+	if mode == "execute" {
+		var count int
+		if err = tx.QueryRow(ctx, "SELECT count(*) FROM runs WHERE workspace_id=$1 AND execution_mode='execute' AND state NOT IN ('succeeded','failed','cancelled')", workspace).Scan(&count); err != nil {
+			return Run{}, err
+		}
+		if count >= 100 {
+			return Run{}, ErrLimit
+		}
 	}
 	if active == nil {
 		return Run{}, ErrUnpublished

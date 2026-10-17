@@ -4,7 +4,7 @@ import { executeNode, NodeFailure, parseEnvelope } from './product-host.js';
 export interface Environment {
   serviceUrl: string; token: string; attempt: number; signal: AbortSignal; request?: typeof fetch;
 }
-const safeCodes = new Set(['InvalidInput', 'VersionMismatch', 'PayloadUnavailable', 'InvalidOutput', 'ProviderTransient', 'ProviderNetwork', 'ProviderRejected', 'EgressDenied', 'CredentialUnavailable', 'Cancelled', 'StorageUnavailable']);
+const safeCodes = new Set(['RateLimited', 'InvalidInput', 'VersionMismatch', 'PayloadUnavailable', 'InvalidOutput', 'ProviderTransient', 'ProviderNetwork', 'ProviderRejected', 'EgressDenied', 'CredentialUnavailable', 'Cancelled', 'StorageUnavailable']);
 class ServiceFailure extends Error {
   constructor(readonly code: string, readonly retryable: boolean) { super(code); }
 }

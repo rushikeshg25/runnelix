@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/jackc/pgx/v5"
 	"time"
 
 	"github.com/rushikeshg25/runnelix/internal/definition"
@@ -60,6 +61,18 @@ func (s *Store) ExecutionSnapshot(ctx context.Context, r StartRequest) (Snapshot
 	return result, err
 }
 func (s *Store) PutPayload(ctx context.Context, workspace, run string, value any) (string, error) {
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback(ctx)
+	ref, err := putPayload(ctx, tx, workspace, run, value)
+	if err != nil {
+		return "", err
+	}
+	return ref, tx.Commit(ctx)
+}
+func putPayload(ctx context.Context, tx pgx.Tx, workspace, run string, value any) (string, error) {
 	encoded, err := json.Marshal(value)
 	if err != nil || len(encoded) > 8192 {
 		return "", ErrInvalid
@@ -71,7 +84,25 @@ func (s *Store) PutPayload(ctx context.Context, workspace, run string, value any
 	sum := sha256.Sum256(encoded)
 	digest := hex.EncodeToString(sum[:])
 	id := "payload_" + digest
-	_, err = s.Pool.Exec(ctx, "INSERT INTO payloads(workspace_id,run_id,id,data,digest) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING", workspace, run, id, encoded, digest)
+	var used, limit, size int64
+	err = tx.QueryRow(ctx, "SELECT payload_bytes,max_payload_bytes,octet_length($3::jsonb::text) FROM runs WHERE workspace_id=$1 AND id=$2 FOR NO KEY UPDATE", workspace, run, encoded).Scan(&used, &limit, &size)
+	if err != nil {
+		return "", notFound(err)
+	}
+	var exists bool
+	if err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM payloads WHERE workspace_id=$1 AND run_id=$2 AND id=$3)", workspace, run, id).Scan(&exists); err != nil {
+		return "", err
+	}
+	if exists {
+		return id, nil
+	}
+	if used+size > limit {
+		return "", ErrLimit
+	}
+	if _, err = tx.Exec(ctx, "INSERT INTO payloads(workspace_id,run_id,id,data,digest) VALUES($1,$2,$3,$4,$5)", workspace, run, id, encoded, digest); err != nil {
+		return "", err
+	}
+	_, err = tx.Exec(ctx, "UPDATE runs SET payload_bytes=payload_bytes+$3 WHERE workspace_id=$1 AND id=$2", workspace, run, size)
 	return id, err
 }
 func (s *Store) Payload(ctx context.Context, workspace, run, ref string) (json.RawMessage, error) {
@@ -102,19 +133,40 @@ func (s *Store) PrepareScopedInvocation(ctx context.Context, r StartRequest, ste
 	if _, err = definition.ParseEnvelope(data); err != nil {
 		return envelope, ErrInvalid
 	}
-	_, err = s.Pool.Exec(ctx, "INSERT INTO node_invocations(workspace_id,run_id,id,node_id,envelope) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING", r.WorkspaceID, r.RunID, envelope.InvocationID, step.ID, data)
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return envelope, err
+	}
+	defer tx.Rollback(ctx)
+	var used, limit int
+	if err = tx.QueryRow(ctx, "SELECT invocation_count,max_invocations FROM runs WHERE workspace_id=$1 AND id=$2 FOR NO KEY UPDATE", r.WorkspaceID, r.RunID).Scan(&used, &limit); err != nil {
+		return envelope, notFound(err)
+	}
+	var exists bool
+	if err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM node_invocations WHERE workspace_id=$1 AND run_id=$2 AND id=$3)", r.WorkspaceID, r.RunID, envelope.InvocationID).Scan(&exists); err != nil {
+		return envelope, err
+	}
+	if !exists && used >= limit {
+		return envelope, ErrLimit
+	}
+	tag, err := tx.Exec(ctx, "INSERT INTO node_invocations(workspace_id,run_id,id,node_id,envelope) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING", r.WorkspaceID, r.RunID, envelope.InvocationID, step.ID, data)
 	if err != nil {
 		return envelope, err
 	}
 	var equal bool
-	err = s.Pool.QueryRow(ctx, "SELECT envelope=$4::jsonb FROM node_invocations WHERE workspace_id=$1 AND run_id=$2 AND id=$3", r.WorkspaceID, r.RunID, envelope.InvocationID, data).Scan(&equal)
+	if tag.RowsAffected() == 1 {
+		if _, err = tx.Exec(ctx, "UPDATE runs SET invocation_count=invocation_count+1 WHERE workspace_id=$1 AND id=$2", r.WorkspaceID, r.RunID); err != nil {
+			return envelope, err
+		}
+	}
+	err = tx.QueryRow(ctx, "SELECT envelope=$4::jsonb FROM node_invocations WHERE workspace_id=$1 AND run_id=$2 AND id=$3", r.WorkspaceID, r.RunID, envelope.InvocationID, data).Scan(&equal)
 	if err != nil {
 		return envelope, err
 	}
 	if !equal {
 		return envelope, ErrConflict
 	}
-	return envelope, nil
+	return envelope, tx.Commit(ctx)
 }
 func (s *Store) Invocation(ctx context.Context, e definition.Envelope) error {
 	data, err := json.Marshal(e)

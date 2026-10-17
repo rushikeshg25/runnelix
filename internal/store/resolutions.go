@@ -58,7 +58,7 @@ func (s *Store) ResolveUncertain(ctx context.Context, res Resolution, output any
 		if !ok || definition.ValidateSchema(descriptor.OutputSchema, output) != nil {
 			return res, ErrInvalid
 		}
-		res.OutputRef, err = s.PutPayload(ctx, res.WorkspaceID, res.RunID, output)
+		res.OutputRef, err = putPayload(ctx, tx, res.WorkspaceID, res.RunID, output)
 		if err != nil {
 			return res, err
 		}

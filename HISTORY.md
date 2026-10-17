@@ -241,3 +241,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** an uncertain write must not be retried merely because a response was lost. Decision persistence must survive API or dispatcher failure.
 - **Decisions:** no automatic resend option. Confirmed results fence late worker results. Concurrent Map completions retain the needs-attention state while any item remains unresolved. The local operator identity is explicit; production role enforcement follows in hardening.
 - **Evidence:** [resolution persistence tests](internal/store/resolutions_test.go), [runtime reconciliation test](internal/engine/resolutions_test.go). Tests cover immutable choices, durable delivery, late-attempt fencing, and resumption without another provider request.
+
+## 2026-10-18 — transactional execution and provider limits
+
+- **What:** added a 100-active-execution workspace limit, pinned per-run limits of 1,000 action invocations and 8 MiB of payload storage, and shared host/credential request buckets.
+- **Why:** per-process counters cannot enforce limits across replicas or concurrent Map items. Existing references and invocations must remain idempotent without consuming budget twice.
+- **Decisions:** use PostgreSQL row locks and transactional counters. Provider admission allows 10 requests/second per workspace/host and 5 per workspace/credential, with no burst. A rejected unsafe request fails before send; it is not reported as an uncertain provider effect.
+- **Evidence:** [limit tests](internal/store/limits_test.go), [provider gates](internal/store/limits.go). Concurrent checks verify exact invocation capacity, payload deduplication, shared request admission, and refill.

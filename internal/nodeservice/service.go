@@ -110,6 +110,15 @@ func (s Service) Handler() (http.Handler, error) {
 					return
 				}
 			}
+			credentialRef, _ := config["credentialRef"].(string)
+			if err = s.Store.AcquireProvider(r.Context(), task.Envelope.WorkspaceID, strings.ToLower(destination.Hostname()), credentialRef); err != nil {
+				if errors.Is(err, store.ErrLimit) {
+					failure(w, 429, "RateLimited", true)
+				} else {
+					failure(w, 503, "StorageUnavailable", true)
+				}
+				return
+			}
 			result, err := s.Egress.Do(r.Context(), task.Request, credential)
 			if err != nil {
 				var provider *ProviderError
@@ -151,7 +160,7 @@ func approvedRequest(nodeType string, config map[string]any, request Request) bo
 }
 func allowedCode(s string) bool {
 	switch s {
-	case "", "InvalidInput", "VersionMismatch", "PayloadUnavailable", "InvalidOutput", "ProviderTransient", "ProviderNetwork", "ProviderRejected", "EgressDenied", "CredentialUnavailable", "Cancelled":
+	case "", "RateLimited", "InvalidInput", "VersionMismatch", "PayloadUnavailable", "InvalidOutput", "ProviderTransient", "ProviderNetwork", "ProviderRejected", "EgressDenied", "CredentialUnavailable", "Cancelled":
 		return true
 	}
 	return false

@@ -95,6 +95,8 @@ func fail(w http.ResponseWriter, r *http.Request, err error) {
 	var issues []definition.Issue
 	var invalid *definition.Invalid
 	switch {
+	case errors.Is(err, store.ErrLimit):
+		status, code, msg = 429, "limit_exceeded", "Workspace or run limit reached"
 	case errors.As(err, &invalid):
 		status, code, msg = 422, "invalid_workflow", "Workflow validation failed"
 		issues = invalid.Issues
