@@ -6,7 +6,7 @@ Runnelix is a self-hosted workflow platform under development for internal teams
 
 The design uses a **Go backend**, a **TypeScript interface and node workers**, and an internal node architecture that developers can extend. Adding an ordinary integration action should not require changes to the execution engine or canvas.
 
-> **Project status: Phase 1 development slice.** Workflow JSON can be validated, saved with revisions, published immutably, and admitted durably through PostgreSQL and Temporal. Seven live admission/recovery cases pass. The runtime records admission only; the product graph engine, UI, authentication, and production deployment remain unfinished.
+> **Project status: Phase 2 local implementation.** Author a workflow in the visual editor, publish a fixed version, execute it through Go and TypeScript workers, and inspect its events and outputs. Seven live execution cases and browser checks pass. Production identity, complete control semantics, real integrations, and operational release gates remain unfinished.
 
 ## Run the development checks
 
@@ -18,11 +18,14 @@ make deps
 make test check
 make integration
 make integration-phase1
+make integration-phase2
 ```
 
 `make tools` downloads a checksum-pinned Temporal CLI into this checkout. `make integration` builds the programs, starts isolated loopback services, runs the twelve cases, and stops its own processes. It preserves fake provider/runtime state and reports under `artifacts/phase0/` for inspection.
 
-Read the [Phase 1 setup and API examples](docs/implementation/phase-1.md), [Phase 0 runtime proof](docs/implementation/phase-0.md), [implementation status](docs/implementation/README.md), [history](HISTORY.md), and [runtime decision](docs/decisions/0001-temporal-development-runtime.md).
+Start the local editor with `make dev`, then open <http://127.0.0.1:5173>. The launcher owns a separate PostgreSQL cluster and Temporal development server. It preserves local data and keys in `.local/dev` on shutdown. Use fixture data. It does not touch an existing system database.
+
+Read the [Phase 2 guide](docs/implementation/phase-2.md), [Phase 1 setup and API examples](docs/implementation/phase-1.md), [Phase 0 runtime proof](docs/implementation/phase-0.md), [implementation status](docs/implementation/README.md), [history](HISTORY.md), and [runtime decision](docs/decisions/0001-temporal-development-runtime.md).
 
 ## Read the plan
 
@@ -34,7 +37,7 @@ For a visual introduction, download [the standalone HTML overview](docs/plans/pr
 
 - Manual, authenticated webhook, and scheduled triggers.
 - HTTP actions, field mapping, conditions, merges, bounded iteration, and durable waits.
-- Two service integrations selected from real team workflows.
+- GitHub issue and Slack message integrations, initially verified with provider fixtures.
 - Immutable published versions, execution history, cancellation, and explicit retry policies.
 - OIDC login, workspace permissions, protected credentials, audit records, and tested recovery.
 
@@ -42,7 +45,7 @@ For a visual introduction, download [the standalone HTML overview](docs/plans/pr
 
 ## Next engineering phase
 
-[Phase 2](docs/plans/08-delivery-plan.md#phase-2-first-complete-workflow) adds the first actual execution path, minimal editor, HTTP action, condition, and run inspector. [ADR 0002](docs/decisions/0002-postgresql-admission-and-receipts.md) explains why Phase 1 admission is separate from execution. Production operations approval remains open.
+[Phase 3](docs/plans/08-delivery-plan.md#phase-3-complete-execution-semantics) adds merge, bounded Map, waits, schedules, quotas, uncertainty resolution, and projection recovery. Independent teammate acceptance of Phase 2 remains pending. The current installation target is local; production rollout and pilot approval remain open.
 
 ## About the name
 

@@ -17,7 +17,10 @@
 | D-09 | Proposed | Provider-aware at-least-once execution with explicit uncertainty. | Do not promise exactly-once external effects. |
 | D-10 | Proposed | PostgreSQL stores bounded JSON payloads initially. | Add object storage for binary support or measured storage/recovery pressure. |
 | D-11 | Proposed | DAG plus explicit bounded Map. | Arbitrary graph cycles and user-defined subworkflows are deferred. |
-| D-12 | Proposed | Markdown documents are canonical; HTML is the visual overview. | Review and update both when major scope or architecture changes. |
+| D-12 | Confirmed | Markdown documents are canonical; HTML is the visual overview. | Review and update both when major scope or architecture changes. |
+
+| D-13 | Confirmed by user | GitHub issues and Slack messages are the first integrations. | Use fixture providers until real-account tests are authorized. |
+| D-14 | Confirmed by user | Local deployment for now. | No production host, identity provider, operational owner, or pilot acceptance is implied. |
 
 ## Risk register
 
@@ -40,8 +43,8 @@
 | Question | Needed by | Default until resolved |
 | --- | --- | --- |
 | Which five workflows justify the pilot? | Phase 0. | Use the mock webhook-to-HTTP example for technical proof only. |
-| Which two service integrations come first? | Before Phase 4. | GitHub and Slack are examples, not commitments. |
-| What host/platform, OIDC provider, and operating owner are available? | Phase 0 and deployment design. | Do not infer an existing production environment. |
+| Real-account integration validation? | Before provider rollout. | GitHub issues and Slack messages are selected. Adapter tests use fixtures. |
+| Production host, OIDC provider, and operating owner? | Before production rollout. | User selected local deployment for now. Keep production identity and owner undecided. |
 | What is the monthly cost ceiling? | Before paid provisioning. | Price expected and 10x configurations; no spend is authorized by this plan. |
 | Is single-host restore-based recovery acceptable? | Before pilot deployment. | Describe its failure domain; do not claim high availability. |
 | Are proposed retention and payload limits sufficient? | First real-workflow review. | 7-day completed payloads, 30-day summaries, active dependency pins. |

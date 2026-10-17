@@ -1,0 +1,10 @@
+{
+  "postgres": "postgres (PostgreSQL) 17.6 (Homebrew)",
+  "command": [
+    "go",
+    "test",
+    "-race",
+    "./internal/store"
+  ],
+  "exitCode": 0
+}

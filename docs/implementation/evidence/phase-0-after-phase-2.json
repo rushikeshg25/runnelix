@@ -1,0 +1,144 @@
+{
+  "timestampUtc": "2026-10-17T18:25:48.660180+00:00",
+  "scope": "development Temporal SQLite; not production PostgreSQL",
+  "versions": {
+    "temporal": "temporal version 1.9.1 (Server 1.32.0, UI 2.54.1)",
+    "go": "go version go1.26.0 darwin/arm64",
+    "node": "v24.2.0",
+    "typescriptSdk": "1.24.0"
+  },
+  "sourceSha256": {
+    "internal/mockprovider/server.go": "b548b4f59a2688aa9dd6b7237358b750d873b05ccaf5f99d4b44512f988e5510",
+    "internal/mockprovider/server_test.go": "d67fe6fdf1a180b5fe583eb1cea3c7c0934e2157909e47b510b8f66d4bd9fcf6",
+    "internal/mapping/mapping_test.go": "48fc7f1689aeeecdad4661a123963a147cc5665c16a148ebcb44017cd6ebb205",
+    "internal/mapping/mapping.go": "075f532044c28f67cf0153e62614cf648a46f96c5952249cdc8f55c0bc8f3b17",
+    "internal/nodeservice/egress_test.go": "b4a433943092c41a6788bd54364190a07551599c4af0d8db1453007ceb489d89",
+    "internal/nodeservice/egress.go": "ca6b909933f9abccb6eba6958566c457ea677ab37300b67bae990aca7937ac3c",
+    "internal/nodeservice/service.go": "abf8c8a4ee6fafc00214204229ac3869efb9e2ade12855a166d6dcad07375736",
+    "internal/secrets/secrets.go": "d80433b9907e0f5a3a3608106e7aaa2038dd1ff3018ae0a1c56ad01dac3707e1",
+    "internal/secrets/secrets_test.go": "14702a480e55568a53b3e0608783ae48b183c45d72a25cdf04d45f36410e9b8c",
+    "internal/dispatch/dispatch_test.go": "da9c8e9681bdf850ec433530a1cd64aa566e81868ac1603e762d0dcfae2881ff",
+    "internal/dispatch/dispatch.go": "64e2baf6bb9d31aba248fdab86f3db2bfd130888f65a6669752fb59f781a87d7",
+    "internal/definition/catalog.go": "f370e5092092816a165b69d3743c845ec90dc4be2e989ffb5f50773fc74ac003",
+    "internal/definition/catalog_test.go": "5849b9b474e39f2044d55be40125ce399ba5c502929c8a9afe9724691988b482",
+    "internal/definition/definition_test.go": "4dd88a1ac84e08c44971626fa5d48b3c1dfc80238e8552da552207a2e0bb5193",
+    "internal/definition/definition.go": "b1cfd1b5346429e0df3961e76dfc97a94b13de7340d483e5ef55b92716b7b734",
+    "internal/api/execution.go": "3d011bc92e6552e427a1bf63f8b6b0f77c46b8ef807bfc13c1e5a9bb422b32e1",
+    "internal/api/execution_test.go": "0637a0b3331ec208bbf3108482b2c452321e4eeeb9def1899b551b81b1a3ac89",
+    "internal/api/api.go": "9ed8c6e14292c1a946626e4ada983565bd4407d367a83ea67936bf212303adff",
+    "internal/api/api_test.go": "d6bc6ce3efa921160b4142ff8e0fa73d726f71c9a58b7bfc46cfacb3b1a22e89",
+    "internal/spike/contract_test.go": "0301ff40d4d1c8cdb7f4682fa13b5886e7a1333727f08554d80d0c82e1d936fd",
+    "internal/spike/workflow_test.go": "b54bf843e027b203a5fd196e0aae3746ebda8b1fa111533230e8636f7329a971",
+    "internal/spike/contract.go": "d15af9c710fb9891489c8f88a874eec2e99068a1d7284d3553d36d70e0ada0ce",
+    "internal/spike/workflow.go": "7cb83a7be9aa7eda20826924ed432b9616810be15ff78a66896871e4eafdc71b",
+    "internal/engine/engine_test.go": "b4cc8091ecafd986e8a2c1c31aa0397a7652659a36c0e8c05b4a1b851bc66a28",
+    "internal/engine/engine.go": "123f704c73bbcd868f5db4bb9a6acbde6cd43454c5d476e748a1ce407d894c79",
+    "internal/store/dispatch_test.go": "191847bc68eac59ad83804ff4339f900a8094122c9502f4b214fb6bfb20f0898",
+    "internal/store/credentials.go": "ae3e5ab8440c02b9d20e1b30772044668e6c94c046b1b8cc6d7932728be97ae2",
+    "internal/store/execution.go": "d4f2c0b8b35397eaef984921a5772a6aae916a3a2aef89d6508429c040c0c585",
+    "internal/store/store_test.go": "73e4e22b412e1433a68b26ed15ac6e02098dd993be4c2eb8d6d3627e2bd8c962",
+    "internal/store/admission_test.go": "28385b6e464fc02954b92e0a9fb838b8711c8444786ebf593293d13b050d446e",
+    "internal/store/store.go": "013edb9317e6fc068b5927e61d41ae72c3ecebca8adc1ecec7e88e778ac0111a",
+    "internal/store/dispatch.go": "bf22f7c86a1741e52faaaa1b6e70c357d7cd173db89a1f7823e02e503c035dfd",
+    "internal/store/workflows.go": "33f2c2fc63c5504571aed390e8884e86439113ad9457ec1634106c3415ec3291",
+    "internal/store/execution_test.go": "e5c41ddb496b1e0a3013574c67c7cfe4e1d8f3c96320b093b01c8276fe0074ed",
+    "internal/store/inspection.go": "f990f83b910b116559b0f9057bc762bf17cf63289a4d9fd708e114abbe3cee96",
+    "internal/store/credentials_test.go": "f10f8a1fb8d96590407137f9eb1249e37a6074fc27c600ca59900cbf2f1390a9",
+    "internal/store/workflows_test.go": "79a85a4ed3e658973399ba5ea2b6fff7918e27e08830bbe819eeadc7da39fa01",
+    "internal/store/admission.go": "3ab52b2ffae69e9d8b368c34619b22a69743b718398d5a991e56b6214e92dd60",
+    "cmd/mock-provider/main.go": "b5f355c0acc6973fa5fa068025d45109548bdda297c51e4366d50784da5c928f",
+    "cmd/spike/main.go": "10389b3c0e9f7c49e8e5fb634851d8557d9be71c381a890154e5222a3b5e8d86",
+    "cmd/runnelix/main.go": "d8160259f3e5f0f2eff9815e0fe2abc7c9f75faa09a63893ebe59cac6b86afcb",
+    "node-worker/contract.ts": "178fe11ceb4dad7ef40789d69229ae5cd3d9ec46a2adac92011dbcc3a94904e2",
+    "node-worker/main.ts": "4e389ef2b244815d242e63b79e38248440e90d5226c86bf24188b3f914549af6",
+    "node-worker/product-host.ts": "e9ceab19a2c44a18b25f89c01b9116558c271ea4e510fb00b5b141e594481d38",
+    "node-worker/product-host.test.ts": "898b385978f560dbe3081a8f33c7912c39a97cf435f50e51274e0dd82f78c223",
+    "node-worker/activity.test.ts": "c0996d4765d9d7c79dc92172ef9a45f2cb3bac7c2c57cf79240e8748ecf8db91",
+    "node-worker/activity.ts": "64d463f691baf040848982f499855a15a10b328fab371ac23056148008c5885d",
+    "node-worker/product-activity.test.ts": "e3ceb7f06261df515fb82b771d1947d5390e4391755ff42f7b14e7d223f8afeb",
+    "node-worker/contract.test.ts": "98b7891dffe76ad63fa7ce7ca084322052c5e5d4b85f94aee4399642112a178d",
+    "node-worker/product-activity.ts": "44120d02d963a9a3d84b48c8ae6f7dbd94b34e04059a0b812722c48cdd60377e",
+    "node-worker/product-main.ts": "c942421585deccb2ceb87f164795590b016e29ecf21c9414ecd7c404a4e316e6",
+    "contracts/spike/request.schema.json": "4389c363a10c363e28161266ad0299f590fa9d0a4041326b5a1e90c3524e6aed",
+    "contracts/spike/fixtures.json": "ec363681c521c7903009ccbdd29f775ccef8fc27e19e111f325e9315c6cbd673",
+    "tests/integration/phase0.py": "3b5e0a1a4d8560680ff3dcf5c7dc34da41956eda31ab656d9d6330eed0173248",
+    "go.mod": "557a1137a2ce66e1424b2ea933fea105022d00c7130fe1c6fd1c00d870fd1ada",
+    "go.sum": "f972b1784170cf097706dd47845964f122eb25087c0fb1b0dd0b05667c4d3e31",
+    "package.json": "5f55052d311a891a612794b32cc33d6e1e7ea2d3695a89a347ff431cd4b1cc67",
+    "pnpm-lock.yaml": "dfedb12f8c99ade0eb0b06f3674bca48f59e9e5133614877123dc6beb4f71182"
+  },
+  "results": [
+    {
+      "name": "cross-language roundtrip",
+      "status": "passed",
+      "seconds": 1.244,
+      "detail": "Unicode, null, nested arrays, and large integer strings survived Go \u2192 TS \u2192 Go."
+    },
+    {
+      "name": "safe transient retry",
+      "status": "passed",
+      "seconds": 1.074,
+      "detail": "A pre-commit 503 retried once and created one action."
+    },
+    {
+      "name": "safe post-commit response loss",
+      "status": "passed",
+      "seconds": 1.061,
+      "detail": "Provider committed before losing the response; retry returned the original action."
+    },
+    {
+      "name": "unsafe post-commit response loss",
+      "status": "passed",
+      "seconds": 0.05,
+      "detail": "One remote effect, one request, and an explicit uncertain result."
+    },
+    {
+      "name": "worker restart across durable wait",
+      "status": "passed",
+      "seconds": 8.126,
+      "detail": "Both worker processes died; persisted timer resumed and produced one action."
+    },
+    {
+      "name": "worker crash after safe write",
+      "status": "passed",
+      "seconds": 1.809,
+      "detail": "Killed worker after provider commit; safe policy retained one external effect."
+    },
+    {
+      "name": "worker crash after unsafe write",
+      "status": "passed",
+      "seconds": 1.032,
+      "detail": "Killed worker after provider commit; unsafe policy retained one external effect."
+    },
+    {
+      "name": "cancellation during wait",
+      "status": "passed",
+      "seconds": 0.055,
+      "detail": "Cancellation during wait sent no provider request."
+    },
+    {
+      "name": "cancellation during activity",
+      "status": "passed",
+      "seconds": 0.394,
+      "detail": "Cancellation stopped execution; it did not undo an already committed effect."
+    },
+    {
+      "name": "development server crash recovery",
+      "status": "passed",
+      "seconds": 5.067,
+      "detail": "Killed Temporal; SQLite-backed state resumed on the same database."
+    },
+    {
+      "name": "version-specific workflow and action routing",
+      "status": "passed",
+      "seconds": 4.426,
+      "detail": "Application-level v1/v2 queues isolate both workflow and action versions; old compatible workers are still required."
+    },
+    {
+      "name": "cold development-state restore with live external state",
+      "status": "passed",
+      "seconds": 6.785,
+      "detail": "Restored an earlier SQLite snapshot into a separate directory; the live provider deduplicated the replayed safe action. Not a PostgreSQL or unsafe-write restore guarantee."
+    }
+  ]
+}
