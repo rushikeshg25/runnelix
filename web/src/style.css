@@ -114,6 +114,7 @@ button:disabled {
   min-height: calc(100vh - 110px);
 }
 .sidebar {
+  min-width: 0;
   background: #fff;
   border-right: 1px solid #dce3e9;
   padding: 30px 23px;
@@ -390,7 +391,7 @@ footer {
     font-size: 10px;
   }
   .layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .sidebar {
     padding: 20px;

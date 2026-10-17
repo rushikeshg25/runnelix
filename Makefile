@@ -53,3 +53,9 @@ integration-phase2: build-phase2
 
 dev: build-phase2
 	python3 scripts/dev.py
+
+.PHONY: integration-phase3
+integration-phase3: build-phase2
+	python3 scripts/build-compat-v2.py
+	python3 tests/integration/postgres.py go test -race ./internal/store
+	python3 tests/integration/phase3.py

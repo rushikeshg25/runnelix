@@ -1,3 +1,4 @@
+import { ResolutionForm } from "./ResolutionForm";
 import { useEffect, useRef, useState } from "react";
 import {
   request,
@@ -46,6 +47,9 @@ export function RunInspector({
         const a = await request<Attempt[]>(`${root}/runs/${runId}/attempts`);
         if (active) {
           setRun(r);
+          setRuns((previous) =>
+            previous.map((value) => (value.runId === r.runId ? r : value)),
+          );
           setAttempts(a);
         }
       } catch {
@@ -110,6 +114,12 @@ export function RunInspector({
       setBusy(false);
     }
   }
+  const latestInvocations = new Map<string, RunEvent>();
+  for (const event of events)
+    if (event.invocationId) latestInvocations.set(event.invocationId, event);
+  const uncertain = [...latestInvocations.values()].filter(
+    (e) => e.nodeState === "uncertain",
+  );
   return (
     <section className="panel inspector">
       <div className="panel-title">
@@ -202,6 +212,14 @@ export function RunInspector({
               you check the provider record.
             </p>
           )}
+          {run.state === "needs_attention" &&
+            uncertain.map((e) => (
+              <ResolutionForm
+                key={`${runId}/${e.invocationId}`}
+                runId={runId}
+                invocationId={e.invocationId!}
+              />
+            ))}
           <div className="inspection-columns">
             <div>
               <h4>Execution timeline</h4>
@@ -213,6 +231,11 @@ export function RunInspector({
                       <strong>
                         {e.nodeId ?? "Run"} · {e.nodeState ?? e.state}
                       </strong>
+                      {e.invocationId && (
+                        <small>
+                          <code>{e.invocationId}</code>
+                        </small>
+                      )}
                       {e.errorCode && <small>{e.errorCode}</small>}
                       {e.outputRef && (
                         <button

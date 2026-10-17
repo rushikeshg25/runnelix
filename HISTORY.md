@@ -269,3 +269,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **What:** eight live cases passed with isolated PostgreSQL, Temporal, and fixture providers. Checks cover bounded Map, engine-crash wait recovery, immutable operator reconciliation, offline-engine projection repair, schedules, actual DST calendar matching, retained V2 workers, and concurrent admission.
 - **Why:** unit tests alone cannot prove behavior across process crashes or runtime/database boundaries. A bounded dispatcher batch removes the one-start-per-tick bottleneck while yielding to reconciliation on each tick.
 - **Evidence:** [generated report](docs/implementation/evidence/phase-3-full.json), [harness](tests/integration/phase3.py), [V2 fixture builder](scripts/build-compat-v2.py). Thirty single-action runs completed in 2.390 seconds (12.554 runs/second) with ten HTTP clients. This is local smoke-load evidence, not production capacity acceptance.
+
+## 2026-10-18 — expose Phase 3 controls in the editor
+
+- **What:** added JSON object configuration, defaults for merge/wait/Map, schedule creation and enable/pause controls, and permanent operator decisions with invocation identities. Added Phase 3 OpenAPI routes and a CI job that builds the pinned V2 compatibility fixture from full Git history.
+- **Why:** authors need the same supported contracts in the editor and API. Invalid JSON remains in the draft so publication cannot silently use an older valid value. Schedules start paused so creation does not immediately start actions.
+- **Evidence:** [schema editor](web/src/SchemaForm.tsx), [schedule editor](web/src/Schedules.tsx), [resolution form](web/src/ResolutionForm.tsx), [CI](.github/workflows/phase3.yml). Browser verification is recorded with the completed phase evidence.
+- **Browser findings:** permanent confirmation resumed a real local uncertain run to success. Fixed mobile grid overflow with three saved workflows and a restart preflight that mistook TCP TIME_WAIT for a listening service. Updated run-picker states during inspection.

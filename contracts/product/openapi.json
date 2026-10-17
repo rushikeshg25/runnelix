@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Runnelix development API",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Local development API. Literal loopback Host required; browser Origin must equal configured RUNNELIX_BROWSER_ORIGIN. Workspace paths scope data but are not user authentication. The runs POST route remains admission-only; execute POST runs the pinned graph. Requests <=256 KiB; run inputs and node payloads <=8 KiB. Lists have a stable ID cursor and 50-row pages. Credentials are write-only and encrypted; metadata includes destination and grants are explicit."
   },
   "servers": [
@@ -2316,6 +2316,318 @@
           }
         }
       }
+    },
+    "/v1/workspaces/{workspace}/schedules": {
+      "get": {
+        "operationId": "listSchedules",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Schedule"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request rejected or unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createSchedule",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Schedule"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request rejected or unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "workflowId": {
+                    "type": "string"
+                  },
+                  "spec": {
+                    "$ref": "#/components/schemas/ScheduleSpec"
+                  }
+                },
+                "required": [
+                  "workflowId",
+                  "spec"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspace}/schedules/{schedule}": {
+      "put": {
+        "operationId": "updateSchedule",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "schedule",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Quoted expected revision"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Schedule"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request rejected or unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "workflowId": {
+                    "type": "string"
+                  },
+                  "spec": {
+                    "$ref": "#/components/schemas/ScheduleSpec"
+                  }
+                },
+                "required": [
+                  "workflowId",
+                  "spec"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspace}/runs/{run}/invocations/{invocation}/resolve": {
+      "post": {
+        "operationId": "resolveUncertainInvocation",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "run",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invocation",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resolution"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request rejected or unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "action": {
+                    "enum": [
+                      "confirm",
+                      "fail"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
+                  "output": {
+                    "description": "Schema-valid verified output for confirm; null or absent for fail."
+                  }
+                },
+                "required": [
+                  "action",
+                  "note"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspace}/required-artifacts": {
+      "get": {
+        "operationId": "listRequiredArtifacts",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "digest": {
+                        "type": "string"
+                      },
+                      "versions": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "digest",
+                      "versions"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request rejected or unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2551,6 +2863,118 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "ScheduleSpec": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "interval",
+              "daily"
+            ]
+          },
+          "intervalSeconds": {
+            "type": "integer"
+          },
+          "hour": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 23
+          },
+          "minute": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 59
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "input": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "kind",
+          "intervalSeconds",
+          "hour",
+          "minute",
+          "timezone",
+          "enabled",
+          "input"
+        ],
+        "description": "Interval requires 60\u201386400 seconds and UTC. Daily uses IANA timezone. Skip overlap; one-minute catch-up; repeated daily wall time deduplicated."
+      },
+      "Schedule": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "workflowId": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "observedRevision": {
+            "type": "integer"
+          },
+          "spec": {
+            "$ref": "#/components/schemas/ScheduleSpec"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "id",
+          "workflowId",
+          "revision",
+          "observedRevision",
+          "spec"
+        ]
+      },
+      "Resolution": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string"
+          },
+          "invocationId": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "outputRef": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "runId",
+          "invocationId",
+          "action",
+          "outputRef",
+          "actor",
+          "note"
         ]
       }
     }

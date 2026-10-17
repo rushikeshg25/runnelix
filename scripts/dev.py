@@ -50,6 +50,7 @@ def main():
         settings_path.write_text(json.dumps(settings)+'\n');os.chmod(settings_path,0o600)
     for port in [5173,7233,8787,8788,settings['postgresPort']]:
         with socket.socket() as sock:
+            sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
             try:sock.bind(('127.0.0.1',port))
             except OSError:raise RuntimeError(f'Loopback port {port} is occupied; existing service was left untouched')
     env={**os.environ,'RUNNELIX_DATABASE_URL':f'postgresql://runnelix_dev@127.0.0.1:{settings["postgresPort"]}/postgres?sslmode=disable',

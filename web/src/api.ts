@@ -54,6 +54,7 @@ export interface RunEvent {
   state: string;
   nodeId?: string;
   nodeState?: string;
+  invocationId?: string;
   outputRef?: string;
   errorCode?: string;
   recordedAt: string;

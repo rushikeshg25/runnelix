@@ -1,3 +1,4 @@
+import { JsonField } from "./JsonField";
 import type { Descriptor, GraphNode } from "./api";
 export function SchemaForm({
   descriptor,
@@ -30,7 +31,13 @@ export function SchemaForm({
           <label key={name}>
             {schema.title ?? name}
             {required ? " *" : " (optional)"}
-            {schema.enum ? (
+            {schema.type === "object" ? (
+              <JsonField
+                key={`${node.id}/${name}`}
+                value={value}
+                change={(value) => change({ ...node.config, [name]: value })}
+              />
+            ) : schema.enum ? (
               <select
                 value={String(value ?? "")}
                 onChange={(e) => update(e.target.value)}
@@ -40,7 +47,7 @@ export function SchemaForm({
                   <option key={v}>{v}</option>
                 ))}
               </select>
-            ) : name === "expression" ? (
+            ) : name.toLowerCase().endsWith("expression") ? (
               <textarea
                 spellCheck={false}
                 rows={4}
@@ -73,7 +80,7 @@ export function SchemaForm({
                 The host must be approved by your local administrator.
               </small>
             )}
-            {name === "expression" && (
+            {name.toLowerCase().endsWith("expression") && (
               <small>
                 CEL expression. Read the previous node’s value as{" "}
                 <code>input</code>.

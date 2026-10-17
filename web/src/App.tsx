@@ -11,6 +11,7 @@ import {
 import { SchemaForm } from "./SchemaForm";
 import { Canvas } from "./Canvas";
 import { RunInspector } from "./RunInspector";
+import { Schedules } from "./Schedules";
 import { MappingPreview } from "./MappingPreview";
 export default function App() {
   const [catalog, setCatalog] = useState<Descriptor[]>([]);
@@ -95,9 +96,21 @@ export default function App() {
     const d = catalog.find((n) => n.type === addType);
     if (!d) return;
     const id = `node_${crypto.randomUUID().replaceAll("-", "").slice(0, 10)}`;
-    const config = d.configSchema.properties?.expression
+    const config: Record<string, unknown> = d.configSchema.properties
+      ?.expression
       ? { expression: d.type === "control.condition" ? "true" : "input" }
       : {};
+    if (d.type === "control.merge") Object.assign(config, { policy: "named" });
+    if (d.type === "control.wait") Object.assign(config, { seconds: 60 });
+    if (d.type === "control.map")
+      Object.assign(config, {
+        collectionExpression: "input.items",
+        bodyType: "mock.echo",
+        bodyVersion: 1,
+        bodyConfig: {},
+        maxItems: 100,
+        concurrency: 4,
+      });
     setGraph({
       ...graph,
       nodes: [...graph.nodes, { id, type: d.type, version: d.version, config }],
@@ -364,6 +377,7 @@ export default function App() {
                   )}
                 </div>
               </section>
+              <Schedules key={`schedules-${current.id}`} workflow={current} />
               <RunInspector
                 key={`inspector-${current.id}`}
                 workflow={current}

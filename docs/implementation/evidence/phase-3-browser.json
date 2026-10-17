@@ -1,0 +1,26 @@
+{
+  "timestampUtc": "2026-10-17T18:56:37.664437+00:00",
+  "scope": "Native T3 browser against owned local services; fixture data only. Not teammate acceptance.",
+  "viewports": [
+    {
+      "width": 1440,
+      "scrollWidth": 1440
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390
+    }
+  ],
+  "passed": [
+    "Invalid Map body JSON remains visible and publication rejects it",
+    "Corrected Map body JSON publishes; two-item Map completes with distinct invocation IDs",
+    "Create paused schedule, enable, pause; final persisted revision synchronized",
+    "Permanent operator confirmation through browser resumes local unsafe-provider fixture without another run",
+    "Mobile layout with three saved workflows fits 390px after grid fix"
+  ],
+  "limitations": [
+    "Browser checks were interactive, not a persisted automation suite",
+    "Historical connection-refused console entries came from the stopped local server; corrected selectors were needed for several automation interactions",
+    "Provider calls were local fixtures only"
+  ]
+}
