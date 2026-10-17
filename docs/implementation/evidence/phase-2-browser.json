@@ -1,0 +1,47 @@
+{
+  "timestampUtc": "2026-10-17T18:24:45.407971+00:00",
+  "tool": "T3 collaborative browser",
+  "scope": "Local fixture-data browser session; not independent teammate acceptance",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "horizontalOverflow": false
+    }
+  ],
+  "checks": [
+    "Create workflow through form",
+    "Publish initial version",
+    "Execute published manual-to-echo graph",
+    "Observe succeeded state and five persisted events",
+    "Inspect immutable version 1 after draft edits",
+    "Remove/reconnect through native selects",
+    "Tab to Connect and activate with Enter",
+    "Unconnected node produces useful validation error",
+    "Restore connected graph and validate",
+    "Fresh reload after React key fix has one canvas and one inspector with no new console errors"
+  ],
+  "sourceSha256": {
+    "web/index.html": "dc04332f31009c3c8c42ed4a381dae824147b7ebe454f160fa4cd4ce8370f77e",
+    "web/package.json": "693a763b640acf810dda1da0f2a4ca4b75b984d4ab84bcfcad8d9aee021d2faa",
+    "web/src/App.tsx": "4fa2f44445947f06b519af8d0928e26ef3d7d2f090b923a0161be212f2bf5014",
+    "web/src/Canvas.tsx": "4cccc17d3630e3cc98e22189886e5b18e890589d95fd88c791abcfe9e88482a9",
+    "web/src/MappingPreview.tsx": "a7fc98ccdd52546aa642e32dbb738277e1c669f563a09131f7614c0133e9e4e5",
+    "web/src/RunInspector.tsx": "23f70c00b33bd59a338da9351d19f12e2577242a7d7f39ac4e826daa66db12b0",
+    "web/src/SchemaForm.tsx": "0dd8b988424cc77e2a40eee7dd11a2c1bb55e3318e5d5874d972605bb8757b8b",
+    "web/src/api.ts": "0f4d67ef5f67f02f1e1794765992224b090e3c11ba5504fa83c1e75ec5a0be87",
+    "web/src/main.tsx": "66b13a05278f63bed198dea75bb54b40da58be51ddd3b04e412d91ce464e6555",
+    "web/src/style.css": "9df59837ffe7a67041742b200f469598b08cfea986118fb8614562c83b8c3143",
+    "web/tsconfig.json": "ca5e8a5921aed78276520c24d7894b9bc06c8f7260a4eac7032b6b0d5ae1ce56",
+    "web/vite.config.ts": "bcfde95d9ff687a34797f8731b56319a0b10052e78dc6a0f038d0066c785f36c"
+  },
+  "fixes": [
+    "Unique sibling keys for canvas and inspector",
+    "Adopt canonical saved graph so JSONB key ordering does not retain dirty state"
+  ]
+}

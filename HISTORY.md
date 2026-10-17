@@ -201,3 +201,16 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Observed:** branch/skip execution produced the expected mapped output; GET retried once after 429; unsafe POST paused after one call; pre-dispatch cancellation made no provider call; credential echoes were redacted; signed delivery deduplicated; SSE resumed; engine SIGKILL recovered a queued node.
 - **Fix:** the first run exposed JSON whole-number arithmetic failing in CEL. A focused regression failed before recursive numeric normalization and passed afterward. The full live run then passed with unchanged sources and clean process shutdown.
 - **Evidence:** [live report](docs/implementation/evidence/phase-2-full.json), [harness](tests/integration/phase2.py), [numeric regression](internal/mapping/mapping_test.go). No real provider records were created.
+
+## 2026-10-17 — local startup and browser verification
+
+- **What:** added an owned local launcher with persistent development data, loopback bindings, retained encryption keys, process cleanup, port preflight, and a single-owner lock. Added Phase 2 CI and reproducible editor formatting.
+- **Observed:** browser creation, publication, execution, pinned inspection, connection controls, keyboard focus/activation, and desktop/narrow layouts work. A duplicate React key caused sibling identity warnings during the first browser check; unique component keys fixed it. A fresh reload showed one canvas and one inspector with no new console errors.
+- **Evidence:** [launcher](scripts/dev.py), [CI](.github/workflows/phase2.yml), [browser record](docs/implementation/evidence/phase-2-browser.json). Existing system PostgreSQL was not stopped or modified. Local state survived a launcher shutdown/restart.
+- **Boundary:** browser checks used fixture data. Independent teammate acceptance remains pending.
+
+## 2026-10-17 — saved graph normalization fix
+
+- **Observed:** after editing a connection, the API saved the draft but validation stayed disabled. PostgreSQL JSONB reordered object keys, while the editor compared serialized graphs and retained the pre-save representation.
+- **Fix:** replace the local graph with the canonical saved graph returned by the API. Browser verification now shows Draft saved after save; an unconnected node produces the expected field error, and removing it restores successful validation. The old run still displays published draft revision 1 after draft revision 5.
+- **Evidence:** [save handler](web/src/App.tsx), [updated browser record](docs/implementation/evidence/phase-2-browser.json).

@@ -6,7 +6,8 @@ import json
 from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 paths = ['contracts/product/catalog.source.json', 'contracts/product/activity.schema.json',
-         'node-worker/product-host.ts', 'package.json', 'pnpm-lock.yaml']
+         'package.json', 'pnpm-lock.yaml']
+paths += [str(p.relative_to(root)) for p in sorted((root / 'node-worker').glob('product*.ts')) if not p.name.endswith('.test.ts')]
 paths += [str(p.relative_to(root)) for p in sorted((root / 'node-worker/nodes').glob('*.ts')) if not p.name.endswith('.test.ts')]
 hash_state = hashlib.sha256()
 for name in sorted(paths):

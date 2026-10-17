@@ -13,23 +13,25 @@
     "test": "node --test dist/node-worker/*.test.js",
     "dev:web": "vite web",
     "build:web": "tsc -p web && vite build web",
-    "check:web": "tsc -p web"
+    "check:web": "tsc -p web && prettier --check web",
+    "format:web": "prettier --write web"
   },
   "dependencies": {
     "@temporalio/activity": "1.24.0",
     "@temporalio/common": "1.24.0",
     "@temporalio/worker": "1.24.0",
-    "@xyflow/react": "^12.12.0",
+    "@xyflow/react": "12.12.0",
     "ajv": "8.17.1",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@types/node": "24.19.2",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "prettier": "3.9.10",
     "typescript": "5.9.3",
-    "vite": "^8.3.4"
+    "vite": "8.3.4"
   }
 }
