@@ -63,7 +63,7 @@ def main():
         h.record('Projection outage recovers with engine offline',projection)
         def schedule():
             w=h.workflow([node('wait','control.wait',seconds=8),node('echo','mock.echo')],[edge('start','wait'),edge('wait','echo')]);h.publish(w)
-            spec={'kind':'interval','intervalSeconds':60,'hour':0,'minute':0,'timezone':'UTC','enabled':True,'input':{'scheduled':True}}
+            spec={'kind':'interval','intervalSeconds':86400,'hour':0,'minute':0,'timezone':'UTC','enabled':True,'input':{'scheduled':True}}
             schedule=h.request('POST','/v1/workspaces/workspace_a/schedules',{'workflowId':w['id'],'spec':spec})
             wait_until(lambda:any(s['id']==schedule['id'] and s['observedRevision']==1 for s in h.request('GET','/v1/workspaces/workspace_a/schedules')),'schedule sync')
             runtime='runnelix-schedule-workspace_a-'+schedule['id']
@@ -71,7 +71,11 @@ def main():
             trigger()
             wait_until(lambda:h.sql(f"SELECT count(*) FROM schedule_occurrences WHERE schedule_id='{schedule['id']}' AND outcome='accepted'")=='1','actual schedule occurrence',20)
             runid=h.sql(f"SELECT run_id FROM schedule_occurrences WHERE schedule_id='{schedule['id']}' AND outcome='accepted'")
-            r={'runId':runid};h.finished(r,'waiting');trigger()
+            r={'runId':runid};h.finished(r,'waiting')
+            # TemporalScheduledStartTime has second precision. Use a distinct occurrence.
+            first_second=int(time.time())
+            wait_until(lambda:int(time.time())>first_second,'distinct scheduled second',3)
+            trigger()
             wait_until(lambda:h.sql(f"SELECT count(*) FROM schedule_occurrences WHERE schedule_id='{schedule['id']}' AND outcome='overlap'")=='1','main-run overlap skip',20)
             h.finished(r);spec['enabled']=False;h.request('PUT',f'/v1/workspaces/workspace_a/schedules/{schedule["id"]}',{'workflowId':w['id'],'spec':spec},{'If-Match':'"1"'})
             wait_until(lambda:any(s['id']==schedule['id'] and s['observedRevision']==2 for s in h.request('GET','/v1/workspaces/workspace_a/schedules')),'schedule disable sync')

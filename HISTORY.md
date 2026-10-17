@@ -276,3 +276,9 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** authors need the same supported contracts in the editor and API. Invalid JSON remains in the draft so publication cannot silently use an older valid value. Schedules start paused so creation does not immediately start actions.
 - **Evidence:** [schema editor](web/src/SchemaForm.tsx), [schedule editor](web/src/Schedules.tsx), [resolution form](web/src/ResolutionForm.tsx), [CI](.github/workflows/phase3.yml). Browser verification is recorded with the completed phase evidence.
 - **Browser findings:** permanent confirmation resumed a real local uncertain run to success. Fixed mobile grid overflow with three saved workflows and a restart preflight that mistook TCP TIME_WAIT for a listening service. Updated run-picker states during inspection.
+
+## 2026-10-18 — distinguish schedule duplicates from overlapping occurrences
+
+- **What:** a repeat of the live suite exposed two manual triggers within the same Temporal scheduled second. The database correctly stored one occurrence; the test expected two distinct occurrences.
+- **Why:** duplicate delivery and overlap are separate contracts. The overlap fixture now crosses a second boundary before its second trigger and avoids automatic minute ticks during the test.
+- **Evidence:** failed evidence remains at `artifacts/phase1/20261017T185721Z-5a4f94`; retained PostgreSQL and Temporal recentActions confirmed the shared second identity. The test still requires one accepted run and one overlap outcome.
