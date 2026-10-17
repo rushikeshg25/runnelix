@@ -77,3 +77,13 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Evidence:** [full report with versions and source hashes](docs/implementation/evidence/phase-0-full.json), [harness](tests/integration/phase0.py).
 - **Limits:** application-level versioned queues, not Temporal deployment-version APIs; SQLite cold backup, not production PostgreSQL PITR or unsafe-write reconciliation.
 - **Prior milestone:** crash/cancellation commit `2f2f063`.
+
+## 2026-10-17 — Phase 0 development proof completed
+
+- **What:** completed the ninth implementation slice: CI configuration, reproducible setup instructions, a commit ledger, and a runtime decision. Updated the HTML proposal to link current implementation evidence.
+- **Why:** future phases need a repeatable check and a precise boundary between observed behavior and production promises.
+- **Decision:** continue development with Temporal. Technical feasibility passed for this narrow spike; production topology, PostgreSQL recovery, operating budget, capacity, and ownership remain open. This explicitly refines the original all-or-nothing Phase 0 gate.
+- **Evidence:** [ADR 0001](docs/decisions/0001-temporal-development-runtime.md), [phase record](docs/implementation/phase-0.md), [CI workflow](.github/workflows/phase0.yml), and [full integration report](docs/implementation/evidence/phase-0-full.json).
+- **Verification:** `make test check` passed: Go race tests, all 21 TypeScript tests, Go vet, type checks, and whitespace checks. All 20 source hashes still match the twelve-case integration report. Checked 98 local document links/anchors. Desktop and narrow HTML previews rendered without console errors.
+- **Limits:** implementation commits are local; hosted CI has not run. Phase 1 has not started. This is not a production release.
+- **Prior milestone:** version/restore commit `bf513cf`.

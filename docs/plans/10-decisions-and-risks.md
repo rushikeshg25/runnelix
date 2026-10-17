@@ -10,7 +10,7 @@
 | D-02 | Confirmed | Go backend; TypeScript interface and node workers. | Requires explicit cross-language contracts. |
 | D-03 | Confirmed | Extensibility means internal node modules shipped with the application. | No public plugin loader or uploaded executable code. |
 | D-04 | Selected for this repository | Product name Runnelix; “Small steps. Reliable flows.” | Limited exact-name checks found no matches; domain/trademark clearance is not established. |
-| D-05 | Proposed, gated by A-01 | Temporal supplies durable runtime mechanisms. | PostgreSQL runner is the fallback only after an explicit scope/runtime decision. |
+| D-05 | Accepted for continued development; production gate open | Temporal supplies durable runtime mechanisms. [ADR 0001](../decisions/0001-temporal-development-runtime.md) records Phase 0 evidence and limits. | PostgreSQL runner is the fallback only after an explicit scope/runtime decision. |
 | D-06 | Proposed | Go owns graph/control semantics; TypeScript owns provider actions. | Adding an action stays local; adding a control construct requires engine design. |
 | D-07 | Proposed | Immutable publication and pinned execution versions. | Keep compatible code available for active and still-runnable published versions. |
 | D-08 | Proposed | Transactional admission plus an outbox. | Two persistence systems require start receipts and reconciliation. |

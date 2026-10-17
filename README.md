@@ -2,11 +2,26 @@
 
 **Small steps. Reliable flows.**
 
-Runnelix is a planned, self-hosted workflow platform for internal teams. It connects triggers, data transformations, decisions, and service actions in a visual workflow.
+Runnelix is a self-hosted workflow platform under development for internal teams. The planned product connects triggers, data transformations, decisions, and service actions in a visual workflow.
 
 The design uses a **Go backend**, a **TypeScript interface and node workers**, and an internal node architecture that developers can extend. Adding an ordinary integration action should not require changes to the execution engine or canvas.
 
-> **Project status: planning.** This repository contains the product and engineering plan. It does not contain a working workflow engine, application, or production deployment. Proposed reliability and capacity targets have not been demonstrated.
+> **Project status: Phase 0 development proof.** A Go workflow now executes a TypeScript activity against a durable mock provider. Twelve live integration cases cover retries, crashes, cancellation, version routing, and a development-state restore. The product DAG engine, UI, credentials, and production deployment are not implemented. Production capacity and recovery targets remain unverified.
+
+## Run the development proof
+
+Prerequisites: Go with automatic toolchain downloads enabled, Node 24, pnpm 11.5.0, Python 3, curl, and make. Supported CLI download targets: macOS/Linux on ARM64 or AMD64. Docker is not required for this development proof.
+
+```sh
+make tools
+make deps
+make test check
+make integration
+```
+
+`make tools` downloads a checksum-pinned Temporal CLI into this checkout. `make integration` builds the programs, starts isolated loopback services, runs the twelve cases, and stops its own processes. It preserves fake provider/runtime state and reports under `artifacts/phase0/` for inspection.
+
+Read the [setup and limitations](docs/implementation/phase-0.md), [implementation status](docs/implementation/README.md), [history](HISTORY.md), and [runtime decision](docs/decisions/0001-temporal-development-runtime.md).
 
 ## Read the plan
 
@@ -24,9 +39,9 @@ For a visual introduction, download [the standalone HTML overview](docs/plans/pr
 
 “Extensible nodes” means modules developed and shipped with Runnelix. A plugin marketplace and user-uploaded executable code are outside the first release.
 
-## The first engineering task
+## Next engineering phase
 
-Prove a Go orchestration worker can execute a TypeScript action, survive a worker restart, wait durably, and resume on a compatible deployment. [Phase 0](docs/plans/08-delivery-plan.md#phase-0-prove-the-runtime-boundary) defines the exit checks. Temporal is the proposed runtime, subject to that result and the operating budget.
+[Phase 1](docs/plans/08-delivery-plan.md#phase-1-contracts-and-persistence) adds the product workflow contracts, PostgreSQL persistence, validation, immutable publication, and durable admission/outbox. The Phase 0 evidence supports continued development with Temporal; production operations approval remains open.
 
 ## About the name
 

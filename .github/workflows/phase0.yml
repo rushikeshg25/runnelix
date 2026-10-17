@@ -1,0 +1,41 @@
+name: Phase 0 runtime proof
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.0
+      - name: Install pinned dependencies
+        run: make deps
+      - name: Install checksum-pinned Temporal CLI
+        run: make tools
+      - name: Static and unit checks
+        run: make test check
+      - name: Real runtime failure tests
+        run: make integration
+      - name: Preserve development-only evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase0-runtime-evidence
+          path: artifacts/phase0/
+          if-no-files-found: ignore
+          retention-days: 7
