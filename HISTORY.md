@@ -114,3 +114,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **What:** implemented optimistic draft revisions and immutable, validated publication with pinned plans.
 - **Why:** concurrent editors must see conflicts, and later edits must not alter published execution definitions.
 - **Evidence:** [store methods](internal/store/workflows.go), [PostgreSQL tests](internal/store/workflows_test.go). Race-enabled database tests passed, including direct SQL immutability and cross-workspace FK rejection.
+
+## 2026-10-17 — atomic run admission
+
+- **What:** implemented durable manual admission, canonical input fingerprints, stable run IDs, and atomic inbox/outbox writes.
+- **Why:** a successful acceptance response must survive dispatcher downtime without creating duplicate intended runs.
+- **Evidence:** [admission tests](internal/store/admission_test.go). Twelve concurrent duplicate requests returned the same run; a forced final-insert failure left no partial run or receipt. Race-enabled PostgreSQL tests passed.
+- **Boundary:** keys have no automatic expiry yet; input is bounded fake development data. Retention, quotas, and authenticated triggers remain later phases.
