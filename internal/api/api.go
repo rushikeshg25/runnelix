@@ -61,6 +61,9 @@ func (a API) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/workspaces/{workspace}/runs/{run}/events", a.events)
 	mux.HandleFunc("GET /v1/workspaces/{workspace}/runs/{run}/payloads/{ref}", a.payload)
 	mux.HandleFunc("POST /v1/mapping-preview", a.preview)
+	mux.HandleFunc("GET /v1/workspaces/{workspace}/schedules", a.schedules)
+	mux.HandleFunc("POST /v1/workspaces/{workspace}/schedules", a.saveSchedule)
+	mux.HandleFunc("PUT /v1/workspaces/{workspace}/schedules/{schedule}", a.saveSchedule)
 	mux.HandleFunc("GET /v1/workspaces/{workspace}/credentials", a.credentials)
 	mux.HandleFunc("POST /v1/workspaces/{workspace}/credentials", a.createCredential)
 	mux.HandleFunc("PUT /v1/workspaces/{workspace}/credentials/{credential}/grants/{workflow}", a.grant)
@@ -95,6 +98,8 @@ func fail(w http.ResponseWriter, r *http.Request, err error) {
 	var issues []definition.Issue
 	var invalid *definition.Invalid
 	switch {
+	case errors.Is(err, store.ErrOverlap):
+		status, code, msg = 409, "workflow_active", "Scheduled workflow already has an active run"
 	case errors.Is(err, store.ErrLimit):
 		status, code, msg = 429, "limit_exceeded", "Workspace or run limit reached"
 	case errors.As(err, &invalid):

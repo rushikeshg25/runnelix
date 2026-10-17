@@ -19,6 +19,7 @@ import (
 	"github.com/rushikeshg25/runnelix/internal/dispatch"
 	"github.com/rushikeshg25/runnelix/internal/engine"
 	"github.com/rushikeshg25/runnelix/internal/nodeservice"
+	"github.com/rushikeshg25/runnelix/internal/scheduling"
 	"github.com/rushikeshg25/runnelix/internal/secrets"
 	"github.com/rushikeshg25/runnelix/internal/store"
 	"go.temporal.io/sdk/activity"
@@ -134,6 +135,13 @@ func run() error {
 				return errors.New("version 3 engine failed to start")
 			}
 			defer v3.Stop()
+			schedules := worker.New(c, scheduling.Queue, worker.Options{})
+			schedules.RegisterWorkflowWithOptions(scheduling.Admission, workflow.RegisterOptions{Name: scheduling.WorkflowName})
+			schedules.RegisterActivityWithOptions(scheduling.Activity(s), activity.RegisterOptions{Name: "AdmitScheduleOccurrence"})
+			if err = schedules.Start(); err != nil {
+				return errors.New("schedule admission worker failed to start")
+			}
+			defer schedules.Stop()
 			<-ctx.Done()
 			return nil
 		}
@@ -155,6 +163,9 @@ func run() error {
 			case <-ctx.Done():
 				return nil
 			case <-ticker.C:
+				if err := scheduling.Reconcile(ctx, s, c); err != nil && ctx.Err() == nil {
+					log.Print("schedule reconciliation incomplete; retained for retry")
+				}
 				if err := dispatch.ReconcileResolutions(ctx, s, c); err != nil && ctx.Err() == nil {
 					log.Print("resolution delivery incomplete; retained for retry")
 				}

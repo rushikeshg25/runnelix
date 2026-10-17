@@ -248,3 +248,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** per-process counters cannot enforce limits across replicas or concurrent Map items. Existing references and invocations must remain idempotent without consuming budget twice.
 - **Decisions:** use PostgreSQL row locks and transactional counters. Provider admission allows 10 requests/second per workspace/host and 5 per workspace/credential, with no burst. A rejected unsafe request fails before send; it is not reported as an uncertain provider effect.
 - **Evidence:** [limit tests](internal/store/limits_test.go), [provider gates](internal/store/limits.go). Concurrent checks verify exact invocation capacity, payload deduplication, shared request admission, and refill.
+
+## 2026-10-18 — Temporal-owned schedules and transactional overlap protection
+
+- **What:** added versioned daily/interval schedules, desired/observed synchronization, a Temporal admission wrapper, and immutable occurrence records. The active run itself acts as the durable workflow slot.
+- **Why:** the scheduling wrapper can finish while the product run is still active. Admission must enforce no overlap under the same database locks as manual starts.
+- **Policy:** daily schedules use an IANA timezone; nonexistent local times are skipped by Temporal, repeated daily wall times share one occurrence key. Interval schedules use UTC and a minimum 60-second interval. Overlap is skipped, catch-up is limited to Temporal's one-minute window, and no pending-occurrence coalescing is claimed.
+- **Evidence:** [schedule store tests](internal/store/schedules_test.go), [runtime adapter](internal/scheduling/scheduling.go). Tests cover repeated DST-hour identity, active-run exclusion, terminal release, disabled/stale revisions, and desired/observed replay. Actual schedule delivery is verified in the live Phase 3 suite.

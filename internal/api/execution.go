@@ -225,3 +225,37 @@ func (a API) resolve(w http.ResponseWriter, r *http.Request) {
 	}
 	respond(w, 202, result)
 }
+
+func (a API) schedules(w http.ResponseWriter, r *http.Request) {
+	result, err := a.Store.Schedules(r.Context(), r.PathValue("workspace"))
+	if err != nil {
+		fail(w, r, err)
+		return
+	}
+	respond(w, 200, result)
+}
+func (a API) saveSchedule(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		WorkflowID string             `json:"workflowId"`
+		Spec       store.ScheduleSpec `json:"spec"`
+	}
+	if err := body(w, r, &req); err != nil {
+		fail(w, r, err)
+		return
+	}
+	var rev int64
+	var err error
+	if r.Method == "PUT" {
+		rev, err = revision(r)
+		if err != nil {
+			fail(w, r, err)
+			return
+		}
+	}
+	result, err := a.Store.SaveSchedule(r.Context(), store.Schedule{WorkspaceID: r.PathValue("workspace"), ID: r.PathValue("schedule"), WorkflowID: req.WorkflowID, Spec: req.Spec}, rev)
+	if err != nil {
+		fail(w, r, err)
+		return
+	}
+	respond(w, 200, result)
+}

@@ -59,6 +59,14 @@ func (s *Store) admit(ctx context.Context, workspace, workflow, key string, inpu
 		return Run{}, err
 	}
 	defer tx.Rollback(ctx)
+	run, err := s.admitTx(ctx, tx, workspace, workflow, key, canonical, fingerprint, mode, source)
+	if err != nil {
+		return Run{}, err
+	}
+	return run, tx.Commit(ctx)
+}
+func (s *Store) admitTx(ctx context.Context, tx pgx.Tx, workspace, workflow, key string, canonical []byte, fingerprint, mode, source string) (Run, error) {
+	var err error
 	var workspaceLock string
 	if err = tx.QueryRow(ctx, "SELECT id FROM workspaces WHERE id=$1 FOR UPDATE", workspace).Scan(&workspaceLock); err != nil {
 		return Run{}, notFound(err)
@@ -80,10 +88,25 @@ func (s *Store) admit(ctx context.Context, workspace, workflow, key string, inpu
 		if run.ExecutionMode != mode {
 			return Run{}, ErrConflict
 		}
-		return run, tx.Commit(ctx)
+		return run, nil
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return Run{}, err
+	}
+	var scheduledWorkflow bool
+	if mode == "execute" {
+		if err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM schedules WHERE workspace_id=$1 AND workflow_id=$2)", workspace, workflow).Scan(&scheduledWorkflow); err != nil {
+			return Run{}, err
+		}
+	}
+	if mode == "execute" && (source == "schedule" || scheduledWorkflow) {
+		var activeCount int
+		if err := tx.QueryRow(ctx, "SELECT count(*) FROM runs WHERE workspace_id=$1 AND workflow_id=$2 AND execution_mode='execute' AND state NOT IN ('succeeded','failed','cancelled')", workspace, workflow).Scan(&activeCount); err != nil {
+			return Run{}, err
+		}
+		if activeCount > 0 {
+			return Run{}, ErrOverlap
+		}
 	}
 	if mode == "execute" {
 		var count int
@@ -123,7 +146,7 @@ func (s *Store) admit(ctx context.Context, workspace, workflow, key string, inpu
 	if err != nil {
 		return Run{}, err
 	}
-	return run, tx.Commit(ctx)
+	return run, nil
 }
 func getRun(ctx context.Context, q querier, workspace, id string) (Run, error) {
 	var run Run
