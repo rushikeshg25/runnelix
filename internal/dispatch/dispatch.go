@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/rushikeshg25/runnelix/internal/engine"
 	"github.com/rushikeshg25/runnelix/internal/store"
 	enumspb "go.temporal.io/api/enums/v1"
 	"go.temporal.io/api/serviceerror"
@@ -25,7 +26,11 @@ type Starter interface {
 type TemporalStarter struct{ Client client.Client }
 
 func (t TemporalStarter) Start(ctx context.Context, r store.StartRequest) error {
-	_, err := t.Client.ExecuteWorkflow(ctx, client.StartWorkflowOptions{ID: store.RuntimeID(r.RunID), TaskQueue: Queue, WorkflowIDReusePolicy: enumspb.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE, WorkflowIDConflictPolicy: enumspb.WORKFLOW_ID_CONFLICT_POLICY_USE_EXISTING, WorkflowExecutionTimeout: 24 * time.Hour}, WorkflowName, r)
+	name, queue := WorkflowName, Queue
+	if r.ExecutionMode == "execute" {
+		name, queue = engine.WorkflowName, engine.Queue
+	}
+	_, err := t.Client.ExecuteWorkflow(ctx, client.StartWorkflowOptions{ID: store.RuntimeIDFor(r), TaskQueue: queue, WorkflowIDReusePolicy: enumspb.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE, WorkflowIDConflictPolicy: enumspb.WORKFLOW_ID_CONFLICT_POLICY_USE_EXISTING, WorkflowExecutionTimeout: 24 * time.Hour}, name, r)
 	var duplicate *serviceerror.WorkflowExecutionAlreadyStarted
 	if errors.As(err, &duplicate) {
 		return nil
@@ -82,4 +87,21 @@ func Receipt(s *store.Store) func(context.Context, store.StartRequest) error {
 		}
 		return nil
 	}
+}
+
+// ReconcileCancellation repeats cancellation intent until a terminal projection is durable.
+func ReconcileCancellation(ctx context.Context, s *store.Store, c client.Client) error {
+	pending, err := s.PendingCancellations(ctx)
+	if err != nil {
+		return err
+	}
+	for _, r := range pending {
+		if err = c.CancelWorkflow(ctx, store.RuntimeIDFor(r), ""); err != nil {
+			var absent *serviceerror.NotFound
+			if !errors.As(err, &absent) {
+				return err
+			}
+		}
+	}
+	return nil
 }

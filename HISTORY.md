@@ -174,3 +174,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** node modules need scoped input, output recording, and approved network calls without database credentials or plaintext provider secrets.
 - **Decisions:** GET may retry; POST is unsafe and cannot retry automatically. Requests must match the published URL and node method. DNS results are checked before dialing; redirects and proxy environment settings are disabled. Decoded credential echoes are redacted before storage.
 - **Evidence:** [egress tests](internal/nodeservice/egress_test.go), [credential tests](internal/store/credentials_test.go), [worker tests](node-worker/product-activity.test.ts). Focused Go tests and isolated PostgreSQL race tests passed. Full runtime wiring follows in the next slice.
+
+## 2026-10-17 — execution and inspection API
+
+- **What:** routed explicit execution runs to the graph engine; retained the receipt-only workflow. Added runtime commands, bounded list pages, event streaming, payload/attempt inspection, credential metadata/grants, and mapping preview.
+- **Why:** the editor needs a complete author-to-inspection path, while cancellation and webhook delivery must survive lost responses.
+- **Decisions:** persist cancellation intent before the dispatcher calls Temporal. Repeat cancellation until a terminal projection exists. Sign timestamp, delivery key, and raw webhook body; reject old/future signatures and isolate webhook deduplication from manual requests. EventSource reconnects from persisted sequence IDs.
+- **Evidence:** [API implementation](internal/api/execution.go), [signature tests](internal/api/execution_test.go), [trigger-source tests](internal/store/execution_test.go), [OpenAPI](contracts/product/openapi.json). OpenAPI validation passed; live runtime checks follow in slice 7.

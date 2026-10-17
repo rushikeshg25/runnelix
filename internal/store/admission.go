@@ -28,12 +28,12 @@ type Run struct {
 }
 
 func (s *Store) Admit(ctx context.Context, workspace, workflow, key string, input []byte) (Run, error) {
-	return s.admit(ctx, workspace, workflow, key, input, "admission")
+	return s.admit(ctx, workspace, workflow, key, input, "admission", "manual")
 }
 func (s *Store) AdmitExecution(ctx context.Context, workspace, workflow, key string, input []byte) (Run, error) {
-	return s.admit(ctx, workspace, workflow, key, input, "execute")
+	return s.admit(ctx, workspace, workflow, key, input, "execute", "manual")
 }
-func (s *Store) admit(ctx context.Context, workspace, workflow, key string, input []byte, mode string) (Run, error) {
+func (s *Store) admit(ctx context.Context, workspace, workflow, key string, input []byte, mode, source string) (Run, error) {
 	if !validID(key) {
 		return Run{}, ErrInvalid
 	}
@@ -64,7 +64,7 @@ func (s *Store) admit(ctx context.Context, workspace, workflow, key string, inpu
 		return Run{}, notFound(err)
 	}
 	var existing, stored string
-	err = tx.QueryRow(ctx, "SELECT run_id,fingerprint FROM trigger_inbox WHERE workspace_id=$1 AND workflow_id=$2 AND source='manual' AND trigger_key=$3", workspace, workflow, key).Scan(&existing, &stored)
+	err = tx.QueryRow(ctx, "SELECT run_id,fingerprint FROM trigger_inbox WHERE workspace_id=$1 AND workflow_id=$2 AND source=$4 AND trigger_key=$3", workspace, workflow, key, source).Scan(&existing, &stored)
 	if err == nil {
 		if stored != fingerprint {
 			return Run{}, ErrConflict
@@ -100,7 +100,7 @@ func (s *Store) admit(ctx context.Context, workspace, workflow, key string, inpu
 	if _, err = tx.Exec(ctx, "INSERT INTO runs(workspace_id,id,workflow_id,version_id,input,execution_mode) VALUES($1,$2,$3,$4,$5,$6)", workspace, id, workflow, *active, canonical, mode); err != nil {
 		return Run{}, err
 	}
-	if _, err = tx.Exec(ctx, "INSERT INTO trigger_inbox(workspace_id,workflow_id,source,trigger_key,fingerprint,run_id) VALUES($1,$2,'manual',$3,$4,$5)", workspace, workflow, key, fingerprint, id); err != nil {
+	if _, err = tx.Exec(ctx, "INSERT INTO trigger_inbox(workspace_id,workflow_id,source,trigger_key,fingerprint,run_id) VALUES($1,$2,$6,$3,$4,$5)", workspace, workflow, key, fingerprint, id, source); err != nil {
 		return Run{}, err
 	}
 	if _, err = tx.Exec(ctx, "INSERT INTO start_outbox(workspace_id,run_id) VALUES($1,$2)", workspace, id); err != nil {
@@ -123,4 +123,8 @@ func getRun(ctx context.Context, q querier, workspace, id string) (Run, error) {
 }
 func (s *Store) GetRun(ctx context.Context, workspace, id string) (Run, error) {
 	return getRun(ctx, s.Pool, workspace, id)
+}
+
+func (s *Store) AdmitWebhook(ctx context.Context, workspace, workflow, key string, input []byte) (Run, error) {
+	return s.admit(ctx, workspace, workflow, key, input, "execute", "webhook")
 }

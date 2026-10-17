@@ -11,11 +11,15 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/rushikeshg25/runnelix/internal/api"
 	"github.com/rushikeshg25/runnelix/internal/dispatch"
+	"github.com/rushikeshg25/runnelix/internal/engine"
+	"github.com/rushikeshg25/runnelix/internal/nodeservice"
+	"github.com/rushikeshg25/runnelix/internal/secrets"
 	"github.com/rushikeshg25/runnelix/internal/store"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/client"
@@ -31,7 +35,7 @@ func main() {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return errors.New("usage: runnelix migrate|bootstrap|api|worker|dispatcher")
+		return errors.New("usage: runnelix migrate|bootstrap|api|node-service|worker|engine|dispatcher")
 	}
 	flags := flag.NewFlagSet(os.Args[1], flag.ContinueOnError)
 	address := flags.String("address", "127.0.0.1:8787", "development API loopback address")
@@ -66,12 +70,32 @@ func run() error {
 		}
 		fmt.Println("development workspace ready")
 		return nil
-	case "api":
+	case "api", "node-service":
 		host, _, err := net.SplitHostPort(*address)
 		if err != nil || net.ParseIP(host) == nil || !net.ParseIP(host).IsLoopback() {
 			return errors.New("development API requires a literal loopback address")
 		}
-		srv := &http.Server{Addr: *address, Handler: api.API{Store: s}.Handler(), ReadHeaderTimeout: 3 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16384}
+		var box *secrets.Box
+		if key := os.Getenv("RUNNELIX_CREDENTIAL_KEY"); key != "" {
+			box, err = secrets.New(key, "local-v1")
+			if err != nil {
+				return errors.New("invalid credential key")
+			}
+		}
+		handler := api.API{Store: s, Box: box, BrowserOrigin: os.Getenv("RUNNELIX_BROWSER_ORIGIN")}.Handler()
+		if os.Args[1] == "node-service" {
+			hosts := map[string]bool{}
+			for _, host := range strings.Split(os.Getenv("RUNNELIX_EGRESS_HOSTS"), ",") {
+				if host != "" {
+					hosts[strings.ToLower(strings.TrimSpace(host))] = true
+				}
+			}
+			handler, err = (nodeservice.Service{Store: s, Token: os.Getenv("RUNNELIX_WORKER_TOKEN"), Box: box, Egress: nodeservice.Egress{Hosts: hosts, AllowLoopback: os.Getenv("RUNNELIX_DEV_LOOPBACK_EGRESS") == "1"}}).Handler()
+			if err != nil {
+				return err
+			}
+		}
+		srv := &http.Server{Addr: *address, Handler: handler, ReadHeaderTimeout: 3 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16384}
 		done := make(chan struct{})
 		go func() {
 			select {
@@ -89,12 +113,23 @@ func run() error {
 			return nil
 		}
 		return errors.New("API listener stopped unexpectedly")
-	case "worker", "dispatcher":
+	case "worker", "engine", "dispatcher":
 		c, err := client.DialContext(ctx, client.Options{HostPort: *temporalAddress})
 		if err != nil {
 			return errors.New("Temporal connection unavailable")
 		}
 		defer c.Close()
+		if os.Args[1] == "engine" {
+			w := worker.New(c, engine.Queue, worker.Options{})
+			w.RegisterWorkflowWithOptions(engine.Execute, workflow.RegisterOptions{Name: engine.WorkflowName})
+			w.RegisterActivity(&engine.Activities{Store: s})
+			if err = w.Start(); err != nil {
+				return errors.New("engine worker failed to start")
+			}
+			defer w.Stop()
+			<-ctx.Done()
+			return nil
+		}
 		if os.Args[1] == "worker" {
 			w := worker.New(c, dispatch.Queue, worker.Options{})
 			w.RegisterWorkflowWithOptions(dispatch.Admit, workflow.RegisterOptions{Name: dispatch.WorkflowName})
@@ -113,6 +148,9 @@ func run() error {
 			case <-ctx.Done():
 				return nil
 			case <-ticker.C:
+				if err := dispatch.ReconcileCancellation(ctx, s, c); err != nil && ctx.Err() == nil {
+					log.Print("cancellation reconciliation incomplete; retained for retry")
+				}
 				_, err := dispatch.Once(ctx, s, dispatch.TemporalStarter{Client: c})
 				if err != nil && ctx.Err() == nil {
 					log.Print("dispatch attempt incomplete; retained for retry")

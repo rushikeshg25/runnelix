@@ -14,10 +14,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rushikeshg25/runnelix/internal/definition"
+	"github.com/rushikeshg25/runnelix/internal/secrets"
 	"github.com/rushikeshg25/runnelix/internal/store"
 )
 
-type API struct{ Store *store.Store }
+type API struct {
+	Store         *store.Store
+	Box           *secrets.Box
+	BrowserOrigin string
+}
 type requestKey struct{}
 type Error struct {
 	Code      string             `json:"code"`
@@ -46,13 +51,26 @@ func (a API) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/workspaces/{workspace}/workflows/{workflow}/versions/{version}", a.version)
 	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows/{workflow}/runs", a.admit)
 	mux.HandleFunc("GET /v1/workspaces/{workspace}/runs/{run}", a.run)
+
+	mux.HandleFunc("GET /v1/workspaces/{workspace}/workflows", a.list)
+	mux.HandleFunc("GET /v1/workspaces/{workspace}/workflows/{workflow}/runs", a.runs)
+	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows/{workflow}/execute", a.execute)
+	mux.HandleFunc("POST /v1/workspaces/{workspace}/runs/{run}/cancel", a.cancel)
+	mux.HandleFunc("GET /v1/workspaces/{workspace}/runs/{run}/attempts", a.attempts)
+	mux.HandleFunc("GET /v1/workspaces/{workspace}/runs/{run}/events", a.events)
+	mux.HandleFunc("GET /v1/workspaces/{workspace}/runs/{run}/payloads/{ref}", a.payload)
+	mux.HandleFunc("POST /v1/mapping-preview", a.preview)
+	mux.HandleFunc("GET /v1/workspaces/{workspace}/credentials", a.credentials)
+	mux.HandleFunc("POST /v1/workspaces/{workspace}/credentials", a.createCredential)
+	mux.HandleFunc("PUT /v1/workspaces/{workspace}/credentials/{credential}/grants/{workflow}", a.grant)
+	mux.HandleFunc("POST /v1/workspaces/{workspace}/webhooks/{workflow}/{credential}", a.webhook)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := "request_" + uuid.NewString()
 		w.Header().Set("X-Request-ID", id)
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		// Browser origins are not trusted by this unauthenticated development process.
-		if r.Header.Get("Origin") != "" {
+		if r.Header.Get("Origin") != "" && r.Header.Get("Origin") != a.BrowserOrigin {
 			respond(w, 403, Error{"origin_forbidden", "Browser origin is not allowed", id, nil})
 			return
 		}

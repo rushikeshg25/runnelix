@@ -125,3 +125,27 @@ func TestEventsMonotonicAndCancellation(t *testing.T) {
 		t.Fatal("empty events")
 	}
 }
+
+func TestWebhookSourceIsolation(t *testing.T) {
+	s := database(t)
+	ctx := context.Background()
+	ws, w, _ := published(t, s)
+	manual, err := s.AdmitExecution(ctx, ws, w.ID, "event_one", []byte(`{}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	hook, err := s.AdmitWebhook(ctx, ws, w.ID, "event_one", []byte(`{}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if manual.ID == hook.ID {
+		t.Fatal("trigger sources collided")
+	}
+	duplicate, err := s.AdmitWebhook(ctx, ws, w.ID, "event_one", []byte(`{}`))
+	if err != nil || duplicate.ID != hook.ID {
+		t.Fatal("webhook not deduplicated", err)
+	}
+	if _, err = s.AdmitWebhook(ctx, ws, w.ID, "event_one", []byte(`{"changed":true}`)); !errors.Is(err, ErrConflict) {
+		t.Fatal("changed signed delivery accepted")
+	}
+}
