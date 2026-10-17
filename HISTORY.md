@@ -51,3 +51,11 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Why:** provider-specific work belongs outside replayed Go workflow code; raw network errors must not leak into execution history.
 - **Evidence:** [activity tests](node-worker/activity.test.ts), [worker](node-worker/main.ts). All 21 TypeScript tests pass; cross-process runtime checks follow.
 - **Prior milestone:** Go orchestration commit `b9fa212`.
+
+## 2026-10-17 — real-runtime test harness
+
+- **What:** added an integration harness that starts isolated Temporal/provider/Go/TypeScript processes, preserves per-run artifacts, and stops only its own process groups.
+- **Why:** unit tests do not prove cross-language transport or remote-effect behavior. The baseline cases assert payload round trips, safe retries, and unsafe uncertainty against a durable provider ledger.
+- **Evidence:** [harness](tests/integration/phase0.py). `make build` and Python compilation passed. Live execution is pending the development-server download at this milestone.
+- **Blocker:** the CLI release download was slow; its partial archive was preserved and the remaining ranges were downloaded concurrently. Full-archive SHA-256 verification is required before execution.
+- **Prior milestone:** TypeScript worker commit `b857451`.

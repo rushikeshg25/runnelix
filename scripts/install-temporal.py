@@ -26,7 +26,7 @@ def main():
     name = f"temporal_cli_{VERSION}_{system}_{arch}.tar.gz"
     with tempfile.TemporaryDirectory(prefix="runnelix-cli-") as temp:
         archive = pathlib.Path(temp) / name
-        subprocess.run(["curl", "--fail", "--silent", "--show-error", "--location",
+        subprocess.run(["curl", "--fail", "--silent", "--show-error", "--location", "--connect-timeout", "20", "--max-time", "1800",
                         f"https://github.com/temporalio/cli/releases/download/v{VERSION}/{name}",
                         "--output", str(archive)], check=True)
         if hashlib.sha256(archive.read_bytes()).hexdigest() != expected:
