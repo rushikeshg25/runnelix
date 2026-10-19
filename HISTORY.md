@@ -295,3 +295,9 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **What:** moved HTTP request authorization from provider-name switches into trusted catalog descriptors. Policies pin method, fixed URL or a generic URL field, escaped path fields, fixed headers, and required credential presence.
 - **Why:** new provider actions need the same network boundary without changes to the interpreter or ordinary editor. Workflow authors cannot set authorization headers or replace a fixed provider host.
 - **Evidence:** [policy tests](internal/definition/http_policy_test.go), [network boundary tests](internal/nodeservice/egress_test.go), [Phase 4 plan](docs/implementation/phase-4.md). Generic HTTP remains compatible; the existing worker envelope is unchanged.
+
+## 2026-10-19 — GitHub issue action through the built-in node path
+
+- **What:** added `github.createIssue@1`, narrow config/input/output schemas, fixed request metadata, and adapter fixtures. The worker returns only the issue ID, number, and URL.
+- **Why:** the first integration proves that an ordinary action can use existing execution and editor contracts. Creating an issue is an unsafe write; missing responses must not trigger automatic resends.
+- **Evidence:** [adapter fixtures](node-worker/product-integrations.test.ts), [author instructions](docs/nodes/github-create-issue.md). All 39 TypeScript checks and Go catalog checks passed. No real issue was created.

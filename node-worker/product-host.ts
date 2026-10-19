@@ -1,3 +1,5 @@
+import { NodeFailure } from './product-errors.js';
+export { NodeFailure } from './product-errors.js';
 import { readFileSync } from 'node:fs';
 import { Ajv } from 'ajv';
 import { modules, type Capabilities } from './nodes/index.js';
@@ -13,9 +15,6 @@ const ajv = new Ajv({ strict: false });
 const validateEnvelope = ajv.compile(JSON.parse(readFileSync(new URL('activity.schema.json', contractRoot), 'utf8')));
 const catalog: Descriptor[] = JSON.parse(readFileSync(new URL('catalog.json', contractRoot), 'utf8'));
 
-export class NodeFailure extends Error {
-  constructor(public readonly code: 'InvalidInput' | 'VersionMismatch' | 'PayloadUnavailable' | 'InvalidOutput', message: string) { super(message); }
-}
 export function parseEnvelope(value: unknown): Envelope {
   if (!bounded(value) || !validateEnvelope(value)) throw new NodeFailure('InvalidInput', 'Invalid activity envelope');
   return value as Envelope;
