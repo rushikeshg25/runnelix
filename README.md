@@ -47,7 +47,7 @@ For a visual introduction, download [the standalone HTML overview](docs/plans/pr
 
 ## Next engineering phase
 
-Phase 5 adds locally testable identity, workspace permissions, audit records, retention, and operating procedures. See the [Phase 5 scope](docs/implementation/phase-5.md). Independent teammate acceptance of Phase 2 remains pending. The current installation target is local; production rollout and pilot approval remain open.
+Phase 5 has started with [OIDC identity verification](docs/implementation/phase-5-identity.md). OIDC mode currently exposes identity inspection only; workspace authorization and browser login remain pending. The remaining phase adds workspace permissions, audit records, retention, and operating procedures. See the [Phase 5 scope](docs/implementation/phase-5.md). Independent teammate acceptance of Phase 2 remains pending. The current installation target is local; production rollout and pilot approval remain open.
 
 ## About the name
 

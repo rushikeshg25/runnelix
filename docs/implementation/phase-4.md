@@ -40,3 +40,7 @@ Run `make test check`, `make integration-phase4`, and `make integration-phase2` 
 ## Acceptance limits
 
 Automated checks prove local extension and execution behavior. The N-01 gate still requires a different developer to add a node. Independent teammate acceptance, representative production load, real-provider permissions, production identity, public deployment, and a two-week pilot remain open. No real issue or Slack message was created, and no changes were pushed in this continuation.
+
+## Follow-up review
+
+The [follow-up review](phase-4-review.md) records five corrected issues across import state, strict JSON, file size, credential pagination, and narrow layouts. It includes fresh runtime and browser verification.
