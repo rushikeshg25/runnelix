@@ -347,3 +347,12 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Implementation:** store/retention commit `2c4e70e`, API/CLI commit `a0225b9`, and packaging/restore commit `60ecf7c`. [Completion evidence](docs/implementation/phase-5-completion.md) includes unit/static checks, signed PostgreSQL security tests, four live Phase 4 groups, eight Phase 3 groups, and browser expiry checks at desktop/narrow widths.
 - **Recovery evidence:** the final isolated backup took 0.407 seconds; restore through exact runtime-history comparison, durable-wait resumption, credential verification, and new execution took 17.861 seconds. These small fixture timings do not establish production RPO/RTO.
 - **Boundary:** migration 013 is required. The dependency update changes node bundle identities; retain matching old artifacts for unfinished work. Production hosting/provider selection, operational ownership, independent acceptance, representative load, redistribution licensing, and pilot approval remain open. No production deployment occurred.
+
+## 2026-10-30 — pre-pilot corrections and Phase 6 preparation
+
+- **What:** corrected elapsed-time retention around daylight-saving changes, backup interruption cleanup and SQLite URI escaping, and expired-run inspection. Replaced up to 51 run-list queries with one and reused maintained payload byte counters.
+- **Why:** remove confirmed correctness and operational defects before pilot use; reduce avoidable database work without changing API contracts.
+- **Evidence:** commits `3b79e8e`, `b952264`, `3ae9979`, and `2851728`; [follow-up review and regression evidence](docs/implementation/phase-5-followup-review.md).
+- **What:** added five portable training workflows, eight live execution cases, CI coverage, and participant/usage/incident/release templates. Updated the README and phase ledger.
+- **Evidence:** commits `c2c5d81` and `75d76ab`; [Phase 6 implementation](docs/implementation/phase-6.md), [live fixture report](docs/implementation/evidence/phase-6-fixtures.json), [pilot kit](docs/pilot/README.md).
+- **Limit:** local preparation is implemented. No real pilot participants, useful-workflow adoption, independent acceptance, or two-week usage have been recorded. These external gates remain open.
