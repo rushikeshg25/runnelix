@@ -56,6 +56,22 @@ export function RunInspector({
           setAttempts(a);
         }
       } catch (error) {
+        if (!active) return;
+        if (error instanceof APIError && error.status === 410) {
+          denied = true;
+          stream.close();
+          setRunId("");
+          setRun(null);
+          setVersion(null);
+          setEvents([]);
+          setAttempts([]);
+          setPayload(undefined);
+          setRuns((previous) =>
+            previous.filter((value) => value.runId !== runId),
+          );
+          setError("Run history expired under the retention policy.");
+          return;
+        }
         if (
           error instanceof APIError &&
           (error.status === 401 || error.status === 403)
