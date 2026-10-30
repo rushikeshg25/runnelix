@@ -39,6 +39,7 @@ func (a API) Handler() http.Handler {
 	handle := func(pattern string, permission store.Permission, handler http.HandlerFunc) {
 		mux.HandleFunc(pattern, a.authorize(permission, handler))
 	}
+	handle("GET /v1/workspaces/{workspace}/audit-records", store.Manage, a.auditRecords)
 	handle("GET /v1/workspaces/{workspace}/memberships", store.Manage, a.memberships)
 	handle("PUT /v1/workspaces/{workspace}/memberships", store.Manage, a.changeMembership)
 	handle("DELETE /v1/workspaces/{workspace}/memberships", store.Manage, a.changeMembership)
@@ -113,6 +114,11 @@ func (a API) Handler() http.Handler {
 		if !ok {
 			return
 		}
+		actor := "local-development"
+		if principal, ok := authenticated.Context().Value(principalKey{}).(identity.Principal); ok {
+			actor = store.PrincipalActor(principal)
+		}
+		authenticated = authenticated.WithContext(store.WithAuditContext(authenticated.Context(), actor, id))
 		mux.ServeHTTP(w, authenticated)
 	})
 }

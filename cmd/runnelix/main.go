@@ -70,7 +70,7 @@ func run() error {
 		fmt.Println("migrations applied")
 		return nil
 	case "provision-owner":
-		if err := s.ProvisionOwner(ctx, *workspaceID, identity.Principal{Issuer: *ownerIssuer, Subject: *ownerSubject}); err != nil {
+		if err := s.ProvisionOwner(store.WithAuditContext(ctx, "installation-operator", ""), *workspaceID, identity.Principal{Issuer: *ownerIssuer, Subject: *ownerSubject}); err != nil {
 			return fmt.Errorf("owner provisioning failed: %w", err)
 		}
 		fmt.Println("workspace owner provisioned")

@@ -224,9 +224,7 @@ func (a API) resolve(w http.ResponseWriter, r *http.Request) {
 	}
 	actor := "local-development-operator"
 	if principal, ok := r.Context().Value(principalKey{}).(identity.Principal); ok {
-		encoded, _ := json.Marshal(principal)
-		digest := sha256.Sum256(encoded)
-		actor = "oidc:" + hex.EncodeToString(digest[:])
+		actor = store.PrincipalActor(principal)
 	}
 	result, err := a.Store.ResolveUncertain(r.Context(), store.Resolution{WorkspaceID: r.PathValue("workspace"), RunID: r.PathValue("run"), InvocationID: r.PathValue("invocation"), Action: req.Action, Actor: actor, Note: req.Note}, req.Output)
 	if err != nil {

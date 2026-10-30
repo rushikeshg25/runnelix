@@ -52,6 +52,7 @@ func TestSignedWorkspacePermissions(t *testing.T) {
 		r.Header.Set("Content-Type", "application/json")
 		r.Header.Set("If-Match", `"1"`)
 		r.Header.Set("Idempotency-Key", "auth-fixture")
+		r.Header.Set("X-Request-ID", "forged-client-reference")
 		w := httptest.NewRecorder()
 		handler.ServeHTTP(w, r)
 		return w
@@ -69,7 +70,7 @@ func TestSignedWorkspacePermissions(t *testing.T) {
 	}
 	// Every registered workspace route is exercised with an identity lacking membership.
 	routes := []struct{ method, path string }{
-		{"GET", "/memberships"}, {"PUT", "/memberships"}, {"DELETE", "/memberships"},
+		{"GET", "/audit-records"}, {"GET", "/memberships"}, {"PUT", "/memberships"}, {"DELETE", "/memberships"},
 		{"GET", "/workflows"}, {"POST", "/workflows"}, {"POST", "/workflows/import"},
 		{"GET", "/workflows/w"}, {"GET", "/workflows/w/export"}, {"PUT", "/workflows/w/draft"},
 		{"POST", "/workflows/w/validate"}, {"POST", "/workflows/w/publish"}, {"GET", "/workflows/w/versions/v"},
@@ -102,6 +103,7 @@ func TestSignedWorkspacePermissions(t *testing.T) {
 		{"editor", "POST", "/workflows/w/execute", 403}, {"operator", "POST", "/workflows", 403},
 		{"operator", "POST", "/workflows/w/publish", 403}, {"operator", "POST", "/workflows/w/execute", 400},
 		{"operator", "GET", "/credentials", 403}, {"editor", "PUT", "/memberships", 403},
+		{"owner", "GET", "/audit-records", 200}, {"viewer", "GET", "/audit-records", 403}, {"editor", "GET", "/audit-records", 403}, {"operator", "GET", "/audit-records", 403},
 		{"owner", "GET", "/memberships", 200}, {"owner", "GET", "/credentials", 200},
 	} {
 		if w := call(tc.subject, tc.method, base+tc.path, "{}"); w.Code != tc.status {
@@ -116,6 +118,28 @@ func TestSignedWorkspacePermissions(t *testing.T) {
 	var workflow store.Workflow
 	if err = json.Unmarshal(created.Body.Bytes(), &workflow); err != nil {
 		t.Fatal(err)
+	}
+	audit := call("owner", "GET", base+"/audit-records", "")
+	var records []store.AuditRecord
+	if audit.Code != 200 || json.Unmarshal(audit.Body.Bytes(), &records) != nil {
+		t.Fatal("audit read failed")
+	}
+	found := false
+	for _, record := range records {
+		if record.Action == "workflow.created" && record.TargetID == workflow.ID {
+			found = true
+			if record.Actor != store.PrincipalActor(identity.Principal{Issuer: f.server.URL, Subject: "editor"}) || record.RequestID != created.Header().Get("X-Request-ID") || record.RequestID == "forged-client-reference" {
+				t.Fatal("audit attribution was not server-derived")
+			}
+		}
+	}
+	if !found {
+		t.Fatal("successful API write missing audit")
+	}
+	for _, cursor := range []string{"-1", "not-a-number", "9007199254740992"} {
+		if w := call("owner", "GET", base+"/audit-records?after="+cursor, ""); w.Code != 400 {
+			t.Fatal("invalid audit cursor accepted")
+		}
 	}
 	if w := call("editor", "POST", base+"/workflows/import", `{"bindings":{"slot":"credential"}}`); w.Code != 403 {
 		t.Fatalf("import grant bypass %d", w.Code)

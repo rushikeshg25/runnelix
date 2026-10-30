@@ -255,9 +255,27 @@ func TestBrowserLoginSessionsAndCSRF(t *testing.T) {
 	}
 	// A real cookie-authenticated event stream ends after logout.
 	graph := []byte(`{"formatVersion":1,"nodes":[{"id":"start","type":"trigger.manual","version":1,"config":{}},{"id":"echo","type":"mock.echo","version":1,"config":{}}],"edges":[{"from":{"node":"start","port":"out"},"to":{"node":"echo","port":"in"}}]}`)
-	workflow, e := s.CreateWorkflow(ctx, ws, "Session stream", graph)
+	rawWorkflow, _ := json.Marshal(map[string]any{"name": "Session stream", "graph": json.RawMessage(graph)})
+	req, _ = http.NewRequest("POST", origin+base+"/workflows", strings.NewReader(string(rawWorkflow)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Origin", origin)
+	req.Header.Set("X-CSRF-Token", csrf)
+	created, e := client.Do(req)
 	if e != nil {
 		t.Fatal(e)
+	}
+	var workflow store.Workflow
+	if created.StatusCode != 201 || json.NewDecoder(created.Body).Decode(&workflow) != nil {
+		created.Body.Close()
+		t.Fatal("cookie-authenticated workflow creation failed")
+	}
+	created.Body.Close()
+	records, e := s.AuditRecords(ctx, ws, 0)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if len(records) != 2 || records[1].Actor != store.PrincipalActor(owner) || records[1].RequestID != created.Header.Get("X-Request-ID") {
+		t.Fatal("cookie action lost audit identity")
 	}
 	if _, e = s.Publish(ctx, ws, workflow.ID, 1); e != nil {
 		t.Fatal(e)
