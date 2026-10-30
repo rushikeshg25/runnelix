@@ -1,6 +1,6 @@
 # Phase 5: local security and operations
 
-Status: started. The first identity-verification slice is implemented and locally tested; workspace permissions and browser login remain open. See [identity configuration and limits](phase-5-identity.md). The user selected a local installation. Public deployment, a production identity provider, and an operational owner remain unselected.
+Status: started. Identity verification and workspace permissions are implemented and locally tested; browser login remains open. See [workspace memberships](phase-5-memberships.md). See [identity configuration and limits](phase-5-identity.md). The user selected a local installation. Public deployment, a production identity provider, and an operational owner remain unselected.
 
 ## Implementation boundary
 

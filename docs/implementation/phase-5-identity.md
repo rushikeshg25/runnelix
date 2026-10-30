@@ -1,6 +1,6 @@
 # Phase 5 first slice: verified identity
 
-This is an identity foundation for the local installation. It does not enable production use, workspace permissions, or browser login.
+This is an identity foundation for the local installation. It does not enable production use or browser login. The subsequent [membership slice](phase-5-memberships.md) adds workspace permissions.
 
 ## Configuration
 
@@ -23,12 +23,12 @@ The response contains `mode: "oidc"` and a `principal` with only `issuer` and `s
 
 Without authentication, `/v1/identity` returns 401 with a safe error and `WWW-Authenticate`. Invalid-token details and token values do not appear in responses. In development mode it returns only `mode: "development"`, without claiming an authenticated user.
 
-## Closed authorization boundary
+## Workspace authorization boundary
 
-In OIDC mode, **all other application routes return 403 after authentication**, including catalog, workflow exports, payloads, events, credentials, and webhooks. `/health` remains a database readiness probe and reports the active mode. This restriction is deliberate: verified identity alone must not grant access to every workspace. Leave the existing local editor in development mode until workspace membership and browser session slices are implemented.
+OIDC mode now checks [workspace memberships and permissions](phase-5-memberships.md) after verifying identity. A valid token alone grants no workspace access. `/health` remains public; identity inspection, catalog, and mapping preview require authentication without membership. Keep the local editor in development mode until browser session handling is implemented.
 
-The next slice adds memberships and server-side role checks. Browser login, cookie/CSRF handling or an approved bearer-token deployment, authorization-code/PKCE flow, production provider selection, audit events, and operational rollout remain open. This endpoint is a local verifier probe, not a completed login/session protocol.
+Browser login, cookie/CSRF handling or an approved bearer-token deployment, authorization-code/PKCE flow, production provider selection, audit events, and operational rollout remain open. This endpoint is a local verifier probe, not a completed login/session protocol.
 
 ## Verification
 
-`go test -race ./internal/identity ./internal/api ./cmd/runnelix` runs a real loopback discovery/JWKS issuer with generated fixture RSA keys. Tests cover signature, issuer, audience, expiry, issued-at/not-before, authorized-party checks, unsafe discovery, bounded responses, missing/duplicate header authentication, and denied cross-workspace data and mutations. No external identity provider or real user account is used.
+`go test -race ./internal/identity ./internal/api ./cmd/runnelix` runs a real loopback discovery/JWKS issuer with generated fixture RSA keys. Tests cover signature, issuer, audience, expiry, issued-at/not-before, authorized-party checks, unsafe discovery, bounded responses, missing/duplicate header authentication, and safe authentication failures. `make integration-phase5` additionally tests signed workspace permissions against isolated PostgreSQL. No external identity provider or real user account is used.

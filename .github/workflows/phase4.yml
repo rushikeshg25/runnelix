@@ -41,6 +41,8 @@ jobs:
           .tools/openapi/bin/python -m openapi_spec_validator contracts/product/openapi.json
       - name: Isolated PostgreSQL and live runtime checks
         run: make integration-phase4
+      - name: Signed identity and workspace permission checks
+        run: make integration-phase5
       - name: Preserve fake-data evidence
         if: always()
         uses: actions/upload-artifact@v4

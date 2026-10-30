@@ -3,7 +3,7 @@
   "info": {
     "title": "Runnelix development API",
     "version": "0.5.0",
-    "description": "Local development API. Literal loopback Host required; browser Origin must equal configured RUNNELIX_BROWSER_ORIGIN. Workspace paths scope data but are not user authentication. The runs POST route remains admission-only; execute POST runs the pinned graph. Requests <=256 KiB; run inputs and node payloads <=8 KiB. Lists have a stable ID cursor and 50-row pages. Credentials are write-only and encrypted; metadata includes destination and grants are explicit. Optional oidc mode verifies identity tokens at GET /v1/identity and denies all other application routes until workspace authorization is implemented. Development mode remains loopback-only."
+    "description": "Local development API. Literal loopback Host required; browser Origin must equal configured RUNNELIX_BROWSER_ORIGIN. Workspace paths scope data but are not user authentication. The runs POST route remains admission-only; execute POST runs the pinned graph. Requests <=256 KiB; run inputs and node payloads <=8 KiB. Lists have a stable ID cursor and 50-row pages. Credentials are write-only and encrypted; metadata includes destination and grants are explicit. Optional oidc mode verifies identity tokens and enforces issuer/subject workspace memberships on every workspace route. Roles and explicit publish, execute, and dataRead grants govern access. See docs/implementation/phase-5-memberships.md. Development mode remains loopback-only."
   },
   "servers": [
     {
@@ -285,8 +285,24 @@
                 "description": "Server-generated support identifier"
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ]
       }
     },
     "/v1/workspaces/{workspace}/workflows": {
@@ -434,6 +450,16 @@
                 "description": "Server-generated support identifier"
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -460,7 +486,16 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Edit"
+        ]
       },
       "get": {
         "operationId": "listWorkflows",
@@ -494,8 +529,37 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Read"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/workflows/{workflow}": {
@@ -651,8 +715,27 @@
                 "description": "Server-generated support identifier"
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Read"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/workflows/{workflow}/draft": {
@@ -817,6 +900,16 @@
                 "description": "Server-generated support identifier"
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -837,7 +930,16 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Edit"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/workflows/{workflow}/validate": {
@@ -987,8 +1089,27 @@
                 "description": "Server-generated support identifier"
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Edit"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/workflows/{workflow}/publish": {
@@ -1147,8 +1268,27 @@
                 "description": "Server-generated support identifier"
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Publish"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/workflows/{workflow}/versions/{version}": {
@@ -1306,8 +1446,27 @@
                 "description": "Server-generated support identifier"
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Read"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/workflows/{workflow}/runs": {
@@ -1466,6 +1625,16 @@
                 "description": "Server-generated support identifier"
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -1486,7 +1655,16 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Execute"
+        ]
       },
       "get": {
         "operationId": "listRuns",
@@ -1528,8 +1706,37 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Read"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/runs/{run}": {
@@ -1679,8 +1886,27 @@
                 "description": "Server-generated support identifier"
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Read"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/workflows/{workflow}/execute": {
@@ -1839,6 +2065,16 @@
                 "description": "Server-generated support identifier"
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -1859,7 +2095,16 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Execute"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/runs/{run}/cancel": {
@@ -1893,8 +2138,37 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Execute"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/runs/{run}/attempts": {
@@ -1931,8 +2205,37 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "DataRead"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/runs/{run}/events": {
@@ -1990,8 +2293,37 @@
                 "example": "id: 1\ndata: {\"sequence\":1,\"state\":\"running\"}\n\n"
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "DataRead"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/runs/{run}/payloads/{ref}": {
@@ -2033,8 +2365,37 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "DataRead"
+        ]
       }
     },
     "/v1/mapping-preview": {
@@ -2048,6 +2409,16 @@
               "application/json": {
                 "schema": {
                   "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -2073,7 +2444,13 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ]
       }
     },
     "/v1/workspaces/{workspace}/credentials": {
@@ -2127,8 +2504,37 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Manage"
+        ]
       },
       "post": {
         "operationId": "createCredential",
@@ -2169,6 +2575,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -2202,7 +2628,16 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Manage"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/credentials/{credential}/grants/{workflow}": {
@@ -2244,8 +2679,37 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Manage"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/webhooks/{workflow}/{credential}": {
@@ -2311,6 +2775,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -2322,7 +2806,16 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Execute"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/schedules": {
@@ -2361,8 +2854,37 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "DataRead"
+        ]
       },
       "post": {
         "operationId": "createSchedule",
@@ -2396,6 +2918,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -2420,7 +2962,17 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Execute",
+          "DataRead"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/schedules/{schedule}": {
@@ -2473,6 +3025,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -2497,7 +3069,17 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Execute",
+          "DataRead"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/runs/{run}/invocations/{invocation}/resolve": {
@@ -2549,6 +3131,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -2581,7 +3183,16 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Execute"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/required-artifacts": {
@@ -2633,8 +3244,37 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Read"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/workflows/{workflow}/export": {
@@ -2699,8 +3339,37 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Read"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/workflows/import": {
@@ -2757,6 +3426,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -2785,7 +3474,16 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Edit"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/credentials/{credential}/value": {
@@ -2859,6 +3557,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -2882,7 +3600,16 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Manage"
+        ]
       }
     },
     "/v1/workspaces/{workspace}/credentials/{credential}/revoke": {
@@ -2956,14 +3683,43 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Manage"
+        ]
       }
     },
     "/v1/identity": {
       "get": {
         "operationId": "getIdentity",
-        "description": "Development mode reports its mode without a principal. OIDC mode requires a verified token and returns issuer/subject only. Other application routes fail closed in OIDC mode.",
+        "description": "Development mode reports its mode without a principal. OIDC mode requires a verified token and returns issuer/subject only; workspace permissions are checked separately.",
         "security": [
           {},
           {
@@ -3010,7 +3766,7 @@
             }
           },
           "401": {
-            "description": "Identity token missing or invalid",
+            "description": "OIDC mode: missing or invalid identity token",
             "content": {
               "application/json": {
                 "schema": {
@@ -3023,6 +3779,361 @@
             "description": "Host or Origin rejected"
           }
         }
+      }
+    },
+    "/v1/workspaces/{workspace}/memberships": {
+      "get": {
+        "operationId": "listMemberships",
+        "description": "Owner only in OIDC mode. At most 100 members per workspace. Updates replace all grants; last-owner removal or demotion returns 409. Mutation authorization is rechecked inside the transaction. Development mode rejects membership mutations.",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Last owner cannot be removed or demoted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Membership limit reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Memberships",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "maxItems": 100,
+                  "items": {
+                    "$ref": "#/components/schemas/Membership"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Manage"
+        ]
+      },
+      "put": {
+        "operationId": "setMembership",
+        "description": "Owner only in OIDC mode. At most 100 members per workspace. Updates replace all grants; last-owner removal or demotion returns 409. Mutation authorization is rechecked inside the transaction. Development mode rejects membership mutations.",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Last owner cannot be removed or demoted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Membership limit reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Membership changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "updated"
+                  ],
+                  "properties": {
+                    "updated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Membership"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Manage"
+        ]
+      },
+      "delete": {
+        "operationId": "removeMembership",
+        "description": "Owner only in OIDC mode. At most 100 members per workspace. Updates replace all grants; last-owner removal or demotion returns 409. Mutation authorization is rechecked inside the transaction. Development mode rejects membership mutations.",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Last owner cannot be removed or demoted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Membership limit reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Membership changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "updated"
+                  ],
+                  "properties": {
+                    "updated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MembershipIdentity"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Manage"
+        ]
       }
     }
   },
@@ -3417,6 +4528,68 @@
                 }
               }
             }
+          }
+        }
+      },
+      "Membership": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "issuer",
+          "subject",
+          "role"
+        ],
+        "properties": {
+          "issuer": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "viewer",
+              "editor",
+              "operator",
+              "owner"
+            ]
+          },
+          "publish": {
+            "type": "boolean",
+            "default": false
+          },
+          "execute": {
+            "type": "boolean",
+            "default": false
+          },
+          "dataRead": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "MembershipIdentity": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "issuer",
+          "subject"
+        ],
+        "properties": {
+          "issuer": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
           }
         }
       }
