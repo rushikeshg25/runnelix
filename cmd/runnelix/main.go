@@ -38,12 +38,14 @@ func main() {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return errors.New("usage: runnelix migrate|bootstrap|api|node-service|worker|engine|dispatcher")
+		return errors.New("usage: runnelix migrate|bootstrap|provision-owner|api|node-service|worker|engine|dispatcher")
 	}
 	flags := flag.NewFlagSet(os.Args[1], flag.ContinueOnError)
 	address := flags.String("address", "127.0.0.1:8787", "development API loopback address")
 	temporalAddress := flags.String("temporal-address", "127.0.0.1:7233", "Temporal address")
 	workspaceID := flags.String("workspace", "workspace_dev", "development workspace ID")
+	ownerIssuer := flags.String("issuer", "", "owner OIDC issuer")
+	ownerSubject := flags.String("subject", "", "owner OIDC subject")
 	if err := flags.Parse(os.Args[2:]); err != nil {
 		return err
 	}
@@ -66,6 +68,12 @@ func run() error {
 			return errors.New("migration failed; inspect schema compatibility without recreating data")
 		}
 		fmt.Println("migrations applied")
+		return nil
+	case "provision-owner":
+		if err := s.ProvisionOwner(ctx, *workspaceID, identity.Principal{Issuer: *ownerIssuer, Subject: *ownerSubject}); err != nil {
+			return fmt.Errorf("owner provisioning failed: %w", err)
+		}
+		fmt.Println("workspace owner provisioned")
 		return nil
 	case "bootstrap":
 		if s.CreateWorkspace(ctx, *workspaceID, "Development workspace") != nil {
