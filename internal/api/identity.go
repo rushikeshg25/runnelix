@@ -23,7 +23,21 @@ func (a API) authenticate(w http.ResponseWriter, r *http.Request) (*http.Request
 	if a.Identity == nil || r.URL.Path == "/health" {
 		return r, true
 	}
+	if r.Method == "GET" && (r.URL.Path == "/v1/auth/login" || r.URL.Path == "/v1/auth/callback") {
+		return r, true
+	}
 	headers := r.Header.Values("Authorization")
+	cookies := r.CookiesNamed(a.cookieName("session"))
+	if len(headers) > 0 && len(cookies) > 0 {
+		a.unauthenticated(w, r)
+		return r, false
+	}
+	if len(headers) == 0 && len(cookies) == 0 && r.Method == "GET" && r.URL.Path == "/v1/auth/session" {
+		return r, true
+	}
+	if len(headers) == 0 && a.Browser != nil {
+		return a.authenticateSession(w, r)
+	}
 	if len(headers) != 1 || !strings.HasPrefix(headers[0], "Bearer ") {
 		a.unauthenticated(w, r)
 		return r, false
@@ -53,6 +67,14 @@ func (a API) permission(r *http.Request, required store.Permission) error {
 	principal, ok := r.Context().Value(principalKey{}).(identity.Principal)
 	if !ok {
 		return store.ErrForbidden
+	}
+	if session, ok := r.Context().Value(sessionKey{}).(browserSession); ok {
+		if a.Browser == nil {
+			return store.ErrForbidden
+		}
+		if _, _, err := a.Store.Session(r.Context(), session.Hash, a.Browser.Issuer(), a.Browser.ClientID()); err != nil {
+			return store.ErrForbidden
+		}
 	}
 	workspace := r.PathValue("workspace")
 	if required == signedIn && workspace == "" {

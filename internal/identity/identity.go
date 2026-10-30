@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	"golang.org/x/oauth2"
 )
 
 var ErrUnauthenticated = errors.New("identity could not be verified")
@@ -81,8 +82,12 @@ func (t boundedTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 }
 
 type Verifier struct {
-	verifier *oidc.IDTokenVerifier
-	clientID string
+	verifier      *oidc.IDTokenVerifier
+	clientID      string
+	issuer        string
+	endpoint      oauth2.Endpoint
+	client        *http.Client
+	allowLoopback bool
 }
 
 func New(ctx context.Context, c Config) (*Verifier, error) {
@@ -97,15 +102,22 @@ func New(ctx context.Context, c Config) (*Verifier, error) {
 	if err != nil {
 		return nil, errors.New("OIDC discovery failed")
 	}
-	return &Verifier{provider.Verifier(&oidc.Config{ClientID: c.ClientID, SupportedSigningAlgs: []string{oidc.RS256}}), c.ClientID}, nil
+	return &Verifier{verifier: provider.Verifier(&oidc.Config{ClientID: c.ClientID, SupportedSigningAlgs: []string{oidc.RS256}}), clientID: c.ClientID, issuer: c.Issuer, endpoint: provider.Endpoint(), client: client, allowLoopback: c.AllowLoopbackIssuer}, nil
 }
 func (v *Verifier) Verify(ctx context.Context, raw string) (Principal, error) {
+	token, err := v.verify(ctx, raw)
+	if err != nil {
+		return Principal{}, err
+	}
+	return Principal{token.Issuer, token.Subject}, nil
+}
+func (v *Verifier) verify(ctx context.Context, raw string) (*oidc.IDToken, error) {
 	if v == nil || len(raw) == 0 || len(raw) > 16384 || strings.ContainsAny(raw, " \t\r\n") {
-		return Principal{}, ErrUnauthenticated
+		return nil, ErrUnauthenticated
 	}
 	token, err := v.verifier.Verify(ctx, raw)
 	if err != nil || strings.TrimSpace(token.Subject) == "" || len(token.Subject) > 255 {
-		return Principal{}, ErrUnauthenticated
+		return nil, ErrUnauthenticated
 	}
 	var claims struct {
 		IssuedAt        *int64 `json:"iat"`
@@ -113,11 +125,11 @@ func (v *Verifier) Verify(ctx context.Context, raw string) (Principal, error) {
 		NotBefore       *int64 `json:"nbf"`
 	}
 	if token.Claims(&claims) != nil || claims.IssuedAt == nil {
-		return Principal{}, ErrUnauthenticated
+		return nil, ErrUnauthenticated
 	}
 	now := time.Now()
 	if (len(token.Audience) > 1 && claims.AuthorizedParty != v.clientID) || (claims.AuthorizedParty != "" && claims.AuthorizedParty != v.clientID) || (claims.NotBefore != nil && *claims.NotBefore > now.Unix()) || token.IssuedAt.After(now.Add(30*time.Second)) {
-		return Principal{}, ErrUnauthenticated
+		return nil, ErrUnauthenticated
 	}
-	return Principal{token.Issuer, token.Subject}, nil
+	return token, nil
 }

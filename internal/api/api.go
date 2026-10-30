@@ -21,6 +21,7 @@ import (
 
 type API struct {
 	Identity      *identity.Verifier
+	Browser       *identity.Browser
 	Store         *store.Store
 	Box           *secrets.Box
 	BrowserOrigin string
@@ -41,6 +42,10 @@ func (a API) Handler() http.Handler {
 	handle("GET /v1/workspaces/{workspace}/memberships", store.Manage, a.memberships)
 	handle("PUT /v1/workspaces/{workspace}/memberships", store.Manage, a.changeMembership)
 	handle("DELETE /v1/workspaces/{workspace}/memberships", store.Manage, a.changeMembership)
+	handle("GET /v1/auth/login", publicRoute, a.login)
+	handle("GET /v1/auth/callback", publicRoute, a.callback)
+	handle("GET /v1/auth/session", publicRoute, a.session)
+	handle("POST /v1/auth/logout", signedIn, a.logout)
 	handle("GET /v1/identity", signedIn, a.identity)
 	handle("GET /health", publicRoute, func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), time.Second)
@@ -91,6 +96,7 @@ func (a API) Handler() http.Handler {
 		w.Header().Set("X-Request-ID", id)
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("Referrer-Policy", "no-referrer")
 		// Browser origins are not trusted by this unauthenticated development process.
 		if r.Header.Get("Origin") != "" && r.Header.Get("Origin") != a.BrowserOrigin {
 			respond(w, 403, Error{"origin_forbidden", "Browser origin is not allowed", id, nil})

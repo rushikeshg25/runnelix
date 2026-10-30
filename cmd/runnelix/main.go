@@ -94,6 +94,7 @@ func run() error {
 			}
 		}
 		var verifier *identity.Verifier
+		var browser *identity.Browser
 		if os.Args[1] == "api" {
 			config, configErr := identity.FromEnv(os.Getenv)
 			if configErr != nil {
@@ -103,8 +104,12 @@ func run() error {
 			if err != nil {
 				return err
 			}
+			browser, err = identity.NewBrowser(verifier, os.Getenv("RUNNELIX_BROWSER_ORIGIN"), os.Getenv("RUNNELIX_OIDC_REDIRECT_URL"))
+			if err != nil {
+				return err
+			}
 		}
-		handler := api.API{Store: s, Box: box, Identity: verifier, BrowserOrigin: os.Getenv("RUNNELIX_BROWSER_ORIGIN")}.Handler()
+		handler := api.API{Store: s, Box: box, Identity: verifier, Browser: browser, BrowserOrigin: os.Getenv("RUNNELIX_BROWSER_ORIGIN")}.Handler()
 		if os.Args[1] == "node-service" {
 			hosts := map[string]bool{}
 			for _, host := range strings.Split(os.Getenv("RUNNELIX_EGRESS_HOSTS"), ",") {
