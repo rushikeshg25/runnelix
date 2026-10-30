@@ -22,7 +22,7 @@ The longer capacity diagnostic remains opt-in with `make integration-capacity`. 
 
 ## Workflow and dependency maintenance
 
-Run `make check-ci` to lint workflow syntax, expressions, action inputs, and available shell checks with pinned actionlint v1.7.12. CI runs this before the product checks. External actions are pinned to full commit SHAs; Dependabot checks those action references weekly and proposes grouped updates. It does not auto-merge them. Weekly CI also reruns advisory checks, so a newly disclosed dependency issue can fail even without a source push.
+Run `make check-ci` to lint workflow syntax, expressions, action inputs, and available shell checks with pinned actionlint v1.7.12. CI runs this before the product checks. External actions use releases with native Node 24 action runtimes and are pinned to full commit SHAs; Dependabot checks those action references weekly and proposes grouped updates. It does not auto-merge them. Weekly CI also reruns advisory checks, so a newly disclosed dependency issue can fail even without a source push.
 
 ## Artifacts
 
