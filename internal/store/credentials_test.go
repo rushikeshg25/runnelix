@@ -51,3 +51,49 @@ func TestCredentialEncryptionGrantsAndDestination(t *testing.T) {
 		t.Fatal("revoked credential resolved")
 	}
 }
+
+func TestCredentialRotationAndRevocation(t *testing.T) {
+	s := database(t)
+	ctx := context.Background()
+	ws, w, _ := published(t, s)
+	box, _ := secrets.New(strings.Repeat("ab", 32), "test-key")
+	c, err := s.CreateCredential(ctx, ws, "Rotate fixture", "bearer", "old-fixture", "slack.com", box)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = s.GrantCredential(ctx, ws, c.ID, w.ID); err != nil {
+		t.Fatal(err)
+	}
+	for _, value := range []string{"", "bad\r\nvalue", strings.Repeat("x", 4097)} {
+		if err = s.RotateCredential(ctx, ws, c.ID, value, box); err != ErrInvalid {
+			t.Fatal("invalid rotation accepted", err)
+		}
+	}
+	if err = s.RotateCredential(ctx, workspace(t, s), c.ID, "new-fixture", box); err != ErrNotFound {
+		t.Fatal("scope escape", err)
+	}
+	if err = s.RotateCredential(ctx, ws, c.ID, "new-fixture", box); err != nil {
+		t.Fatal(err)
+	}
+	value, err := s.ResolveCredential(ctx, ws, w.ID, c.ID, "bearer", "slack.com", box)
+	if err != nil || value != "new-fixture" {
+		t.Fatal("rotation did not preserve grant")
+	}
+	if _, err = s.ResolveCredential(ctx, ws, w.ID, c.ID, "bearer", "api.github.com", box); err != ErrNotFound {
+		t.Fatal("destination changed")
+	}
+	if err = s.RevokeCredential(ctx, workspace(t, s), c.ID); err != ErrNotFound {
+		t.Fatal("scope escape", err)
+	}
+	for i := 0; i < 2; i++ {
+		if err = s.RevokeCredential(ctx, ws, c.ID); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err = s.RotateCredential(ctx, ws, c.ID, "revive-fixture", box); err != ErrNotFound {
+		t.Fatal("revoked credential revived", err)
+	}
+	if _, err = s.ResolveCredential(ctx, ws, w.ID, c.ID, "bearer", "slack.com", box); err != ErrNotFound {
+		t.Fatal("revoked credential resolved")
+	}
+}

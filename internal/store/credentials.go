@@ -83,3 +83,34 @@ func (s *Store) Credentials(ctx context.Context, workspace string) ([]Credential
 	}
 	return result, rows.Err()
 }
+
+// RotateCredential preserves the destination and grants. A revoked credential stays revoked.
+func (s *Store) RotateCredential(ctx context.Context, workspace, id, value string, box *secrets.Box) error {
+	if box == nil || strings.ContainsAny(value, "\r\n") {
+		return ErrInvalid
+	}
+	encrypted, err := box.Seal(workspace+"/"+id, []byte(value))
+	if err != nil {
+		return ErrInvalid
+	}
+	tag, err := s.Pool.Exec(ctx, "UPDATE credentials SET ciphertext=$3,key_id=$4 WHERE workspace_id=$1 AND id=$2 AND NOT revoked", workspace, id, encrypted, box.KeyID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() != 1 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// RevokeCredential prevents future resolutions, including from already-published versions.
+func (s *Store) RevokeCredential(ctx context.Context, workspace, id string) error {
+	tag, err := s.Pool.Exec(ctx, "UPDATE credentials SET revoked=true WHERE workspace_id=$1 AND id=$2", workspace, id)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() != 1 {
+		return ErrNotFound
+	}
+	return nil
+}

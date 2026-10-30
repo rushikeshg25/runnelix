@@ -67,6 +67,8 @@ func (a API) Handler() http.Handler {
 	mux.HandleFunc("PUT /v1/workspaces/{workspace}/schedules/{schedule}", a.saveSchedule)
 	mux.HandleFunc("GET /v1/workspaces/{workspace}/credentials", a.credentials)
 	mux.HandleFunc("POST /v1/workspaces/{workspace}/credentials", a.createCredential)
+	mux.HandleFunc("PUT /v1/workspaces/{workspace}/credentials/{credential}/value", a.rotateCredential)
+	mux.HandleFunc("POST /v1/workspaces/{workspace}/credentials/{credential}/revoke", a.revokeCredential)
 	mux.HandleFunc("PUT /v1/workspaces/{workspace}/credentials/{credential}/grants/{workflow}", a.grant)
 	mux.HandleFunc("POST /v1/workspaces/{workspace}/webhooks/{workflow}/{credential}", a.webhook)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
