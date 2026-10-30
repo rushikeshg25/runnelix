@@ -41,13 +41,13 @@ The list is ordered by issuer/subject. A workspace supports at most 100 members.
 
 Revocation affects requests admitted after the permission check. Already accepted runs and schedules remain workspace resources; revocation does not cancel them. SSE streams check membership every 300 ms before fetching another batch and close on denial or database failure. An already fetched batch can finish sending. Streams retain the existing 10-second request bound; token validation occurs at connection time and again on reconnect.
 
-Reconciliation records `oidc:` followed by the SHA-256 hex digest of the JSON-encoded verified principal (`issuer`, then `subject`). This binds actions to the principal within the existing actor length limit. It is not a substitute for the planned audit log.
+Reconciliation records `oidc:` followed by the SHA-256 hex digest of the JSON-encoded verified principal (`issuer`, then `subject`). This binds actions to the principal within the existing actor length limit. The subsequent [audit slice](phase-5-audit.md) adds a separate immutable record of the reconciliation decision.
 
 ## Verification and remaining scope
 
 `make integration-phase5` owns an isolated PostgreSQL instance and runs the store and signed-token suites sequentially. It verifies every workspace route rejects a signed non-member, issuer/subject isolation, role restrictions, explicit grants, valid create/publish/execute, revocation, live SSE closure, and concurrent last-owner protection. The store suite also checks existing credential grants and workspace isolation. Unit-only runs skip the database tests explicitly.
 
-The subsequent [browser session slice](phase-5-sessions.md) implements local login and CSRF protection. Production provider selection, production session policy, append-only audit, data retention, production payload protection, and operational acceptance remain open. This work does not approve public deployment.
+The subsequent [browser session slice](phase-5-sessions.md) implements local login and CSRF protection. The [audit slice](phase-5-audit.md) now records membership and other privileged changes. Production provider selection, production session policy, data retention, production payload protection, and operational acceptance remain open. This work does not approve public deployment.
 
 Local verification on 2026-10-30:
 

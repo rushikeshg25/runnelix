@@ -27,7 +27,7 @@ Without authentication, `/v1/identity` returns 401 with a safe error and `WWW-Au
 
 OIDC mode now checks [workspace memberships and permissions](phase-5-memberships.md) after verifying identity. A valid token alone grants no workspace access. `/health` remains public; identity inspection, catalog, and mapping preview require authentication without membership. The local editor can now use the [configured browser session flow](phase-5-sessions.md).
 
-Local browser login now has PKCE and cookie/CSRF protection. Production provider selection, production token policy, audit events, and operational rollout remain open. This endpoint is a local verifier probe, not a completed login/session protocol.
+Local browser login now has PKCE and cookie/CSRF protection. Privileged workspace mutations now have [audit records](phase-5-audit.md). Production provider selection, production token policy, and operational rollout remain open. This endpoint is a local verifier probe, not a completed login/session protocol.
 
 ## Verification
 

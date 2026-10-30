@@ -54,7 +54,7 @@ Use the printed browser URL. The fixture provider clearly identifies itself as a
 
 Browser verification covers actual redirect login, authenticated workflow creation, no provider tokens in browser storage, CSRF rejection, unsaved draft preservation after revocation, and desktop/narrow layouts. See [the browser record](evidence/phase-5-sessions-browser.json).
 
-Production provider acceptance, confidential-client policy, public deployment, provider-wide logout, append-only audit, dedicated retention, and production security acceptance remain open. The next planned slice is safe append-only audit records.
+The subsequent [audit slice](phase-5-audit.md) records privileged workspace mutations. Production provider acceptance, confidential-client policy, public deployment, provider-wide logout, dedicated retention, and production security acceptance remain open. Terminal-data retention is next.
 
 Local verification on 2026-10-30:
 

@@ -4624,6 +4624,101 @@
           }
         }
       }
+    },
+    "/v1/workspaces/{workspace}/audit-records": {
+      "get": {
+        "operationId": "listAuditRecords",
+        "description": "Owner only in OIDC mode; development mode permits unauthenticated loopback access. Records are appended atomically with successful workspace mutations. Use the last returned sequence as the next cursor. No backfill or sensitive request payloads.",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Committed audit records in ascending workspace sequence order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "maxItems": 100,
+                  "items": {
+                    "$ref": "#/components/schemas/AuditRecord"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          },
+          {
+            "browserSession": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Manage"
+        ]
+      }
     }
   },
   "components": {
@@ -5124,6 +5219,127 @@
                 "type": "string"
               }
             }
+          }
+        }
+      },
+      "AuditDetails": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Action-specific safe fields; absent fields are omitted. No arbitrary request metadata.",
+        "properties": {
+          "runId": {
+            "type": "string"
+          },
+          "workflowId": {
+            "type": "string"
+          },
+          "versionId": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "previousRole": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "grants": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "publish",
+              "execute",
+              "dataRead"
+            ],
+            "properties": {
+              "publish": {
+                "type": "boolean"
+              },
+              "execute": {
+                "type": "boolean"
+              },
+              "dataRead": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "AuditRecord": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sequence",
+          "actor",
+          "requestId",
+          "action",
+          "targetId",
+          "details",
+          "recordedAt"
+        ],
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "actor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Hashed verified OIDC principal, local-development, installation-operator, or system."
+          },
+          "requestId": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Server-generated HTTP request ID; empty for background operations."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "workflow.created",
+              "workflow.draft_saved",
+              "workflow.published",
+              "workflow.imported",
+              "credential.created",
+              "credential.rotated",
+              "credential.revoked",
+              "credential.granted",
+              "membership.provisioned",
+              "membership.set",
+              "membership.removed",
+              "run.admitted",
+              "run.cancel_requested",
+              "run.resolved",
+              "schedule.saved"
+            ]
+          },
+          "targetId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "details": {
+            "$ref": "#/components/schemas/AuditDetails"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }
