@@ -47,7 +47,7 @@ For a visual introduction, download [the standalone HTML overview](docs/plans/pr
 
 ## Next engineering phase
 
-Phase 5 has started with [OIDC identity verification](docs/implementation/phase-5-identity.md). OIDC mode now enforces [workspace memberships and permissions](docs/implementation/phase-5-memberships.md). Browser login remains pending. The remaining phase adds browser sessions, audit records, retention, and operating procedures. See the [Phase 5 scope](docs/implementation/phase-5.md). Independent teammate acceptance of Phase 2 remains pending. The current installation target is local; production rollout and pilot approval remain open.
+Phase 5 has started with [OIDC identity verification](docs/implementation/phase-5-identity.md). OIDC mode now enforces [workspace memberships and permissions](docs/implementation/phase-5-memberships.md). The [local browser session flow](docs/implementation/phase-5-sessions.md) is implemented with PKCE and CSRF protection. The remaining phase adds audit records, retention, and operating procedures. See the [Phase 5 scope](docs/implementation/phase-5.md). Independent teammate acceptance of Phase 2 remains pending. The current installation target is local; production rollout and pilot approval remain open.
 
 ## About the name
 

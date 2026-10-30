@@ -47,7 +47,7 @@ Reconciliation records `oidc:` followed by the SHA-256 hex digest of the JSON-en
 
 `make integration-phase5` owns an isolated PostgreSQL instance and runs the store and signed-token suites sequentially. It verifies every workspace route rejects a signed non-member, issuer/subject isolation, role restrictions, explicit grants, valid create/publish/execute, revocation, live SSE closure, and concurrent last-owner protection. The store suite also checks existing credential grants and workspace isolation. Unit-only runs skip the database tests explicitly.
 
-Browser login/session handling, CSRF/session policy, production provider selection, append-only audit, data retention, production payload protection, and operational acceptance remain open. Keep the browser editor in development mode until the next session slice is implemented. This work does not approve public deployment.
+The subsequent [browser session slice](phase-5-sessions.md) implements local login and CSRF protection. Production provider selection, production session policy, append-only audit, data retention, production payload protection, and operational acceptance remain open. This work does not approve public deployment.
 
 Local verification on 2026-10-30:
 

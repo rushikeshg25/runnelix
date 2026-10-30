@@ -1,6 +1,6 @@
 # Phase 5 first slice: verified identity
 
-This is an identity foundation for the local installation. It does not enable production use or browser login. The subsequent [membership slice](phase-5-memberships.md) adds workspace permissions.
+This is an identity foundation for the local installation. It does not enable production use. The subsequent [browser session slice](phase-5-sessions.md) adds local login. The subsequent [membership slice](phase-5-memberships.md) adds workspace permissions.
 
 ## Configuration
 
@@ -25,9 +25,9 @@ Without authentication, `/v1/identity` returns 401 with a safe error and `WWW-Au
 
 ## Workspace authorization boundary
 
-OIDC mode now checks [workspace memberships and permissions](phase-5-memberships.md) after verifying identity. A valid token alone grants no workspace access. `/health` remains public; identity inspection, catalog, and mapping preview require authentication without membership. Keep the local editor in development mode until browser session handling is implemented.
+OIDC mode now checks [workspace memberships and permissions](phase-5-memberships.md) after verifying identity. A valid token alone grants no workspace access. `/health` remains public; identity inspection, catalog, and mapping preview require authentication without membership. The local editor can now use the [configured browser session flow](phase-5-sessions.md).
 
-Browser login, cookie/CSRF handling or an approved bearer-token deployment, authorization-code/PKCE flow, production provider selection, audit events, and operational rollout remain open. This endpoint is a local verifier probe, not a completed login/session protocol.
+Local browser login now has PKCE and cookie/CSRF protection. Production provider selection, production token policy, audit events, and operational rollout remain open. This endpoint is a local verifier probe, not a completed login/session protocol.
 
 ## Verification
 

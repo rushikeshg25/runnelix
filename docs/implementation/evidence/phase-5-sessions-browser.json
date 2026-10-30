@@ -1,0 +1,53 @@
+{
+  "verifiedAtUtc": "2026-10-30T08:55:23.525930+00:00",
+  "scope": "Local fake-data issuer, owned isolated PostgreSQL/API/Vite; no production provider or deployment.",
+  "browser": "T3 collaborative incognito browser",
+  "viewports": [
+    {
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "checks": {
+    "providerRedirectAndConsent": "passed",
+    "authenticatedWorkflowCreation": "passed",
+    "sessionCookieHiddenFromJavaScript": "passed",
+    "localAndSessionStorageEmpty": "passed",
+    "missingCSRFGets403": "passed",
+    "revocationPreservesUnsavedThreeNodeDraft": "passed",
+    "expiredEditorInert": "passed",
+    "expiryNoticeFocusedAndVisible": "passed after fixing off-screen notice",
+    "unsavedNavigationWarning": "passed",
+    "explicitLogoutRevokesSessionAndUnmountsEditor": "passed",
+    "signedOutWorkspaceRequestGets401": "passed",
+    "narrowLayoutNoDocumentOverflow": "passed: 390px document at 390px viewport"
+  },
+  "limitations": [
+    "Fixture provider only. HTTPS cookie flags covered by configuration/code checks, not a TLS browser deployment.",
+    "Cookie-authenticated SSE/logout is verified by the signed HTTP integration suite; the browser fixture does not run Temporal.",
+    "HMR reset the draft while changing the notice focus behavior; preservation and focus were retested after that edit.",
+    "The final empty-query origin guard and disabled-login/stale-cookie status fix were verified by Go tests after the browser API process started. The final session-check-error heading was statically verified; successful login, expiry, and logout branches were browser-tested."
+  ],
+  "artifacts": "artifacts/phase1/20261030T084248Z-6ba3d6",
+  "sourceSha256": {
+    "internal/api/sessions.go": "0980947c5156b95ce329a2f56ae48887dab55a9406ae325409c7a1c82aecf4ce",
+    "internal/api/identity.go": "fc62eb8ed5523ba3edebae7df9f91dd3aaef6ca43f268676a21c761b56272353",
+    "internal/identity/browser.go": "1e758ee0f0f51cff9423d951caf677c659ebc6f526121ab931b204f024917092",
+    "internal/identity/browser_test.go": "38ed10feac9fa7f3f919fb61ded27be11461f803a7c9910f5a5e7bdf9985c67a",
+    "internal/store/sessions.go": "11d1531d1f6ca18f3e313e2cbe54f65651402f1dddf8d55162f5e05f5e36e8ea",
+    "internal/store/sessions_test.go": "c4e1fcff16b0a7e208b64570aa11c9ca6121b098e16e03b0473f60627a7d4aa1",
+    "internal/store/migrations/011_browser_sessions.sql": "1b31b5251428b060a5dcd9cf1fc50e968d80b85ad018460bb709e331ac74b8ed",
+    "web/src/SessionBoundary.tsx": "361e9a31c34bd4e4943c204ad39a2744221281492c1891c3ad8bc1e89c9d1e7e",
+    "web/src/api.ts": "9d07b65bba20ab61e47874067e449dd7c836928d109a5defc96da69ea1a7dcb6",
+    "web/src/RunInspector.tsx": "87e716082869250ac64de7e67ecb4621a9b235e46c6e967cbc46939c1b3e94a4",
+    "web/src/App.tsx": "1d74621854e6e20ec42a41f036ef384b71954e421f67850d1ffefdbf55f05a7b",
+    "web/src/style.css": "7da4c9f3e14b27d8447c8fca98c5c33787d9d601c5b1566b7912163f2e7520d0",
+    "tests/integration/browser_auth.py": "029c400dde10acab888e462d07442bc54cea27f566d6b516fb6d7b3b12bd82bc",
+    "internal/testoidc/issuer.go": "bd378e653f810f569b392e05a8f7eea7f03e0eceaa67db80bbd1940b947a7e1a"
+  },
+  "ownedServicesStopped": true
+}
