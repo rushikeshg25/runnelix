@@ -13,6 +13,7 @@ build:
 	pnpm build
 
 test:
+	python3 -m unittest discover -s tests/python -v
 	go test -race ./...
 	pnpm build
 	pnpm test

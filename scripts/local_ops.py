@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import socket
 import sqlite3
 import subprocess
@@ -66,11 +67,17 @@ def stopped_state(state):
 @contextmanager
 def database(state, port):
     data = state / 'postgres'
-    command([pg('pg_ctl'), '-D', data, '-l', state / 'operations-postgres.log', '-o', f"-h 127.0.0.1 -p {port} -k ''", '-w', 'start'])
     try:
+        command([pg('pg_ctl'), '-D', data, '-l', state / 'operations-postgres.log', '-o', f"-h 127.0.0.1 -p {port} -k ''", '-w', 'start'])
         yield f'postgresql://runnelix_dev@127.0.0.1:{port}/postgres?sslmode=disable'
     finally:
-        command([pg('pg_ctl'), '-D', data, '-m', 'fast', '-w', 'stop'])
+        # A failed startup wait can still leave our server running. Inspect
+        # this data directory, never a global process name or unrelated port.
+        status = subprocess.run([pg('pg_ctl'), '-D', str(data), 'status'], capture_output=True)
+        if status.returncode == 0:
+            command([pg('pg_ctl'), '-D', data, '-m', 'fast', '-w', 'stop'])
+        elif status.returncode != 3:
+            raise RuntimeError('Could not confirm owned PostgreSQL shutdown; inspect the selected state directory')
 
 
 def backup(state, target, keys):
@@ -90,7 +97,7 @@ def backup(state, target, keys):
         os.chmod(keys, 0o600)
         with database(state, free_port()) as dsn:
             command([pg('pg_dump'), '--format=custom', '--no-owner', '--no-acl', '--file', target / 'application.dump', dsn])
-        with sqlite3.connect(f'file:{state / "temporal.sqlite"}?mode=ro', uri=True) as source:
+        with sqlite3.connect((state / "temporal.sqlite").as_uri() + "?mode=ro", uri=True) as source:
             with sqlite3.connect(target / 'temporal.sqlite') as destination:
                 source.backup(destination)
                 if destination.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
@@ -135,7 +142,7 @@ def restore(backup_dir, keys, target):
     with database(target, settings['postgresPort']) as dsn:
         command([pg('pg_restore'), '--exit-on-error', '--single-transaction', '--no-owner', '--no-acl', '--dbname', dsn, backup_dir / 'application.dump'])
     shutil.copyfile(backup_dir / 'temporal.sqlite', target / 'temporal.sqlite')
-    with sqlite3.connect(f'file:{target / "temporal.sqlite"}?mode=ro', uri=True) as db:
+    with sqlite3.connect((target / "temporal.sqlite").as_uri() + "?mode=ro", uri=True) as db:
         if db.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
             raise RuntimeError('Restored Temporal integrity check failed')
     (target / 'settings.json').write_text(json.dumps(settings) + '\n')
@@ -144,6 +151,14 @@ def restore(backup_dir, keys, target):
 
 
 def main():
+    def terminate(signum, _frame):
+        # Unwind context managers; repeated ordinary signals must not interrupt
+        # the owned database stop. SIGKILL/power loss cannot be cleaned up here.
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        raise SystemExit(128 + signum)
+    signal.signal(signal.SIGTERM, terminate)
+    signal.signal(signal.SIGINT, terminate)
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='action', required=True)
