@@ -97,3 +97,26 @@ func TestCredentialRotationAndRevocation(t *testing.T) {
 		t.Fatal("revoked credential resolved")
 	}
 }
+
+func TestCredentialPagesIncludeLaterActiveRecords(t *testing.T) {
+	s := database(t)
+	ctx := context.Background()
+	ws := workspace(t, s)
+	_, err := s.Pool.Exec(ctx, `INSERT INTO credentials(workspace_id,id,name,kind,ciphertext,key_id,destination,revoked)
+ SELECT $1,'credential_'||lpad(i::text,3,'0'),'Fixture','bearer',decode('00','hex'),'fixture','slack.com',i<=100 FROM generate_series(1,101) i`, ws)
+	if err != nil {
+		t.Fatal(err)
+	}
+	first, err := s.Credentials(ctx, ws, "")
+	if err != nil || len(first) != 100 {
+		t.Fatal("first page", len(first), err)
+	}
+	second, err := s.Credentials(ctx, ws, first[99].ID)
+	if err != nil || len(second) != 1 || second[0].Revoked || second[0].ID != "credential_101" {
+		t.Fatal("active credential missing from second page", err)
+	}
+	empty, err := s.Credentials(ctx, workspace(t, s), first[99].ID)
+	if err != nil || len(empty) != 0 {
+		t.Fatal("scope escape", err)
+	}
+}

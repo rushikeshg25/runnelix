@@ -94,10 +94,24 @@ export async function request<T>(
   value?: unknown,
   headers: Record<string, string> = {},
 ): Promise<T> {
+  return requestJSON<T>(
+    path,
+    method,
+    value === undefined ? undefined : JSON.stringify(value),
+    headers,
+  );
+}
+// Use only for pre-encoded JSON whose original representation must reach the server.
+export async function requestJSON<T>(
+  path: string,
+  method: string,
+  body?: string,
+  headers: Record<string, string> = {},
+): Promise<T> {
   const response = await fetch(path, {
     method,
     headers: { "Content-Type": "application/json", ...headers },
-    ...(value !== undefined ? { body: JSON.stringify(value) } : {}),
+    ...(body !== undefined ? { body } : {}),
     signal: AbortSignal.timeout(12000),
   });
   const data = await response.json();

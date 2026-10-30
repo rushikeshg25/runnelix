@@ -16,6 +16,7 @@ test:
 	go test -race ./...
 	pnpm build
 	pnpm test
+	node --experimental-strip-types --test tests/web/*.test.ts
 
 check:
 	python3 scripts/build-catalog.py --check

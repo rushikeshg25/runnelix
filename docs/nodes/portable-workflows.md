@@ -11,7 +11,7 @@ Import with `POST /v1/workspaces/{workspace}/workflows/import`:
 }
 ```
 
-Replace the example bundle with the complete exported object. Supply exactly one binding per declared slot. Each credential must exist in the destination workspace, be active, and match the slot's kind and destination. The API validates node versions, config, graph edges, Map bodies, and slot consistency before writing. Unknown fields and duplicate JSON keys are rejected. The full request limit is 256 KiB.
+Replace the example bundle with the complete exported object. Supply exactly one binding per declared slot. Each credential must exist in the destination workspace, be active, and match the slot's kind and destination. The API validates node versions, config, graph edges, Map bodies, and slot consistency before writing. Unknown fields and duplicate JSON keys are rejected. The full request limit is 256 KiB, including bindings. The editor preserves the original JSON for server validation and downloads compact JSON so formatting does not inflate files beyond the file-input limit.
 
 Import creates a new workflow ID and revision 1, plus the explicitly requested credential grants, in one transaction. It never publishes, executes, enables a schedule, or restores runtime state. Validate and publish when ready. Export omits credential IDs and values, workflow identity, grants, versions, runs, and schedules. **Literal configuration values remain in the file.** Review expressions, URLs, and other authored data before sharing it.
 
@@ -19,7 +19,7 @@ The format does not promise identical artifact digests across installations. The
 
 ## Editor controls
 
-Open **Import or export a workflow**. Export downloads the selected saved draft. For import, select a JSON file or paste the bundle, click **Review import**, and select a matching local credential for every slot. **Import as new draft** performs full server validation. The new workflow appears in the workflow list; select it when ready. Import never switches the current editor or replaces edits made while the request was pending. Missing or revoked credentials do not appear in the choices. Create credentials through the API first. Pending editor changes must be saved or discarded before import/export.
+Open **Import or export a workflow**. Export downloads the selected saved draft. For import, select a JSON file or paste the bundle, click **Review import**, and select a matching local credential for every slot. **Import as new draft** performs full server validation. The new workflow appears in the workflow list; select it when ready. Import never switches the current editor or replaces edits made while the request was pending. Missing or revoked credentials do not appear in the choices. Use **Load more credentials** when a matching credential is not in the first page. Create credentials through the API first. Pending editor changes must be saved or discarded before import/export.
 
 ## Explicit draft migration example
 

@@ -2087,6 +2087,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "Exclusive credential ID cursor. Results sort by ID with at most 100 records per page.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {

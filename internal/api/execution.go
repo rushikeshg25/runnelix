@@ -141,7 +141,7 @@ func (a API) preview(w http.ResponseWriter, r *http.Request) {
 	respond(w, 200, map[string]any{"value": value})
 }
 func (a API) credentials(w http.ResponseWriter, r *http.Request) {
-	v, e := a.Store.Credentials(r.Context(), r.PathValue("workspace"))
+	v, e := a.Store.Credentials(r.Context(), r.PathValue("workspace"), r.URL.Query().Get("after"))
 	if e != nil {
 		fail(w, r, e)
 		return

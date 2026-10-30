@@ -67,8 +67,8 @@ func (s *Store) ResolveCredential(ctx context.Context, workspace, workflow, cred
 	}
 	return string(value), nil
 }
-func (s *Store) Credentials(ctx context.Context, workspace string) ([]Credential, error) {
-	rows, err := s.Pool.Query(ctx, "SELECT id,name,kind,destination,revoked FROM credentials WHERE workspace_id=$1 ORDER BY created_at,id LIMIT 100", workspace)
+func (s *Store) Credentials(ctx context.Context, workspace, after string) ([]Credential, error) {
+	rows, err := s.Pool.Query(ctx, "SELECT id,name,kind,destination,revoked FROM credentials WHERE workspace_id=$1 AND id>$2 ORDER BY id LIMIT 100", workspace, after)
 	if err != nil {
 		return nil, err
 	}

@@ -9,3 +9,5 @@ Rotate a token with `PUT /v1/workspaces/{workspace}/credentials/{credential}/val
 Use `POST /v1/workspaces/{workspace}/credentials/{credential}/revoke` to block future resolutions. Repeating revocation succeeds. Rotation cannot reactivate a revoked credential; create and grant a new credential instead. Also revoke the token in GitHub or Slack. A request that already resolved a token can finish; local revocation cannot undo an external effect.
 
 Responses and credential lists contain metadata only. Do not paste real tokens into shell history or workflow JSON. These routes are currently local development controls; production identity and workspace roles belong to Phase 5.
+
+List credentials with `GET /v1/workspaces/{workspace}/credentials`. Results sort by ID with at most 100 records. Pass `?after={lastCredentialId}` to read the next page. Revoked records remain visible as metadata.

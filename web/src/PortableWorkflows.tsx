@@ -1,11 +1,13 @@
 import { useState } from "react";
 import {
   request,
+  requestJSON,
   root,
   type Credential,
   type Graph,
   type Workflow,
 } from "./api";
+import { portableExportText, portableImportBody } from "./portable";
 interface Bundle {
   formatVersion: 1;
   name: string;
@@ -24,6 +26,7 @@ export function PortableWorkflows({
   const [source, setSource] = useState("");
   const [bundle, setBundle] = useState<Bundle | null>(null);
   const [credentials, setCredentials] = useState<Credential[]>([]);
+  const [credentialCursor, setCredentialCursor] = useState<string | null>(null);
   const [bindings, setBindings] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -63,9 +66,19 @@ export function PortableWorkflows({
       )
     )
       throw new Error("Choose a version-1 workflow export.");
-    setCredentials(await request<Credential[]>(`${root}/credentials`));
+    const page = await request<Credential[]>(`${root}/credentials`);
+    setCredentials(page);
+    setCredentialCursor(page.length === 100 ? page.at(-1)!.id : null);
     setBundle(parsed);
     setBindings({});
+  }
+  async function moreCredentials() {
+    if (!credentialCursor) return;
+    const page = await request<Credential[]>(
+      `${root}/credentials?after=${encodeURIComponent(credentialCursor)}`,
+    );
+    setCredentials((previous) => [...previous, ...page]);
+    setCredentialCursor(page.length === 100 ? page.at(-1)!.id : null);
   }
   async function exportDraft() {
     if (!workflow) return;
@@ -73,7 +86,7 @@ export function PortableWorkflows({
       `${root}/workflows/${workflow.id}/export`,
     );
     const url = URL.createObjectURL(
-      new Blob([JSON.stringify(data, null, 2) + "\n"], {
+      new Blob([portableExportText(data)], {
         type: "application/json",
       }),
     );
@@ -166,6 +179,14 @@ export function PortableWorkflows({
               </select>
             </label>
           ))}
+          {credentialCursor && bundle.credentialSlots.length > 0 && (
+            <button
+              disabled={disabled || busy}
+              onClick={() => void perform(moreCredentials)}
+            >
+              Load more credentials
+            </button>
+          )}
           <button
             disabled={
               disabled ||
@@ -174,10 +195,11 @@ export function PortableWorkflows({
             }
             onClick={() =>
               void perform(async () => {
-                await request<Workflow>(`${root}/workflows/import`, "POST", {
-                  bundle,
-                  bindings,
-                });
+                await requestJSON<Workflow>(
+                  `${root}/workflows/import`,
+                  "POST",
+                  portableImportBody(source, bindings),
+                );
                 edit("");
                 await imported();
                 setMessage(
