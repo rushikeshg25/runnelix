@@ -40,10 +40,10 @@ func (s *Store) RetainTerminalData(ctx context.Context, workspace string, policy
 	}
 	// Lock even previews so reported candidates obey the same selection rules.
 	// SKIP LOCKED lets concurrent batches and active writers proceed safely.
-	rows, err := tx.Query(ctx, `SELECT r.id,r.updated_at < now()-($3*interval '1 day')
+	rows, err := tx.Query(ctx, `SELECT r.id,r.updated_at < now()-($3*interval '24 hours')
  FROM runs r WHERE r.workspace_id=$1 AND r.state IN ('succeeded','failed','cancelled')
  AND NOT r.retention_hold AND r.history_expired_at IS NULL
- AND ((r.payloads_expired_at IS NULL AND r.updated_at < now()-($2*interval '1 day')) OR r.updated_at < now()-($3*interval '1 day'))
+ AND ((r.payloads_expired_at IS NULL AND r.updated_at < now()-($2*interval '24 hours')) OR r.updated_at < now()-($3*interval '24 hours'))
  AND EXISTS(SELECT 1 FROM start_outbox o WHERE o.workspace_id=r.workspace_id AND o.run_id=r.id AND o.dispatched_at IS NOT NULL)
  AND NOT EXISTS(SELECT 1 FROM uncertain_invocations u WHERE u.workspace_id=r.workspace_id AND u.run_id=r.id AND u.resolved_at IS NULL)
  ORDER BY r.updated_at,r.id LIMIT $4 FOR UPDATE OF r SKIP LOCKED`, workspace, policy.PayloadDays, policy.HistoryDays, policy.Limit)

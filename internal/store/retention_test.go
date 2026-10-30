@@ -3,6 +3,9 @@ package store
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"strings"
 	"testing"
 	"time"
 )
@@ -200,5 +203,50 @@ func TestRetentionLocksAndBounds(t *testing.T) {
 		if _, err = s.RetainTerminalData(ctx, r.WorkspaceID, p, true); !errors.Is(err, ErrInvalid) {
 			t.Fatal("invalid policy accepted", p, err)
 		}
+	}
+}
+
+func TestRetentionUsesElapsedDaysAcrossDST(t *testing.T) {
+	for _, tc := range []struct {
+		name, now string
+		age       time.Duration
+		want      int
+	}{
+		{"spring", "2026-03-10T12:00:00-04:00", 7*24*time.Hour - 30*time.Minute, 0},
+		{"fall", "2026-11-03T12:00:00-05:00", 7*24*time.Hour + 30*time.Minute, 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := database(t)
+			ctx := context.Background()
+			r, _ := terminalFixture(t, s, 8)
+			fixed, err := time.Parse(time.RFC3339, tc.now)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err = s.Pool.Exec(ctx, "UPDATE runs SET updated_at=$2 WHERE id=$1", r.RunID, fixed.Add(-tc.age)); err != nil {
+				t.Fatal(err)
+			}
+			schema := "retention_clock_" + strings.ReplaceAll(uuid.NewString(), "-", "")
+			if _, err = s.Pool.Exec(ctx, "CREATE SCHEMA "+schema); err != nil {
+				t.Fatal(err)
+			}
+			defer s.Pool.Exec(ctx, "DROP SCHEMA "+schema+" CASCADE")
+			if _, err = s.Pool.Exec(ctx, "CREATE FUNCTION "+schema+".now() RETURNS timestamptz LANGUAGE sql STABLE AS $$ SELECT '"+tc.now+"'::timestamptz $$"); err != nil {
+				t.Fatal(err)
+			}
+			cfg := s.Pool.Config()
+			cfg.ConnConfig.RuntimeParams["search_path"] = schema + ",pg_catalog,public"
+			cfg.ConnConfig.RuntimeParams["TimeZone"] = "America/New_York"
+			pool, err := pgxpool.NewWithConfig(ctx, cfg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer pool.Close()
+			clockStore := Store{Pool: pool, Catalog: s.Catalog}
+			result, err := clockStore.RetainTerminalData(ctx, r.WorkspaceID, RetentionPolicy{7, 30, 100}, false)
+			if err != nil || len(result.Candidates) != tc.want {
+				t.Fatalf("elapsed age %s: got %d candidates, want %d: %v", tc.age, len(result.Candidates), tc.want, err)
+			}
+		})
 	}
 }
