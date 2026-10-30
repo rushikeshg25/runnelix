@@ -363,3 +363,11 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Evidence:** implementation `c3b4351`; [workload, results, and limitations](docs/implementation/local-capacity.md), [source-hashed report](docs/implementation/evidence/local-capacity.json). `make integration-capacity`, `make check`, and Python compilation passed.
 - **Result:** 267 of 1,200 requests were accepted; 933 received HTTP 429. All accepted runs completed. First scheduling p95 was 41.512 seconds; twenty queued runs drained 5.497 seconds after worker restart. Sources stayed unchanged and cleanup succeeded.
 - **Limit:** the proposed burst and dispatch-latency targets did not pass on this local configuration. Correctness under backpressure is verified; the bottleneck is not yet isolated. No quotas or production settings changed.
+
+## 2026-10-31 — dispatch stalls isolated and reduced
+
+- **What:** separated periodic dispatcher jobs so slow projection reconciliation cannot block starts, schedules, cancellation, or resolution delivery. Added deterministic race-tested coverage for independent progress, serial job execution, and joined shutdown.
+- **Cause:** boundary timings identified multi-second projection calls in the shared loop. Persisted Temporal history then located a separate delay before the first workflow task. Increasing mixed poller count did not help; the pinned SDK's separate normal/sticky queue coverage reduced task pickup delay.
+- **Result:** the same local burst measured scheduling p95 at 3.119 seconds versus 41.512 seconds previously; peak sampled pending-start age fell to 1.567 seconds. All accepted workflows and queued-work recovery passed.
+- **Evidence:** [investigation, implementation, and validation](docs/implementation/dispatch-throughput.md), [final capacity report](docs/implementation/evidence/dispatch-capacity.json).
+- **Limit:** only 300/1,200 requests were accepted; full capacity acceptance remains open. No quotas, activity concurrency, workflow definitions, SDK/server versions, or schemas changed.

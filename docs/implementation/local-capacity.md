@@ -44,3 +44,7 @@ The [source-hashed report](evidence/local-capacity.json) records a macOS arm64 r
 Correctness passed: all accepted workflows succeeded, expected attempt counts matched, and queued work survived the worker outage. The proposed burst target **did not pass** on this configuration: it did not accept 20 starts/second. Scheduling alone exceeded five seconds at p95, so this run cannot satisfy the proposed first-action-start latency target either. The report's `passed` fields describe correctness assertions, not capacity acceptance.
 
 The backlog establishes a local limit, not its root cause. Investigate dispatch throughput and database/runtime contention before selecting a scaling or tuning change. Do not extrapolate the accepted average into sustained supported capacity, increase quotas to hide rejection, or attribute the limit to worker concurrency without a distinguishing measurement.
+
+## Follow-up
+
+The [dispatch correction](dispatch-throughput.md) separates maintenance from dispatch and preserves normal workflow-task polling during continuation backlog. Its comparative run reduced scheduling p95 to 3.12 seconds and peak sampled pending age to 1.57 seconds. It still accepted only 300/1,200 requests. The original measurements above remain historical evidence; the full operating-envelope gate remains open.

@@ -198,7 +198,13 @@ func run() error {
 				return errors.New("engine worker failed to start")
 			}
 			defer w.Stop()
-			v3 := worker.New(c, engine.QueueV3, worker.Options{})
+			// Separate normal/sticky polling prevents a busy sticky queue from
+			// starving new workflow tasks. Keep a small polling range per queue.
+			v3 := worker.New(c, engine.QueueV3, worker.Options{
+				WorkflowTaskPollerBehavior: worker.NewPollerBehaviorAutoscaling(worker.PollerBehaviorAutoscalingOptions{
+					InitialNumberOfPollers: 1, MinimumNumberOfPollers: 1, MaximumNumberOfPollers: 2,
+				}),
+			})
 			v3.RegisterWorkflowWithOptions(engine.ExecuteV3, workflow.RegisterOptions{Name: engine.WorkflowNameV3})
 			v3.RegisterActivity(&engine.Activities{Store: s})
 			if err = v3.Start(); err != nil {
@@ -226,25 +232,28 @@ func run() error {
 			<-ctx.Done()
 			return nil
 		}
-		ticker := time.NewTicker(250 * time.Millisecond)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case <-ticker.C:
+		dispatch.Run(ctx,
+			func(ctx context.Context) {
 				if err := dispatch.RepairProjection(ctx, s, c); err != nil && ctx.Err() == nil {
 					log.Print("projection reconciliation incomplete; runtime remains authoritative")
 				}
+			},
+			func(ctx context.Context) {
 				if err := scheduling.Reconcile(ctx, s, c); err != nil && ctx.Err() == nil {
 					log.Print("schedule reconciliation incomplete; retained for retry")
 				}
+			},
+			func(ctx context.Context) {
 				if err := dispatch.ReconcileResolutions(ctx, s, c); err != nil && ctx.Err() == nil {
 					log.Print("resolution delivery incomplete; retained for retry")
 				}
+			},
+			func(ctx context.Context) {
 				if err := dispatch.ReconcileCancellation(ctx, s, c); err != nil && ctx.Err() == nil {
 					log.Print("cancellation reconciliation incomplete; retained for retry")
 				}
+			},
+			func(ctx context.Context) {
 				for range 16 {
 					worked, err := dispatch.Once(ctx, s, dispatch.TemporalStarter{Client: c})
 					if err != nil && ctx.Err() == nil {
@@ -254,8 +263,9 @@ func run() error {
 						break
 					}
 				}
-			}
-		}
+			},
+		)
+		return nil
 	default:
 		return errors.New("unknown command")
 	}

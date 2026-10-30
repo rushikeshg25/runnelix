@@ -74,7 +74,7 @@ The local Phase 5 scope is complete. See the [retention commands](docs/implement
 
 Phase 6 local preparation includes five [portable training workflows](examples/pilot/README.md), an automated import/publish/run check (`make integration-phase6`), and a [pilot kit](docs/pilot/README.md) with installation, participant, usage, incident, and release records. See the [Phase 6 evidence](docs/implementation/phase-6.md).
 
-A repeatable [local capacity diagnostic](docs/implementation/local-capacity.md) is available with `make integration-capacity`. It measures a 20-starts/second offered burst and worker-outage recovery without changing admission limits.
+A repeatable [local capacity diagnostic](docs/implementation/local-capacity.md) is available with `make integration-capacity`. It measures a 20-starts/second offered burst and worker-outage recovery without changing admission limits. The [dispatch throughput fix](docs/implementation/dispatch-throughput.md) reduced local scheduling p95 to 3.12 seconds, but the full accepted-throughput target remains open.
 
 The real pilot has not started. Production provider/hosting selection, accountable ownership, independent acceptance, representative load, two weeks of teammate usage, external redistribution licensing, and rollout approval remain open. Local fixture results do not satisfy those gates.
 
