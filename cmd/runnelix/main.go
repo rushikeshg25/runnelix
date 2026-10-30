@@ -19,6 +19,7 @@ import (
 	"github.com/rushikeshg25/runnelix/internal/definition"
 	"github.com/rushikeshg25/runnelix/internal/dispatch"
 	"github.com/rushikeshg25/runnelix/internal/engine"
+	"github.com/rushikeshg25/runnelix/internal/identity"
 	"github.com/rushikeshg25/runnelix/internal/nodeservice"
 	"github.com/rushikeshg25/runnelix/internal/scheduling"
 	"github.com/rushikeshg25/runnelix/internal/secrets"
@@ -84,7 +85,18 @@ func run() error {
 				return errors.New("invalid credential key")
 			}
 		}
-		handler := api.API{Store: s, Box: box, BrowserOrigin: os.Getenv("RUNNELIX_BROWSER_ORIGIN")}.Handler()
+		var verifier *identity.Verifier
+		if os.Args[1] == "api" {
+			config, configErr := identity.FromEnv(os.Getenv)
+			if configErr != nil {
+				return configErr
+			}
+			verifier, err = identity.New(ctx, config)
+			if err != nil {
+				return err
+			}
+		}
+		handler := api.API{Store: s, Box: box, Identity: verifier, BrowserOrigin: os.Getenv("RUNNELIX_BROWSER_ORIGIN")}.Handler()
 		if os.Args[1] == "node-service" {
 			hosts := map[string]bool{}
 			for _, host := range strings.Split(os.Getenv("RUNNELIX_EGRESS_HOSTS"), ",") {

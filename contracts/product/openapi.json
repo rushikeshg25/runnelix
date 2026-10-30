@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Runnelix development API",
-    "version": "0.4.0",
-    "description": "Local development API. Literal loopback Host required; browser Origin must equal configured RUNNELIX_BROWSER_ORIGIN. Workspace paths scope data but are not user authentication. The runs POST route remains admission-only; execute POST runs the pinned graph. Requests <=256 KiB; run inputs and node payloads <=8 KiB. Lists have a stable ID cursor and 50-row pages. Credentials are write-only and encrypted; metadata includes destination and grants are explicit."
+    "version": "0.5.0",
+    "description": "Local development API. Literal loopback Host required; browser Origin must equal configured RUNNELIX_BROWSER_ORIGIN. Workspace paths scope data but are not user authentication. The runs POST route remains admission-only; execute POST runs the pinned graph. Requests <=256 KiB; run inputs and node payloads <=8 KiB. Lists have a stable ID cursor and 50-row pages. Credentials are write-only and encrypted; metadata includes destination and grants are explicit. Optional oidc mode verifies identity tokens at GET /v1/identity and denies all other application routes until workspace authorization is implemented. Development mode remains loopback-only."
   },
   "servers": [
     {
@@ -2959,6 +2959,71 @@
           }
         }
       }
+    },
+    "/v1/identity": {
+      "get": {
+        "operationId": "getIdentity",
+        "description": "Development mode reports its mode without a principal. OIDC mode requires a verified token and returns issuer/subject only. Other application routes fail closed in OIDC mode.",
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Identity mode and optional verified principal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "mode"
+                  ],
+                  "properties": {
+                    "mode": {
+                      "enum": [
+                        "development",
+                        "oidc"
+                      ]
+                    },
+                    "principal": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "issuer",
+                        "subject"
+                      ],
+                      "properties": {
+                        "issuer": {
+                          "type": "string"
+                        },
+                        "subject": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Identity token missing or invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Host or Origin rejected"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3354,6 +3419,14 @@
             }
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "oidcIdentityToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "RS256 OIDC ID token for the configured issuer and client. Identity probe only; workspace authorization is not yet implemented."
       }
     }
   }

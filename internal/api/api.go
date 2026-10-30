@@ -14,11 +14,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rushikeshg25/runnelix/internal/definition"
+	"github.com/rushikeshg25/runnelix/internal/identity"
 	"github.com/rushikeshg25/runnelix/internal/secrets"
 	"github.com/rushikeshg25/runnelix/internal/store"
 )
 
 type API struct {
+	Identity      *identity.Verifier
 	Store         *store.Store
 	Box           *secrets.Box
 	BrowserOrigin string
@@ -33,6 +35,7 @@ type Error struct {
 
 func (a API) Handler() http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /v1/identity", a.identity)
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), time.Second)
 		defer cancel()
@@ -40,7 +43,11 @@ func (a API) Handler() http.Handler {
 			respond(w, 503, map[string]string{"status": "unavailable"})
 			return
 		}
-		respond(w, 200, map[string]string{"status": "ready", "mode": "development"})
+		mode := "development"
+		if a.Identity != nil {
+			mode = "oidc"
+		}
+		respond(w, 200, map[string]string{"status": "ready", "mode": mode})
 	})
 	mux.HandleFunc("GET /v1/node-types", func(w http.ResponseWriter, r *http.Request) { respond(w, 200, a.Store.Catalog) })
 	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows", a.create)
@@ -90,7 +97,11 @@ func (a API) Handler() http.Handler {
 		}
 		ctx, cancel := context.WithTimeout(context.WithValue(r.Context(), requestKey{}, id), 10*time.Second)
 		defer cancel()
-		mux.ServeHTTP(w, r.WithContext(ctx))
+		authenticated, ok := a.authenticate(w, r.WithContext(ctx))
+		if !ok {
+			return
+		}
+		mux.ServeHTTP(w, authenticated)
 	})
 }
 func respond(w http.ResponseWriter, status int, value any) {
