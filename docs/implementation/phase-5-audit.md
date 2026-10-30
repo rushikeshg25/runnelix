@@ -67,4 +67,4 @@ Local checks passed on 2026-10-30:
 
 Both live reports confirm unchanged sources during execution and no cleanup errors. These are local fixture results, not production or external-provider acceptance. No editor UI changed in this slice; no new browser interaction test was run.
 
-The next Phase 5 slice is terminal-data retention with active-run protection. Audit records are excluded from that cleanup by default.
+[Terminal-data retention](phase-5-retention.md) now protects active runs and excludes audit records. Retention expiry and hold changes also append audit records; they do not modify existing records.

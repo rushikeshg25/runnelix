@@ -6,11 +6,11 @@ Runnelix is a self-hosted workflow platform under development for internal teams
 
 The design uses a **Go backend**, a **TypeScript interface and node workers**, and an internal node architecture that developers can extend. Adding an ordinary integration action should not require changes to the execution engine or canvas.
 
-> **Project status: Phase 5 security and operations in progress.** Local workflows support conditions, merge, bounded Map, durable waits, schedules, operator reconciliation, GitHub/Slack actions, credential rotation, and portable imports/exports. OIDC identity, workspace roles, and browser login with PKCE, HttpOnly sessions, and CSRF protection are implemented and locally verified. Transactional, append-only audit records are available for privileged workspace changes. Terminal-data retention is next. Production provider acceptance, representative load, independent teammate acceptance, and rollout remain open.
+> **Project status: Phase 5 local security and operations implemented.** Local workflows support conditions, merge, bounded Map, durable waits, schedules, operator reconciliation, GitHub/Slack actions, credential rotation, and portable imports/exports. OIDC identity, workspace roles, and browser login with PKCE, HttpOnly sessions, and CSRF protection are implemented and locally verified. Transactional, append-only audit records are available for privileged workspace changes. Explicit terminal-data retention, owner metrics, schema readiness, local packaging, and isolated backup/restore checks are implemented. Production provider acceptance, representative load, independent teammate acceptance, and rollout remain open.
 
 ## Run the development checks
 
-Prerequisites: Go with automatic toolchain downloads enabled, Node 24, pnpm 11.5.0, Python 3, curl, and make. Supported CLI download targets: macOS/Linux on ARM64 or AMD64. PostgreSQL server/client binaries are required for the database and live integration checks. Docker is not required.
+Prerequisites: Go 1.26.10 or automatic toolchain downloads enabled, Node 24, pnpm 11.5.0, Python 3, curl, and make. Supported CLI download targets: macOS/Linux on ARM64 or AMD64. PostgreSQL server/client binaries are required for the database and live integration checks. Docker is not required.
 
 ```sh
 make tools
@@ -22,6 +22,7 @@ make integration-phase2
 make integration-phase3
 make integration-phase4
 make integration-phase5
+make integration-operations
 ```
 
 `make tools` downloads a checksum-pinned Temporal CLI into this checkout. `make integration` builds the programs, starts isolated loopback services, runs the twelve cases, and stops its own processes. It preserves fake provider/runtime state and reports under `artifacts/phase0/` for inspection.
@@ -34,7 +35,7 @@ Read the [Phase 4 integrations and portability guide](docs/implementation/phase-
 
 ## Enable local browser login
 
-The default development mode is unauthenticated and restricted to loopback. To use OIDC login, apply migrations through **012**, register a public OIDC client with authorization-code flow and S256 PKCE, and explicitly provision the first workspace owner. Signing in never grants workspace membership automatically.
+The default development mode is unauthenticated and restricted to loopback. To use OIDC login, apply migrations through **013**, register a public OIDC client with authorization-code flow and S256 PKCE, and explicitly provision the first workspace owner. Signing in never grants workspace membership automatically.
 
 Follow the [browser login setup](docs/implementation/phase-5-sessions.md#configure-the-local-installation) and [owner provisioning instructions](docs/implementation/phase-5-memberships.md#provision-the-first-owner). These guides specify the issuer, client ID, browser origin, and exact callback URL. The editor currently uses `workspace_dev`.
 
@@ -66,7 +67,11 @@ For a visual introduction, download [the standalone HTML overview](docs/plans/pr
 
 ## Next engineering work
 
-The next Phase 5 slice adds terminal-data retention with active-run protection. Operational metrics, local deployment packaging, and restore verification follow. Audit records have a separate retention boundary. See the [Phase 5 scope](docs/implementation/phase-5.md) and [implementation ledger](docs/implementation/README.md) for completed work and remaining gates. The installation target remains local; independent teammate acceptance, production rollout, and pilot approval are still open.
+The local Phase 5 scope is complete. See the [retention commands](docs/implementation/phase-5-retention.md), [operations and restore guide](docs/implementation/phase-5-operations.md), [dependency review](docs/implementation/phase-5-dependencies.md), and [release checklist](docs/implementation/phase-5-completion.md).
+
+`make package-local` creates a versioned source archive from a clean tracked tree. Backups keep keys separate, and restores always create a new state directory. Migration **013** is required. Dependency security updates change the node bundle digest; retain matching artifacts for unfinished older runs and republish new revisions before new admissions.
+
+Phase 6 is the pilot. Production provider/hosting selection, accountable ownership, independent acceptance, representative load, external redistribution licensing, and rollout approval remain open. Local fixture results do not satisfy those gates.
 
 ## About the name
 

@@ -1,6 +1,6 @@
 # Phase 5: local security and operations
 
-Status: started. Identity verification, workspace permissions, local browser sessions, and transactional audit records are implemented and locally tested. Terminal-data retention is next. See [audit records](phase-5-audit.md). See [browser sessions](phase-5-sessions.md). See [workspace memberships](phase-5-memberships.md). See [identity configuration and limits](phase-5-identity.md). The user selected a local installation. Public deployment, a production identity provider, and an operational owner remain unselected.
+Status: local scope implemented and verified. Identity, permissions, sessions, audit, terminal-data retention, bounded metrics/readiness, native local packaging, paired backup/restore, dependency review, and release evidence are complete. See the [completion checklist](phase-5-completion.md), [operations guide](phase-5-operations.md), and [retention guide](phase-5-retention.md). Public deployment, a production identity provider, an operational owner, redistribution licensing, and pilot acceptance remain open.
 
 ## Implementation boundary
 

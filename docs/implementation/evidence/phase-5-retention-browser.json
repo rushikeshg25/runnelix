@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-30",
+  "surface": "T3 collaborative browser",
+  "fixture": "artifacts/phase1/20261030T101227Z-57e796",
+  "scope": "Fixture OIDC login, UI workflow create/publish/admit; SQL seeded terminal event/payload and aged terminal timestamp in isolated database; actual retention CLI expired payload. This is an expiry display test, not runtime execution evidence.",
+  "checks": [
+    {
+      "viewport": "1280x800",
+      "passed": "View output displayed Output expired under the retention policy after HTTP 410"
+    },
+    {
+      "viewport": "390x844",
+      "passed": "Same expiry message visible; document scrollWidth and viewport both 390"
+    }
+  ],
+  "screenshot": "artifacts/phase5-browser/retention-mobile.png",
+  "cleanup": "Fixture launcher stopped; owned services stopped by its finally block"
+}
