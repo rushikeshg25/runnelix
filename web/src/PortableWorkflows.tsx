@@ -19,7 +19,7 @@ export function PortableWorkflows({
 }: {
   workflow: Workflow | null;
   disabled: boolean;
-  imported: (workflow: Workflow) => Promise<void>;
+  imported: () => Promise<void>;
 }) {
   const [source, setSource] = useState("");
   const [bundle, setBundle] = useState<Bundle | null>(null);
@@ -174,15 +174,14 @@ export function PortableWorkflows({
             }
             onClick={() =>
               void perform(async () => {
-                const result = await request<Workflow>(
-                  `${root}/workflows/import`,
-                  "POST",
-                  { bundle, bindings },
-                );
-                await imported(result);
+                await request<Workflow>(`${root}/workflows/import`, "POST", {
+                  bundle,
+                  bindings,
+                });
                 edit("");
+                await imported();
                 setMessage(
-                  "Workflow imported as a new draft. Review before publishing.",
+                  "Workflow imported as a new draft. Select it from the workflow list to review before publishing.",
                 );
               })
             }

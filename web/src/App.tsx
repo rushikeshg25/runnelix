@@ -201,10 +201,7 @@ export default function App() {
           <PortableWorkflows
             workflow={current}
             disabled={busy || dirty}
-            imported={async (w) => {
-              open(w);
-              await refresh();
-            }}
+            imported={refresh}
           />
           {!current ? (
             <section className="welcome">

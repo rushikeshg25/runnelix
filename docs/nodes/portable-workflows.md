@@ -19,7 +19,7 @@ The format does not promise identical artifact digests across installations. The
 
 ## Editor controls
 
-Open **Import or export a workflow**. Export downloads the selected saved draft. For import, select a JSON file or paste the bundle, click **Review import**, and select a matching local credential for every slot. **Import as new draft** performs full server validation. Missing or revoked credentials do not appear in the choices. Create credentials through the API first. Pending editor changes must be saved or discarded before import/export.
+Open **Import or export a workflow**. Export downloads the selected saved draft. For import, select a JSON file or paste the bundle, click **Review import**, and select a matching local credential for every slot. **Import as new draft** performs full server validation. The new workflow appears in the workflow list; select it when ready. Import never switches the current editor or replaces edits made while the request was pending. Missing or revoked credentials do not appear in the choices. Create credentials through the API first. Pending editor changes must be saved or discarded before import/export.
 
 ## Explicit draft migration example
 
