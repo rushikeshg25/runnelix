@@ -35,3 +35,11 @@ func TestRevisionAndOrigin(t *testing.T) {
 		t.Fatal("origin boundary or request ID missing")
 	}
 }
+
+func TestRetentionExpiryResponse(t *testing.T) {
+	w := httptest.NewRecorder()
+	fail(w, httptest.NewRequest("GET", "/", nil), store.ErrExpired)
+	if w.Code != 410 || !strings.Contains(w.Body.String(), `"code":"data_expired"`) {
+		t.Fatal(w.Code, w.Body.String())
+	}
+}

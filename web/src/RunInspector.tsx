@@ -263,8 +263,13 @@ export function RunInspector({
                               `${root}/runs/${runId}/payloads/${e.outputRef}`,
                             )
                               .then(setPayload)
-                              .catch(() =>
-                                setError("Output could not be loaded."),
+                              .catch((error: unknown) =>
+                                setError(
+                                  error instanceof APIError &&
+                                    error.status === 410
+                                    ? "Output expired under the retention policy."
+                                    : "Output could not be loaded.",
+                                ),
                               );
                           }}
                         >

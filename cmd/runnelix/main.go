@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -38,12 +39,18 @@ func main() {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return errors.New("usage: runnelix migrate|bootstrap|provision-owner|api|node-service|worker|engine|dispatcher")
+		return errors.New("usage: runnelix migrate|preflight|bootstrap|provision-owner|retention|retention-hold|api|node-service|worker|engine|dispatcher")
 	}
 	flags := flag.NewFlagSet(os.Args[1], flag.ContinueOnError)
 	address := flags.String("address", "127.0.0.1:8787", "development API loopback address")
 	temporalAddress := flags.String("temporal-address", "127.0.0.1:7233", "Temporal address")
 	workspaceID := flags.String("workspace", "workspace_dev", "development workspace ID")
+	payloadDays := flags.Int("payload-days", 7, "terminal payload retention in elapsed days")
+	historyDays := flags.Int("history-days", 30, "terminal history retention in elapsed days")
+	batch := flags.Int("limit", 100, "maximum retention candidates (1-100)")
+	apply := flags.Bool("apply", false, "apply retention; otherwise preview only")
+	runID := flags.String("run", "", "run ID for retention hold")
+	hold := flags.Bool("hold", true, "set or release a retention hold")
 	ownerIssuer := flags.String("issuer", "", "owner OIDC issuer")
 	ownerSubject := flags.String("subject", "", "owner OIDC subject")
 	if err := flags.Parse(os.Args[2:]); err != nil {
@@ -63,6 +70,22 @@ func run() error {
 	}
 	defer s.Close()
 	switch os.Args[1] {
+	case "preflight":
+		checkCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		if err := s.CheckSchema(checkCtx); err != nil {
+			return fmt.Errorf("database schema not ready: %w", err)
+		}
+		c, err := client.DialContext(checkCtx, client.Options{HostPort: *temporalAddress})
+		if err != nil {
+			return errors.New("Temporal not ready")
+		}
+		defer c.Close()
+		if _, err = c.CheckHealth(checkCtx, &client.CheckHealthRequest{}); err != nil {
+			return errors.New("Temporal health check failed")
+		}
+		fmt.Println("Database schema and Temporal ready; worker availability requires a smoke execution")
+		return nil
 	case "migrate":
 		if s.Migrate(ctx) != nil {
 			return errors.New("migration failed; inspect schema compatibility without recreating data")
@@ -74,6 +97,21 @@ func run() error {
 			return fmt.Errorf("owner provisioning failed: %w", err)
 		}
 		fmt.Println("workspace owner provisioned")
+		return nil
+	case "retention":
+		result, err := s.RetainTerminalData(store.WithAuditContext(ctx, "installation-operator", ""), *workspaceID, store.RetentionPolicy{PayloadDays: *payloadDays, HistoryDays: *historyDays, Limit: *batch}, *apply)
+		if err != nil {
+			return fmt.Errorf("retention did not report success; inspect audit before retrying: %w", err)
+		}
+		return json.NewEncoder(os.Stdout).Encode(result)
+	case "retention-hold":
+		if *runID == "" {
+			return errors.New("retention-hold requires -run")
+		}
+		if err := s.SetRetentionHold(store.WithAuditContext(ctx, "installation-operator", ""), *workspaceID, *runID, *hold); err != nil {
+			return err
+		}
+		fmt.Println("retention hold updated")
 		return nil
 	case "bootstrap":
 		if s.CreateWorkspace(ctx, *workspaceID, "Development workspace") != nil {

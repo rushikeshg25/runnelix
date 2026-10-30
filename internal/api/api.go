@@ -39,6 +39,7 @@ func (a API) Handler() http.Handler {
 	handle := func(pattern string, permission store.Permission, handler http.HandlerFunc) {
 		mux.HandleFunc(pattern, a.authorize(permission, handler))
 	}
+	handle("GET /v1/workspaces/{workspace}/operations", store.Manage, a.operationalMetrics)
 	handle("GET /v1/workspaces/{workspace}/audit-records", store.Manage, a.auditRecords)
 	handle("GET /v1/workspaces/{workspace}/memberships", store.Manage, a.memberships)
 	handle("PUT /v1/workspaces/{workspace}/memberships", store.Manage, a.changeMembership)
@@ -51,7 +52,7 @@ func (a API) Handler() http.Handler {
 	handle("GET /health", publicRoute, func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), time.Second)
 		defer cancel()
-		if a.Store.Pool.Ping(ctx) != nil {
+		if a.Store.CheckSchema(ctx) != nil {
 			respond(w, 503, map[string]string{"status": "unavailable"})
 			return
 		}
@@ -141,6 +142,8 @@ func fail(w http.ResponseWriter, r *http.Request, err error) {
 	case errors.As(err, &invalid):
 		status, code, msg = 422, "invalid_workflow", "Workflow validation failed"
 		issues = invalid.Issues
+	case errors.Is(err, store.ErrExpired):
+		status, code, msg = http.StatusGone, "data_expired", "Run data expired under retention policy"
 	case errors.Is(err, store.ErrNotFound):
 		status, code, msg = 404, "not_found", "Record not found"
 	case errors.Is(err, store.ErrConflict):

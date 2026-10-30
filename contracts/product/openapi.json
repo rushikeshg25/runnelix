@@ -152,7 +152,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Read-only PostgreSQL schema readiness with a one-second deadline. Requires the exact migration set and checksums. Does not check Temporal or worker availability."
       }
     },
     "/v1/node-types": {
@@ -1971,6 +1972,16 @@
                 }
               }
             }
+          },
+          "410": {
+            "description": "Run history or the requested payload expired under retention policy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2257,6 +2268,16 @@
                 }
               }
             }
+          },
+          "410": {
+            "description": "Run history or the requested payload expired under retention policy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2320,6 +2341,16 @@
           },
           "403": {
             "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Run history or the requested payload expired under retention policy",
             "content": {
               "application/json": {
                 "schema": {
@@ -2418,6 +2449,16 @@
                 }
               }
             }
+          },
+          "410": {
+            "description": "Run history or the requested payload expired under retention policy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2486,6 +2527,16 @@
           },
           "403": {
             "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Run history or the requested payload expired under retention policy",
             "content": {
               "application/json": {
                 "schema": {
@@ -3343,6 +3394,16 @@
           },
           "403": {
             "description": "Workspace permission is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Run history or the requested payload expired under retention policy",
             "content": {
               "application/json": {
                 "schema": {
@@ -4719,6 +4780,89 @@
           "Manage"
         ]
       }
+    },
+    "/v1/workspaces/{workspace}/operations": {
+      "get": {
+        "operationId": "operationalMetrics",
+        "description": "Owner-only workspace operational aggregates. Fixed fields; no run IDs or payloads. Two-second query deadline. These metrics do not prove worker readiness or production service targets.",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "OIDC mode: missing or invalid identity token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Workspace operational aggregates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationalMetrics"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Operational metrics unavailable"
+          }
+        },
+        "security": [
+          {},
+          {
+            "oidcIdentityToken": []
+          },
+          {
+            "browserSession": []
+          }
+        ],
+        "x-workspace-permission": [
+          "Manage"
+        ]
+      }
     }
   },
   "components": {
@@ -4857,6 +5001,23 @@
           },
           "updatedAt": {
             "type": "string",
+            "format": "date-time"
+          },
+          "retentionHold": {
+            "type": "boolean"
+          },
+          "payloadsExpiredAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "historyExpiredAt": {
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         },
@@ -5326,7 +5487,10 @@
               "run.admitted",
               "run.cancel_requested",
               "run.resolved",
-              "schedule.saved"
+              "schedule.saved",
+              "run.payloads_expired",
+              "run.history_expired",
+              "run.retention_hold_set"
             ]
           },
           "targetId": {
@@ -5340,6 +5504,79 @@
           "recordedAt": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "OperationalMetrics": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pendingStarts",
+          "unresolvedInvocations",
+          "retentionHolds",
+          "payloadBytes",
+          "expiredHistories",
+          "oldestPendingSeconds",
+          "runs"
+        ],
+        "properties": {
+          "pendingStarts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unresolvedInvocations": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "retentionHolds": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "payloadBytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "expiredHistories": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "oldestPendingSeconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "runs": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "accepted": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "running": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "waiting": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "needs_attention": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "succeeded": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "failed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cancelled": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
           }
         }
       }
