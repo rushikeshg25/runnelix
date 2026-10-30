@@ -81,3 +81,7 @@ integration-operations: build-phase2
 .PHONY: integration-phase6
 integration-phase6: build-phase2
 	python3 tests/integration/phase6.py
+
+.PHONY: integration-capacity
+integration-capacity: build-phase2
+	python3 tests/integration/capacity.py
