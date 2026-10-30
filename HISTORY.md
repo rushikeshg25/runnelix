@@ -371,3 +371,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **Result:** the same local burst measured scheduling p95 at 3.119 seconds versus 41.512 seconds previously; peak sampled pending-start age fell to 1.567 seconds. All accepted workflows and queued-work recovery passed.
 - **Evidence:** [investigation, implementation, and validation](docs/implementation/dispatch-throughput.md), [final capacity report](docs/implementation/evidence/dispatch-capacity.json).
 - **Limit:** only 300/1,200 requests were accepted; full capacity acceptance remains open. No quotas, activity concurrency, workflow definitions, SDK/server versions, or schemas changed.
+
+## 2026-10-31 — CI coverage consolidated
+
+- **What:** replaced five duplicated workflows with shared unit/static/security/PostgreSQL checks, a five-suite runtime matrix, and a final gate that rejects incomplete coverage. Preserved restore, pilot-fixture, failure-injection, and historical compatibility tests.
+- **Why:** eliminate repeated checks and configuration, cancel obsolete runs, cache locked dependencies, validate workflow changes, and detect dependency advisories weekly.
+- **Evidence:** [CI guide and review](docs/implementation/ci.md), [workflow](.github/workflows/ci.yml), shared setup action, and `make check-ci`. Local workflow/static checks and all sixteen aggregate dependency-state combinations passed. Hosted behavior is verified separately after pushing.
+- **Boundary:** automatic triggers are main pushes and PRs, with manual and weekly runs available. Only structured test reports are uploaded; no fixture databases, keys, or release archives are published. Branch-protection settings were not changed.

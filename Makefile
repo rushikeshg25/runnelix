@@ -85,3 +85,7 @@ integration-phase6: build-phase2
 .PHONY: integration-capacity
 integration-capacity: build-phase2
 	python3 tests/integration/capacity.py
+
+.PHONY: check-ci
+check-ci:
+	go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12

@@ -26,6 +26,8 @@ make integration-operations
 make integration-phase6
 ```
 
+See the [CI guide](docs/implementation/ci.md) for test coverage, workflow linting (`make check-ci`), weekly advisory checks, triggers, and retained reports.
+
 `make tools` downloads a checksum-pinned Temporal CLI into this checkout. `make integration` builds the programs, starts isolated loopback services, runs the twelve cases, and stops its own processes. It preserves fake provider/runtime state and reports under `artifacts/phase0/` for inspection.
 
 `make integration-phase5` runs signed OIDC and workspace/session security tests against an isolated PostgreSQL instance. It covers permission checks, login replay, session expiry, CSRF, logout closing authenticated event streams, and audit rollback/isolation. Set `RUNNELIX_PG_BIN` if the PostgreSQL binaries are not on PATH.

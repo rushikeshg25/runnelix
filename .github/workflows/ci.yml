@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Unit, static, security, and PostgreSQL checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          postgres: 'true'
+      - name: Lint GitHub Actions workflows
+        run: make check-ci
+      - name: Unit and static checks
+        run: make test check
+      - name: Validate OpenAPI 3.1 contract
+        run: |
+          python3 -m venv .tools/openapi
+          .tools/openapi/bin/pip install openapi-spec-validator==0.7.2
+          .tools/openapi/bin/python -m openapi_spec_validator contracts/product/openapi.json
+      - name: Isolated store and signed identity checks
+        run: make integration-phase5
+      - name: Verify local source packaging
+        run: |
+          make package-local
+          cd artifacts/releases
+          sha256sum --check ./*.sha256
+      - name: Dependency advisory checks
+        run: |
+          pnpm audit
+          go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+      - name: Preserve database test reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: database-check-reports
+          path: artifacts/**/result.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+  integration:
+    name: Runtime ${{ matrix.suite }}
+    needs: checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: phase0
+            build: build
+          - suite: phase1
+            build: build-phase2
+          - suite: phase2
+            build: build-phase2
+          - suite: phase3
+            build: build-phase2
+          - suite: phase4
+            build: build-phase2
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # Phase 3 builds the pinned older interpreter from Git history.
+          fetch-depth: ${{ matrix.suite == 'phase3' && '0' || '1' }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          postgres: ${{ matrix.suite != 'phase0' && 'true' || 'false' }}
+          temporal: 'true'
+      - name: Build suite programs
+        run: make ${{ matrix.build }}
+      - name: Build retained V2 compatibility fixture
+        if: matrix.suite == 'phase3'
+        run: python3 scripts/build-compat-v2.py
+      - name: Run isolated runtime suite
+        run: python3 tests/integration/${{ matrix.suite }}.py
+      - name: Paired backup and restore drill
+        if: matrix.suite == 'phase4'
+        run: python3 tests/integration/operations.py
+      - name: Portable pilot fixture execution
+        if: matrix.suite == 'phase4'
+        run: python3 tests/integration/phase6.py
+      - name: Preserve runtime reports only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: runtime-${{ matrix.suite }}-reports
+          # Databases, settings, keys, and payload-bearing logs remain on the runner.
+          path: |
+            artifacts/**/results.json
+            artifacts/**/result.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+  verify:
+    name: CI passed
+    if: always()
+    needs: [checks, integration]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    steps:
+      - name: Require all checks and runtime suites
+        env:
+          CHECKS_RESULT: ${{ needs.checks.result }}
+          INTEGRATION_RESULT: ${{ needs.integration.result }}
+        run: |
+          [[ "$CHECKS_RESULT" == success && "$INTEGRATION_RESULT" == success ]]

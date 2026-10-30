@@ -1,0 +1,41 @@
+name: Set up Runnelix
+description: Install the manifest-pinned toolchain and dependencies on Ubuntu.
+inputs:
+  postgres:
+    description: Install PostgreSQL 16 tools for isolated database tests.
+    default: 'false'
+  temporal:
+    description: Install the checksum-pinned Temporal CLI for runtime tests.
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+      with:
+        go-version-file: go.mod
+        cache: true
+    - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      # Reads packageManager from package.json; do not duplicate its version here.
+      with:
+        run_install: false
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: '24'
+        cache: pnpm
+        cache-dependency-path: pnpm-lock.yaml
+    - name: Install PostgreSQL tools
+      if: inputs.postgres == 'true'
+      shell: bash
+      run: |
+        if [[ ! -x /usr/lib/postgresql/16/bin/initdb ]]; then
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y postgresql-16
+        fi
+        echo 'RUNNELIX_PG_BIN=/usr/lib/postgresql/16/bin' >> "$GITHUB_ENV"
+    - name: Install locked dependencies
+      shell: bash
+      run: make deps
+    - name: Install verified Temporal CLI
+      if: inputs.temporal == 'true'
+      shell: bash
+      run: make tools
