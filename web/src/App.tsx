@@ -11,6 +11,7 @@ import {
 import { SchemaForm } from "./SchemaForm";
 import { Canvas } from "./Canvas";
 import { RunInspector } from "./RunInspector";
+import { PortableWorkflows } from "./PortableWorkflows";
 import { Schedules } from "./Schedules";
 import { MappingPreview } from "./MappingPreview";
 export default function App() {
@@ -197,6 +198,14 @@ export default function App() {
           <div role="status" className={message ? "notice success" : "hidden"}>
             {message}
           </div>
+          <PortableWorkflows
+            workflow={current}
+            disabled={busy || dirty}
+            imported={async (w) => {
+              open(w);
+              await refresh();
+            }}
+          />
           {!current ? (
             <section className="welcome">
               <div className="eyebrow">MAKE WORK FLOW</div>

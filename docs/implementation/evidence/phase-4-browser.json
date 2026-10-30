@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-30",
+  "scope": "T3 collaborative browser, isolated local API and PostgreSQL; fixture data only. Runtime execution verified separately.",
+  "viewports": [
+    [
+      1280,
+      800
+    ],
+    [
+      390,
+      844
+    ]
+  ],
+  "checks": [
+    {
+      "name": "Paste portable graph, review, import new unpublished draft",
+      "status": "passed"
+    },
+    {
+      "name": "Export saved draft creates workflow.json download",
+      "status": "passed"
+    },
+    {
+      "name": "Credential slot requires selection; matching encrypted local credential binds on import",
+      "status": "passed"
+    },
+    {
+      "name": "Read persisted import through API: revision 1, unpublished, local credential reference",
+      "status": "passed"
+    },
+    {
+      "name": "Unsaved graph edits disable export/import",
+      "status": "passed"
+    },
+    {
+      "name": "Desktop and narrow layout visual inspection; narrow document width equals viewport",
+      "status": "passed"
+    }
+  ],
+  "limitations": [
+    "File picker upload path was not exercised; paste path was exercised.",
+    "Temporary API initially omitted encryption key; restarted with key before credential-binding verification.",
+    "Connection-refused browser diagnostics occurred during intentional fixture API shutdown/restart."
+  ],
+  "sourceSha256": {
+    "web/src/PortableWorkflows.tsx": "7ba7230c178a25359373833ad8ec2bb2306bca732b2b0b05f7a2d2448a16e88f",
+    "web/src/App.tsx": "33bbce938e48fdff90ca0477782bc91e3eb522acdd67184bb9be64cee6440baf",
+    "web/src/style.css": "7e3632c80a558f7cd99170bafcfe7db60d33733adb86df65f8218cbcae028df6"
+  }
+}
