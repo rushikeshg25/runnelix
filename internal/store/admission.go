@@ -14,17 +14,20 @@ import (
 )
 
 type Run struct {
-	ID              string    `json:"runId"`
-	WorkflowID      string    `json:"workflowId"`
-	VersionID       string    `json:"workflowVersionId"`
-	State           string    `json:"state"`
-	AcceptedAt      time.Time `json:"acceptedAt"`
-	RuntimeID       *string   `json:"runtimeId"`
-	DispatchState   string    `json:"dispatchState"`
-	ExecutionMode   string    `json:"executionMode"`
-	CancelRequested bool      `json:"cancelRequested"`
-	Checkpoint      int64     `json:"checkpoint"`
-	UpdatedAt       time.Time `json:"updatedAt"`
+	RetentionHold     bool       `json:"retentionHold"`
+	PayloadsExpiredAt *time.Time `json:"payloadsExpiredAt"`
+	HistoryExpiredAt  *time.Time `json:"historyExpiredAt"`
+	ID                string     `json:"runId"`
+	WorkflowID        string     `json:"workflowId"`
+	VersionID         string     `json:"workflowVersionId"`
+	State             string     `json:"state"`
+	AcceptedAt        time.Time  `json:"acceptedAt"`
+	RuntimeID         *string    `json:"runtimeId"`
+	DispatchState     string     `json:"dispatchState"`
+	ExecutionMode     string     `json:"executionMode"`
+	CancelRequested   bool       `json:"cancelRequested"`
+	Checkpoint        int64      `json:"checkpoint"`
+	UpdatedAt         time.Time  `json:"updatedAt"`
 }
 
 func (s *Store) Admit(ctx context.Context, workspace, workflow, key string, input []byte) (Run, error) {
@@ -154,14 +157,18 @@ func (s *Store) admitTx(ctx context.Context, tx pgx.Tx, workspace, workflow, key
 func getRun(ctx context.Context, q querier, workspace, id string) (Run, error) {
 	var run Run
 	err := q.QueryRow(ctx, `SELECT r.id,r.workflow_id,r.version_id,r.state,r.accepted_at,receipt.runtime_id,
- CASE WHEN o.dispatched_at IS NOT NULL THEN 'acknowledged' WHEN receipt.run_id IS NOT NULL THEN 'receipt_recorded' ELSE 'pending' END, r.execution_mode,r.cancel_requested,r.checkpoint,r.updated_at
+ CASE WHEN o.dispatched_at IS NOT NULL THEN 'acknowledged' WHEN receipt.run_id IS NOT NULL THEN 'receipt_recorded' ELSE 'pending' END, r.execution_mode,r.cancel_requested,r.checkpoint,r.updated_at,r.retention_hold,r.payloads_expired_at,r.history_expired_at
  FROM runs r JOIN start_outbox o ON (o.workspace_id,o.run_id)=(r.workspace_id,r.id)
  LEFT JOIN runtime_receipts receipt ON (receipt.workspace_id,receipt.run_id)=(r.workspace_id,r.id)
- WHERE r.workspace_id=$1 AND r.id=$2`, workspace, id).Scan(&run.ID, &run.WorkflowID, &run.VersionID, &run.State, &run.AcceptedAt, &run.RuntimeID, &run.DispatchState, &run.ExecutionMode, &run.CancelRequested, &run.Checkpoint, &run.UpdatedAt)
+ WHERE r.workspace_id=$1 AND r.id=$2`, workspace, id).Scan(&run.ID, &run.WorkflowID, &run.VersionID, &run.State, &run.AcceptedAt, &run.RuntimeID, &run.DispatchState, &run.ExecutionMode, &run.CancelRequested, &run.Checkpoint, &run.UpdatedAt, &run.RetentionHold, &run.PayloadsExpiredAt, &run.HistoryExpiredAt)
 	return run, notFound(err)
 }
 func (s *Store) GetRun(ctx context.Context, workspace, id string) (Run, error) {
-	return getRun(ctx, s.Pool, workspace, id)
+	run, err := getRun(ctx, s.Pool, workspace, id)
+	if err == nil && run.HistoryExpiredAt != nil {
+		return Run{}, ErrExpired
+	}
+	return run, err
 }
 
 func (s *Store) AdmitWebhook(ctx context.Context, workspace, workflow, key string, input []byte) (Run, error) {

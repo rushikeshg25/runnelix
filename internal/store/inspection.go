@@ -1,6 +1,9 @@
 package store
 
-import "context"
+import (
+	"context"
+	"errors"
+)
 
 // Lists use a stable ID cursor and a fixed page size to bound database work.
 func (s *Store) Workflows(ctx context.Context, workspace, after string) ([]Workflow, error) {
@@ -20,7 +23,7 @@ func (s *Store) Workflows(ctx context.Context, workspace, after string) ([]Workf
 	return result, rows.Err()
 }
 func (s *Store) Runs(ctx context.Context, workspace, workflow, after string) ([]Run, error) {
-	rows, err := s.Pool.Query(ctx, "SELECT id FROM runs WHERE workspace_id=$1 AND workflow_id=$2 AND id>$3 ORDER BY id LIMIT 50", workspace, workflow, after)
+	rows, err := s.Pool.Query(ctx, "SELECT id FROM runs WHERE workspace_id=$1 AND workflow_id=$2 AND id>$3 AND history_expired_at IS NULL ORDER BY id LIMIT 50", workspace, workflow, after)
 	if err != nil {
 		return nil, err
 	}
@@ -41,6 +44,9 @@ func (s *Store) Runs(ctx context.Context, workspace, workflow, after string) ([]
 	result := []Run{}
 	for _, id := range ids {
 		r, err := s.GetRun(ctx, workspace, id)
+		if errors.Is(err, ErrExpired) {
+			continue
+		}
 		if err != nil {
 			return nil, err
 		}

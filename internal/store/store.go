@@ -18,6 +18,7 @@ import (
 //go:embed migrations/*.sql
 var migrations embed.FS
 
+var ErrExpired = errors.New("run data expired under retention policy")
 var ErrNotFound = errors.New("record not found")
 var ErrConflict = errors.New("revision or idempotency conflict")
 var ErrUnpublished = errors.New("workflow has no published version")

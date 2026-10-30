@@ -85,9 +85,13 @@ func putPayload(ctx context.Context, tx pgx.Tx, workspace, run string, value any
 	digest := hex.EncodeToString(sum[:])
 	id := "payload_" + digest
 	var used, limit, size int64
-	err = tx.QueryRow(ctx, "SELECT payload_bytes,max_payload_bytes,octet_length($3::jsonb::text) FROM runs WHERE workspace_id=$1 AND id=$2 FOR NO KEY UPDATE", workspace, run, encoded).Scan(&used, &limit, &size)
+	var expired *time.Time
+	err = tx.QueryRow(ctx, "SELECT payload_bytes,max_payload_bytes,octet_length($3::jsonb::text),payloads_expired_at FROM runs WHERE workspace_id=$1 AND id=$2 FOR NO KEY UPDATE", workspace, run, encoded).Scan(&used, &limit, &size, &expired)
 	if err != nil {
 		return "", notFound(err)
+	}
+	if expired != nil {
+		return "", ErrExpired
 	}
 	var exists bool
 	if err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM payloads WHERE workspace_id=$1 AND run_id=$2 AND id=$3)", workspace, run, id).Scan(&exists); err != nil {
@@ -107,7 +111,11 @@ func putPayload(ctx context.Context, tx pgx.Tx, workspace, run string, value any
 }
 func (s *Store) Payload(ctx context.Context, workspace, run, ref string) (json.RawMessage, error) {
 	var data json.RawMessage
-	err := s.Pool.QueryRow(ctx, "SELECT data FROM payloads WHERE workspace_id=$1 AND run_id=$2 AND id=$3", workspace, run, ref).Scan(&data)
+	var expired *time.Time
+	err := s.Pool.QueryRow(ctx, "SELECT data,expired_at FROM payloads WHERE workspace_id=$1 AND run_id=$2 AND id=$3", workspace, run, ref).Scan(&data, &expired)
+	if err == nil && expired != nil {
+		return nil, ErrExpired
+	}
 	return data, notFound(err)
 }
 func (s *Store) PrepareInvocation(ctx context.Context, r StartRequest, step definition.Step, inputRef string) (definition.Envelope, error) {
