@@ -435,5 +435,77 @@
       },
       "credentialRequired": true
     }
+  },
+  {
+    "type": "slack.postMessage",
+    "version": 1,
+    "kind": "action",
+    "title": "Slack \u00b7 Post message",
+    "inputs": [
+      "in"
+    ],
+    "outputs": [
+      "out"
+    ],
+    "retrySafety": "unsafe",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channel",
+        "credentialRef"
+      ],
+      "properties": {
+        "channel": {
+          "type": "string",
+          "pattern": "^[CGD][A-Z0-9]+$",
+          "maxLength": 80
+        },
+        "credentialRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3000
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channel",
+        "ts"
+      ],
+      "properties": {
+        "channel": {
+          "type": "string",
+          "pattern": "^[CGD][A-Z0-9]+$",
+          "maxLength": 80
+        },
+        "ts": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$",
+          "maxLength": 40
+        }
+      }
+    },
+    "httpPolicy": {
+      "method": "POST",
+      "url": "https://slack.com/api/chat.postMessage",
+      "credentialRequired": true
+    }
   }
 ]

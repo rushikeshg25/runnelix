@@ -19,7 +19,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:e913a6ba062fe0640b3b3da516f31274d6835f1fa9219df07ffcc89ca7bec4b1"
+    "implementationDigest": "sha256:24dfbcd8261fbeb3ba844558066c89d07c3690a0380e40a9b7c8be6787aebd08"
   },
   {
     "type": "mock.echo",
@@ -43,7 +43,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:e913a6ba062fe0640b3b3da516f31274d6835f1fa9219df07ffcc89ca7bec4b1"
+    "implementationDigest": "sha256:24dfbcd8261fbeb3ba844558066c89d07c3690a0380e40a9b7c8be6787aebd08"
   },
   {
     "type": "transform.map",
@@ -77,7 +77,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:e913a6ba062fe0640b3b3da516f31274d6835f1fa9219df07ffcc89ca7bec4b1"
+    "implementationDigest": "sha256:24dfbcd8261fbeb3ba844558066c89d07c3690a0380e40a9b7c8be6787aebd08"
   },
   {
     "type": "control.condition",
@@ -112,7 +112,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:e913a6ba062fe0640b3b3da516f31274d6835f1fa9219df07ffcc89ca7bec4b1"
+    "implementationDigest": "sha256:24dfbcd8261fbeb3ba844558066c89d07c3690a0380e40a9b7c8be6787aebd08"
   },
   {
     "type": "http.get",
@@ -165,7 +165,7 @@
       "method": "GET",
       "urlConfig": "url"
     },
-    "implementationDigest": "sha256:e913a6ba062fe0640b3b3da516f31274d6835f1fa9219df07ffcc89ca7bec4b1"
+    "implementationDigest": "sha256:24dfbcd8261fbeb3ba844558066c89d07c3690a0380e40a9b7c8be6787aebd08"
   },
   {
     "type": "http.post",
@@ -218,7 +218,7 @@
       "method": "POST",
       "urlConfig": "url"
     },
-    "implementationDigest": "sha256:e913a6ba062fe0640b3b3da516f31274d6835f1fa9219df07ffcc89ca7bec4b1"
+    "implementationDigest": "sha256:24dfbcd8261fbeb3ba844558066c89d07c3690a0380e40a9b7c8be6787aebd08"
   },
   {
     "type": "control.merge",
@@ -255,7 +255,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:e913a6ba062fe0640b3b3da516f31274d6835f1fa9219df07ffcc89ca7bec4b1"
+    "implementationDigest": "sha256:24dfbcd8261fbeb3ba844558066c89d07c3690a0380e40a9b7c8be6787aebd08"
   },
   {
     "type": "control.wait",
@@ -289,7 +289,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:e913a6ba062fe0640b3b3da516f31274d6835f1fa9219df07ffcc89ca7bec4b1"
+    "implementationDigest": "sha256:24dfbcd8261fbeb3ba844558066c89d07c3690a0380e40a9b7c8be6787aebd08"
   },
   {
     "type": "control.map",
@@ -350,7 +350,7 @@
     "outputSchema": {
       "type": "object"
     },
-    "implementationDigest": "sha256:e913a6ba062fe0640b3b3da516f31274d6835f1fa9219df07ffcc89ca7bec4b1"
+    "implementationDigest": "sha256:24dfbcd8261fbeb3ba844558066c89d07c3690a0380e40a9b7c8be6787aebd08"
   },
   {
     "type": "github.createIssue",
@@ -444,6 +444,79 @@
       },
       "credentialRequired": true
     },
-    "implementationDigest": "sha256:e913a6ba062fe0640b3b3da516f31274d6835f1fa9219df07ffcc89ca7bec4b1"
+    "implementationDigest": "sha256:24dfbcd8261fbeb3ba844558066c89d07c3690a0380e40a9b7c8be6787aebd08"
+  },
+  {
+    "type": "slack.postMessage",
+    "version": 1,
+    "kind": "action",
+    "title": "Slack \u00b7 Post message",
+    "inputs": [
+      "in"
+    ],
+    "outputs": [
+      "out"
+    ],
+    "retrySafety": "unsafe",
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channel",
+        "credentialRef"
+      ],
+      "properties": {
+        "channel": {
+          "type": "string",
+          "pattern": "^[CGD][A-Z0-9]+$",
+          "maxLength": 80
+        },
+        "credentialRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3000
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channel",
+        "ts"
+      ],
+      "properties": {
+        "channel": {
+          "type": "string",
+          "pattern": "^[CGD][A-Z0-9]+$",
+          "maxLength": 80
+        },
+        "ts": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$",
+          "maxLength": 40
+        }
+      }
+    },
+    "httpPolicy": {
+      "method": "POST",
+      "url": "https://slack.com/api/chat.postMessage",
+      "credentialRequired": true
+    },
+    "implementationDigest": "sha256:24dfbcd8261fbeb3ba844558066c89d07c3690a0380e40a9b7c8be6787aebd08"
   }
 ]

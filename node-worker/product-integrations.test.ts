@@ -27,3 +27,22 @@ test('GitHub malformed successful response is not accepted as success',async()=>
  const controller=new AbortController();controller.abort();
  await assert.rejects(invoke('github.createIssue',{title:'test'},github,async()=>assert.fail('cancelled before send'),controller.signal),{name:'AbortError'});
 });
+const slack={channel:'C123ABC',credentialRef:'credential_fixture'};
+test('Slack posts bounded text to a fixed route and returns message identity',async()=>{
+ assert.deepEqual(await invoke('slack.postMessage',{text:'Fixture'},slack,async request=>{
+  assert.deepEqual(request,{url:'https://slack.com/api/chat.postMessage',method:'POST',body:{channel:'C123ABC',text:'Fixture'}});
+  return {status:200,body:{ok:true,channel:'C123ABC',ts:'123456.000001',message:{text:'not retained'}}};
+ }),{channel:'C123ABC',ts:'123456.000001'});
+});
+test('Slack HTTP 200 rejection is a safe failure, never success',async()=>{
+ await assert.rejects(invoke('slack.postMessage',{text:'Fixture'},slack,async()=>({status:200,body:{ok:false,error:'sensitive-provider-detail'}})),error=>{
+  assert.equal((error as {code:string}).code,'ProviderRejected');assert.ok(!String(error).includes('sensitive-provider-detail'));return true;
+ });
+ for(const body of [{},{ok:'true'},{ok:true,channel:'C123ABC',ts:123}]) await assert.rejects(invoke('slack.postMessage',{text:'Fixture'},slack,async()=>({status:200,body})),{code:'InvalidOutput'});
+});
+test('Slack rejects invalid configuration and input before send',async()=>{
+ for(const config of [{...slack,channel:'#general'},{channel:'C123ABC'}]) await assert.rejects(invoke('slack.postMessage',{text:'Fixture'},config,async()=>assert.fail('must not send')),{code:'InvalidInput'});
+ for(const input of [{text:''},{text:'x'.repeat(3001)},{text:'hello',channel:'COTHER'}]) await assert.rejects(invoke('slack.postMessage',input,slack,async()=>assert.fail('must not send')),{code:'InvalidInput'});
+ const controller=new AbortController();controller.abort();
+ await assert.rejects(invoke('slack.postMessage',{text:'Fixture'},slack,async()=>assert.fail('cancelled'),controller.signal),{name:'AbortError'});
+});
