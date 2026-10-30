@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/rushikeshg25/runnelix/internal/api"
+	"github.com/rushikeshg25/runnelix/internal/definition"
 	"github.com/rushikeshg25/runnelix/internal/dispatch"
 	"github.com/rushikeshg25/runnelix/internal/engine"
 	"github.com/rushikeshg25/runnelix/internal/nodeservice"
@@ -91,7 +92,13 @@ func run() error {
 					hosts[strings.ToLower(strings.TrimSpace(host))] = true
 				}
 			}
-			handler, err = (nodeservice.Service{Store: s, Token: os.Getenv("RUNNELIX_WORKER_TOKEN"), Box: box, Egress: nodeservice.Egress{Hosts: hosts, AllowLoopback: os.Getenv("RUNNELIX_DEV_LOOPBACK_EGRESS") == "1"}}).Handler()
+			fixtures := map[string]string{}
+			if raw := os.Getenv("RUNNELIX_DEV_PROVIDER_FIXTURES"); raw != "" {
+				if definition.Decode([]byte(raw), &fixtures) != nil {
+					return errors.New("invalid provider fixture mapping")
+				}
+			}
+			handler, err = (nodeservice.Service{Store: s, Token: os.Getenv("RUNNELIX_WORKER_TOKEN"), Box: box, Egress: nodeservice.Egress{FixtureOrigins: fixtures, Hosts: hosts, AllowLoopback: os.Getenv("RUNNELIX_DEV_LOOPBACK_EGRESS") == "1"}}).Handler()
 			if err != nil {
 				return err
 			}

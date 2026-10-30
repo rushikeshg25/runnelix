@@ -106,3 +106,35 @@ func TestRequiredCredentialAndVersionedPolicy(t *testing.T) {
 		t.Fatal("method override accepted")
 	}
 }
+
+func TestFixtureOriginsRequireExplicitLoopbackAndPreserveRequest(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.RequestURI() != "/repos/team/repo/issues?fixture=1" || r.Method != "POST" || r.Header.Get("Authorization") != "Bearer fake-fixture" || r.Header.Get("X-Fixture") != "fixed" {
+			t.Error("fixture changed request")
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(201)
+		_, _ = w.Write([]byte(`{"id":123}`))
+	}))
+	defer server.Close()
+	e := Egress{Hosts: map[string]bool{"api.github.com": true, "127.0.0.1": true}, AllowLoopback: true, FixtureOrigins: map[string]string{"api.github.com": server.URL}}
+	result, err := e.Do(context.Background(), Request{URL: "https://api.github.com/repos/team/repo/issues?fixture=1", Method: "POST", Body: map[string]any{"title": "fixture"}, Headers: map[string]string{"X-Fixture": "fixed"}}, "fake-fixture")
+	if err != nil || result.Status != 201 {
+		t.Fatal(result, err)
+	}
+	e.AllowLoopback = false
+	if e.ValidateFixtures() == nil {
+		t.Fatal("fixture enabled outside local mode")
+	}
+	e.AllowLoopback = true
+	for _, origin := range []string{"https://example.com", "http://localhost:1234", "http://127.0.0.1/path", "http://127.0.0.1?x=1", "http://user@127.0.0.1", "http://127.0.0.1#fragment"} {
+		e.FixtureOrigins["api.github.com"] = origin
+		if e.ValidateFixtures() == nil {
+			t.Fatal("invalid fixture accepted", origin)
+		}
+	}
+	e.FixtureOrigins = map[string]string{"unapproved.example": server.URL}
+	if e.ValidateFixtures() == nil {
+		t.Fatal("unapproved host remapped")
+	}
+}

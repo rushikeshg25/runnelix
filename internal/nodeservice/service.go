@@ -30,6 +30,9 @@ type taskRequest struct {
 }
 
 func (s Service) Handler() (http.Handler, error) {
+	if err := s.Egress.ValidateFixtures(); err != nil {
+		return nil, err
+	}
 	if len(s.Token) < 32 {
 		return nil, errors.New("worker token must contain at least 32 characters")
 	}

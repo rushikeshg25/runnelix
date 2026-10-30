@@ -32,8 +32,9 @@ type HTTPResult struct {
 	Body   any `json:"body"`
 }
 type Egress struct {
-	Hosts         map[string]bool
-	AllowLoopback bool
+	FixtureOrigins map[string]string // Explicit operator-only loopback fixtures; never workflow data.
+	Hosts          map[string]bool
+	AllowLoopback  bool
 }
 
 func public(ip net.IP) bool {
@@ -71,10 +72,33 @@ func (e Egress) Validate(raw string) (*url.URL, error) {
 	}
 	return u, nil
 }
+func (e Egress) ValidateFixtures() error {
+	for host, origin := range e.FixtureOrigins {
+		u, err := url.Parse(origin)
+		if err != nil || !e.AllowLoopback || !e.Hosts[host] || host != strings.ToLower(host) || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") || u.RawPath != "" || u.Opaque != "" || u.ForceQuery {
+			return errors.New("invalid loopback fixture configuration")
+		}
+		ip := net.ParseIP(u.Hostname())
+		if ip == nil || !ip.IsLoopback() || (u.Scheme != "http" && u.Scheme != "https") {
+			return errors.New("fixture origin must be literal loopback")
+		}
+		if _, err := e.Validate(origin); err != nil {
+			return errors.New("fixture origin must be allowed")
+		}
+	}
+	return nil
+}
 func (e Egress) Do(ctx context.Context, request Request, credential string) (HTTPResult, error) {
 	u, err := e.Validate(request.URL)
 	if err != nil {
 		return HTTPResult{}, err
+	}
+	if err := e.ValidateFixtures(); err != nil {
+		return HTTPResult{}, &ProviderError{"EgressDenied", false}
+	}
+	if origin, ok := e.FixtureOrigins[strings.ToLower(u.Hostname())]; ok {
+		fixture, _ := url.Parse(origin)
+		u.Scheme, u.Host = fixture.Scheme, fixture.Host
 	}
 	if request.Method != "GET" && request.Method != "POST" {
 		return HTTPResult{}, &ProviderError{"InvalidInput", false}

@@ -1,0 +1,51 @@
+name: Phase 4 integrations and portability
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.0
+      - name: Install PostgreSQL 16 tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y postgresql-16
+          echo 'RUNNELIX_PG_BIN=/usr/lib/postgresql/16/bin' >> "$GITHUB_ENV"
+      - name: Install pinned dependencies and runtime
+        run: make deps tools
+      - name: Unit and static checks
+        run: make test check
+      - name: Validate OpenAPI 3.1 contract
+        run: |
+          python3 -m venv .tools/openapi
+          .tools/openapi/bin/pip install openapi-spec-validator==0.7.2
+          .tools/openapi/bin/python -m openapi_spec_validator contracts/product/openapi.json
+      - name: Isolated PostgreSQL and live runtime checks
+        run: make integration-phase4
+      - name: Preserve fake-data evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase4-integration-evidence
+          path: artifacts/phase1/
+          if-no-files-found: ignore
+          retention-days: 7
