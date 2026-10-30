@@ -6,7 +6,7 @@ Runnelix is a self-hosted workflow platform under development for internal teams
 
 The design uses a **Go backend**, a **TypeScript interface and node workers**, and an internal node architecture that developers can extend. Adding an ordinary integration action should not require changes to the execution engine or canvas.
 
-> **Project status: Phase 3 local implementation.** Author, publish, and execute workflows with conditions, merge, bounded Map, durable waits, schedules, and operator reconciliation. Local failure and compatibility checks pass. Production identity, integrations, representative load, independent teammate acceptance, and rollout remain open.
+> **Project status: Phase 4 local implementation.** Author, publish, and execute workflows with conditions, merge, bounded Map, durable waits, schedules, and operator reconciliation. GitHub and Slack actions, credential rotation, and portable workflows are available for local fixture use. Production identity, real-provider acceptance, representative load, independent teammate acceptance, and rollout remain open.
 
 ## Run the development checks
 
@@ -20,13 +20,14 @@ make integration
 make integration-phase1
 make integration-phase2
 make integration-phase3
+make integration-phase4
 ```
 
 `make tools` downloads a checksum-pinned Temporal CLI into this checkout. `make integration` builds the programs, starts isolated loopback services, runs the twelve cases, and stops its own processes. It preserves fake provider/runtime state and reports under `artifacts/phase0/` for inspection.
 
 Start the local editor with `make dev`, then open <http://127.0.0.1:5173>. The launcher owns a separate PostgreSQL cluster and Temporal development server. It preserves local data and keys in `.local/dev` on shutdown. Use fixture data. It does not touch an existing system database.
 
-Read the [Phase 3 controls and recovery guide](docs/implementation/phase-3.md), [Phase 2 guide](docs/implementation/phase-2.md), [Phase 1 setup and API examples](docs/implementation/phase-1.md), [Phase 0 runtime proof](docs/implementation/phase-0.md), [implementation status](docs/implementation/README.md), [history](HISTORY.md), and [runtime decision](docs/decisions/0001-temporal-development-runtime.md).
+Read the [Phase 4 integrations and portability guide](docs/implementation/phase-4.md), [Phase 3 controls and recovery guide](docs/implementation/phase-3.md), [Phase 2 guide](docs/implementation/phase-2.md), [Phase 1 setup and API examples](docs/implementation/phase-1.md), [Phase 0 runtime proof](docs/implementation/phase-0.md), [implementation status](docs/implementation/README.md), [history](HISTORY.md), and [runtime decision](docs/decisions/0001-temporal-development-runtime.md).
 
 ## Read the plan
 
@@ -46,7 +47,7 @@ For a visual introduction, download [the standalone HTML overview](docs/plans/pr
 
 ## Next engineering phase
 
-Phase 4 adds GitHub issue creation and Slack messages through the built-in node-authoring path, with fixture providers and workflow import/export. Independent teammate acceptance of Phase 2 remains pending. The current installation target is local; production rollout and pilot approval remain open.
+Phase 5 adds locally testable identity, workspace permissions, audit records, retention, and operating procedures. See the [Phase 5 scope](docs/implementation/phase-5.md). Independent teammate acceptance of Phase 2 remains pending. The current installation target is local; production rollout and pilot approval remain open.
 
 ## About the name
 

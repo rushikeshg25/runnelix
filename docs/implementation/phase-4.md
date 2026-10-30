@@ -1,27 +1,42 @@
 # Phase 4: built-in integrations and portable workflows
 
-Status: planned implementation. Target: local installation with fixture providers only.
+Status: local development implementation verified; independent node-author acceptance remains open.
 
-The selected actions are GitHub issue creation and Slack message posting. Both create external effects without a documented general exactly-once guarantee. Keep their retries conservative. Use scoped, encrypted bearer credentials: a GitHub fine-grained token and a Slack bot token. Interactive OAuth installation is unnecessary for the selected local token-based path and remains unsupported.
+Target: local installation with fixture providers only. GitHub issue creation and Slack message posting use the same built-in action interface. Both are unsafe external writes without a general exactly-once guarantee. Scoped bearer credentials remain encrypted and resolve only at the Go network boundary. Interactive OAuth installation is unsupported.
 
-## Nine implementation slices
+## Implementation slices
 
-1. Add a declarative HTTP request policy to node descriptors. Bind methods, destinations, path fields, and fixed headers at the Go boundary. Preserve generic HTTP behavior.
-2. Implement GitHub issue creation with strict schemas and fixture-based adapter checks.
-3. Implement Slack message posting, including Slack's HTTP-200 error body, with fixture-based adapter checks.
-4. Support explicit credential rotation and document provider scope/revocation behavior.
-5. Add versioned workflow export/import with explicit credential-slot bindings and strict validation.
-6. Add portable workflow controls in the editor and an explicit draft-version migration example.
-7. Exercise adapters through real local PostgreSQL/Temporal workers and a loopback provider fixture. Verify no provider resend after uncertainty.
-8. Document and check the node-authoring path, catalog completeness, compatible artifacts, and error contracts.
-9. Record verification, limitations, phase history, and push.
+The first two slices were already committed. The remaining work follows the current request for six focused commits, superseding the earlier nine-slice plan.
 
-## Extension boundary
+1. Existing: declarative HTTP policies bind methods, destinations, path fields, and fixed headers at the Go boundary.
+2. Existing: GitHub issue creation with strict schemas and adapter fixtures.
+3. Slack message posting with bounded outputs, HTTP-200 error-body handling, cancellation, and schema fixtures.
+4. Credential rotation and irreversible local revocation while preserving workflow grants and destination scope.
+5. Versioned portable workflow API with exact credential-slot binding, Map body support, strict validation, and transactional unpublished import.
+6. Editor import/export controls, browser verification, and an explicit future draft-version migration example.
+7. Operator-only loopback provider fixtures, real PostgreSQL/Temporal worker checks, and a Phase 4 CI job.
+8. Node-authoring instructions, catalog/module completeness checks, phase history, and verification records.
 
-A normal action adds a TypeScript module, a descriptor, fixtures, and documentation. The interpreter remains unchanged. Request authorization is declarative catalog data, not a new provider switch in the engine or ordinary editor. Runtime package loading and arbitrary third-party code remain outside scope.
+## Use and extend
 
-Provider fixtures must be explicitly configured by the local operator and restricted to literal loopback. Production destinations stay fixed in descriptors. A workflow cannot supply a fixture override or redirect a credential to a different host.
+- [GitHub issue action](../nodes/github-create-issue.md)
+- [Slack message action](../nodes/slack-post-message.md)
+- [Credential creation, rotation, and revocation](../nodes/credentials.md)
+- [Portable workflow API, editor controls, and draft migration](../nodes/portable-workflows.md)
+- [Node-authoring path, error contract, and retained artifacts](../nodes/authoring.md)
+
+A normal action adds a TypeScript module, a descriptor, fixtures, and documentation. Adding these integrations required no provider-specific interpreter or canvas changes. HTTP authorization is declarative catalog data. Runtime package loading and arbitrary third-party code remain outside scope.
+
+Fixture remapping is an explicit startup setting restricted to literal loopback. Production destinations stay fixed in descriptors. A workflow cannot supply an override or redirect a credential to a different host. The runtime still treats uncertain unsafe outcomes conservatively and never automatically resends them.
+
+## Verification
+
+Run `make test check`, `make integration-phase4`, and `make integration-phase2` with the documented development prerequisites. OpenAPI is checked with `openapi-spec-validator==0.7.2`. The catalog is generated from source; use `make catalog` after worker changes.
+
+[Live evidence](evidence/phase-4-full.json) records four passing groups: both adapters, uncertain outcomes across restart without resend, portable API execution, and rotation/revocation on existing publications. [PostgreSQL checks](evidence/phase-4-postgres.json) and [all seven Phase 2 regressions](evidence/phase-2-after-phase-4.json) passed. `make test check` passed; the final catalog test brings the TypeScript total to 43.
+
+[Browser evidence](evidence/phase-4-browser.json) covers desktop and 390-pixel layouts, pasted imports, downloads, explicit credential binding, persisted unpublished drafts, and unsaved-edit protection. File-picker upload was not exercised. OpenAPI 3.1 validation passed with `openapi-spec-validator==0.7.2`; an IPv4-only installer process resolved the initial package-download timeout.
 
 ## Acceptance limits
 
-Automated checks can prove the extension seam and local behavior. The original N-01 gate requires a different developer to add a node. That independent acceptance remains open. Real provider credentials, external records, public deployment, and a production pilot are not part of this phase's local evidence.
+Automated checks prove local extension and execution behavior. The N-01 gate still requires a different developer to add a node. Independent teammate acceptance, representative production load, real-provider permissions, production identity, public deployment, and a two-week pilot remain open. No real issue or Slack message was created, and no changes were pushed in this continuation.

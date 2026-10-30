@@ -10,8 +10,9 @@
 | 1: contracts and persistence | Development slice complete in nine commits. Graph execution starts in Phase 2. | [Implementation record](phase-1.md), [live report](evidence/phase-1-full.json). |
 | 2: first executing workflow | Local development slice implemented in nine commits; teammate acceptance pending. | [Implementation record](phase-2.md), [live execution report](evidence/phase-2-full.json), [browser record](evidence/phase-2-browser.json). |
 | 3: controls and recovery | Local implementation in ten commits; representative load gate remains open. | [Implementation record](phase-3.md), [live report](evidence/phase-3-full.json), [browser record](evidence/phase-3-browser.json). |
-| 4–6 | Implementation pending. Target remains local; production/pilot gates require external evidence. | [Delivery plan](../plans/08-delivery-plan.md). |
+| 4: integrations and portability | Local implementation in two existing plus six continuation commits; independent node-author acceptance remains open. | [Implementation record](phase-4.md), [live report](evidence/phase-4-full.json), [browser record](evidence/phase-4-browser.json). |
+| 5–6 | Implementation pending. Target remains local; production/pilot gates require external evidence. | [Delivery plan](../plans/08-delivery-plan.md). |
 
-Use 8–10 meaningful commits per phase, as requested. Every slice records its change, reason, alternatives, checks, and limitations in the dated decision log and project history. Do not create empty commits to reach a count.
+Phase 4 continuation uses six meaningful commits, per the latest request. Earlier phases used 8–10. Every slice records its change, reason, alternatives, checks, and limitations in the dated decision log and project history. Do not create empty commits to reach a count.
 
 The checked-in reports contain fake provider data and source hashes. Larger runtime logs and databases remain in ignored local `artifacts/` directories. Keep production data and secrets out of both records.
