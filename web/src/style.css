@@ -288,6 +288,11 @@ main {
   text-align: left;
   padding: 14px;
 }
+.node-list button > span:last-child,
+.panel-title .muted {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .node-list .selected {
   border-color: #238880;
   background: #f0f9f6;
