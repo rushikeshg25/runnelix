@@ -35,8 +35,14 @@ type Error struct {
 
 func (a API) Handler() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /v1/identity", a.identity)
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+	handle := func(pattern string, permission store.Permission, handler http.HandlerFunc) {
+		mux.HandleFunc(pattern, a.authorize(permission, handler))
+	}
+	handle("GET /v1/workspaces/{workspace}/memberships", store.Manage, a.memberships)
+	handle("PUT /v1/workspaces/{workspace}/memberships", store.Manage, a.changeMembership)
+	handle("DELETE /v1/workspaces/{workspace}/memberships", store.Manage, a.changeMembership)
+	handle("GET /v1/identity", signedIn, a.identity)
+	handle("GET /health", publicRoute, func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), time.Second)
 		defer cancel()
 		if a.Store.Pool.Ping(ctx) != nil {
@@ -49,37 +55,37 @@ func (a API) Handler() http.Handler {
 		}
 		respond(w, 200, map[string]string{"status": "ready", "mode": mode})
 	})
-	mux.HandleFunc("GET /v1/node-types", func(w http.ResponseWriter, r *http.Request) { respond(w, 200, a.Store.Catalog) })
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows", a.create)
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows/import", a.importWorkflow)
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/workflows/{workflow}/export", a.exportWorkflow)
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/workflows/{workflow}", a.read)
-	mux.HandleFunc("PUT /v1/workspaces/{workspace}/workflows/{workflow}/draft", a.save)
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows/{workflow}/validate", a.validate)
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows/{workflow}/publish", a.publish)
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/workflows/{workflow}/versions/{version}", a.version)
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows/{workflow}/runs", a.admit)
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/runs/{run}", a.run)
+	handle("GET /v1/node-types", signedIn, func(w http.ResponseWriter, r *http.Request) { respond(w, 200, a.Store.Catalog) })
+	handle("POST /v1/workspaces/{workspace}/workflows", store.Edit, a.create)
+	handle("POST /v1/workspaces/{workspace}/workflows/import", store.Edit, a.importWorkflow)
+	handle("GET /v1/workspaces/{workspace}/workflows/{workflow}/export", store.Read, a.exportWorkflow)
+	handle("GET /v1/workspaces/{workspace}/workflows/{workflow}", store.Read, a.read)
+	handle("PUT /v1/workspaces/{workspace}/workflows/{workflow}/draft", store.Edit, a.save)
+	handle("POST /v1/workspaces/{workspace}/workflows/{workflow}/validate", store.Edit, a.validate)
+	handle("POST /v1/workspaces/{workspace}/workflows/{workflow}/publish", store.Publish, a.publish)
+	handle("GET /v1/workspaces/{workspace}/workflows/{workflow}/versions/{version}", store.Read, a.version)
+	handle("POST /v1/workspaces/{workspace}/workflows/{workflow}/runs", store.Execute, a.admit)
+	handle("GET /v1/workspaces/{workspace}/runs/{run}", store.Read, a.run)
 
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/workflows", a.list)
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/workflows/{workflow}/runs", a.runs)
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows/{workflow}/execute", a.execute)
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/runs/{run}/cancel", a.cancel)
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/runs/{run}/invocations/{invocation}/resolve", a.resolve)
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/runs/{run}/attempts", a.attempts)
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/runs/{run}/events", a.events)
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/runs/{run}/payloads/{ref}", a.payload)
-	mux.HandleFunc("POST /v1/mapping-preview", a.preview)
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/schedules", a.schedules)
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/required-artifacts", a.requiredArtifacts)
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/schedules", a.saveSchedule)
-	mux.HandleFunc("PUT /v1/workspaces/{workspace}/schedules/{schedule}", a.saveSchedule)
-	mux.HandleFunc("GET /v1/workspaces/{workspace}/credentials", a.credentials)
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/credentials", a.createCredential)
-	mux.HandleFunc("PUT /v1/workspaces/{workspace}/credentials/{credential}/value", a.rotateCredential)
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/credentials/{credential}/revoke", a.revokeCredential)
-	mux.HandleFunc("PUT /v1/workspaces/{workspace}/credentials/{credential}/grants/{workflow}", a.grant)
-	mux.HandleFunc("POST /v1/workspaces/{workspace}/webhooks/{workflow}/{credential}", a.webhook)
+	handle("GET /v1/workspaces/{workspace}/workflows", store.Read, a.list)
+	handle("GET /v1/workspaces/{workspace}/workflows/{workflow}/runs", store.Read, a.runs)
+	handle("POST /v1/workspaces/{workspace}/workflows/{workflow}/execute", store.Execute, a.execute)
+	handle("POST /v1/workspaces/{workspace}/runs/{run}/cancel", store.Execute, a.cancel)
+	handle("POST /v1/workspaces/{workspace}/runs/{run}/invocations/{invocation}/resolve", store.Execute, a.resolve)
+	handle("GET /v1/workspaces/{workspace}/runs/{run}/attempts", store.DataRead, a.attempts)
+	handle("GET /v1/workspaces/{workspace}/runs/{run}/events", store.DataRead, a.events)
+	handle("GET /v1/workspaces/{workspace}/runs/{run}/payloads/{ref}", store.DataRead, a.payload)
+	handle("POST /v1/mapping-preview", signedIn, a.preview)
+	handle("GET /v1/workspaces/{workspace}/schedules", store.DataRead, a.schedules)
+	handle("GET /v1/workspaces/{workspace}/required-artifacts", store.Read, a.requiredArtifacts)
+	handle("POST /v1/workspaces/{workspace}/schedules", store.Execute|store.DataRead, a.saveSchedule)
+	handle("PUT /v1/workspaces/{workspace}/schedules/{schedule}", store.Execute|store.DataRead, a.saveSchedule)
+	handle("GET /v1/workspaces/{workspace}/credentials", store.Manage, a.credentials)
+	handle("POST /v1/workspaces/{workspace}/credentials", store.Manage, a.createCredential)
+	handle("PUT /v1/workspaces/{workspace}/credentials/{credential}/value", store.Manage, a.rotateCredential)
+	handle("POST /v1/workspaces/{workspace}/credentials/{credential}/revoke", store.Manage, a.revokeCredential)
+	handle("PUT /v1/workspaces/{workspace}/credentials/{credential}/grants/{workflow}", store.Manage, a.grant)
+	handle("POST /v1/workspaces/{workspace}/webhooks/{workflow}/{credential}", store.Execute, a.webhook)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := "request_" + uuid.NewString()
 		w.Header().Set("X-Request-ID", id)
@@ -114,6 +120,8 @@ func fail(w http.ResponseWriter, r *http.Request, err error) {
 	var issues []definition.Issue
 	var invalid *definition.Invalid
 	switch {
+	case errors.Is(err, store.ErrForbidden):
+		status, code, msg = 403, "forbidden", "Workspace permission is required"
 	case errors.Is(err, store.ErrOverlap):
 		status, code, msg = 409, "workflow_active", "Scheduled workflow already has an active run"
 	case errors.Is(err, store.ErrLimit):

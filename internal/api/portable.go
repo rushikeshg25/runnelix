@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/rushikeshg25/runnelix/internal/definition"
+	"github.com/rushikeshg25/runnelix/internal/store"
 	"net/http"
 )
 
@@ -27,6 +28,12 @@ func (a API) importWorkflow(w http.ResponseWriter, r *http.Request) {
 	if err := body(w, r, &req); err != nil {
 		fail(w, r, err)
 		return
+	}
+	if len(req.Bindings) > 0 {
+		if err := a.permission(r, store.Manage); err != nil {
+			fail(w, r, err)
+			return
+		}
 	}
 	workflow, err := a.Store.ImportWorkflow(r.Context(), r.PathValue("workspace"), req.Bundle, req.Bindings)
 	if err != nil {

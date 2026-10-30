@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/rushikeshg25/runnelix/internal/identity"
 	"github.com/rushikeshg25/runnelix/internal/mapping"
 	"github.com/rushikeshg25/runnelix/internal/store"
 	"io"
@@ -118,6 +119,9 @@ func (a API) events(w http.ResponseWriter, r *http.Request) {
 			return
 		case <-ticker.C:
 		}
+		if a.permission(r, store.DataRead) != nil {
+			return
+		}
 		events, e = a.Store.Events(r.Context(), r.PathValue("workspace"), r.PathValue("run"), after)
 		if e != nil {
 			return
@@ -218,7 +222,13 @@ func (a API) resolve(w http.ResponseWriter, r *http.Request) {
 		fail(w, r, err)
 		return
 	}
-	result, err := a.Store.ResolveUncertain(r.Context(), store.Resolution{WorkspaceID: r.PathValue("workspace"), RunID: r.PathValue("run"), InvocationID: r.PathValue("invocation"), Action: req.Action, Actor: "local-development-operator", Note: req.Note}, req.Output)
+	actor := "local-development-operator"
+	if principal, ok := r.Context().Value(principalKey{}).(identity.Principal); ok {
+		encoded, _ := json.Marshal(principal)
+		digest := sha256.Sum256(encoded)
+		actor = "oidc:" + hex.EncodeToString(digest[:])
+	}
+	result, err := a.Store.ResolveUncertain(r.Context(), store.Resolution{WorkspaceID: r.PathValue("workspace"), RunID: r.PathValue("run"), InvocationID: r.PathValue("invocation"), Action: req.Action, Actor: actor, Note: req.Note}, req.Output)
 	if err != nil {
 		fail(w, r, err)
 		return
