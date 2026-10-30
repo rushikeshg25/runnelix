@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   APIError,
   emptyGraph,
@@ -14,7 +14,11 @@ import { RunInspector } from "./RunInspector";
 import { PortableWorkflows } from "./PortableWorkflows";
 import { Schedules } from "./Schedules";
 import { MappingPreview } from "./MappingPreview";
-export default function App() {
+export default function App({
+  sessionActions,
+}: {
+  sessionActions?: ReactNode;
+}) {
   const [catalog, setCatalog] = useState<Descriptor[]>([]);
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [current, setCurrent] = useState<Workflow | null>(null);
@@ -129,7 +133,10 @@ export default function App() {
           <span className="brand-icon">↝</span>runnelix
           <span className="brand-tag">WORKFLOW STUDIO</span>
         </a>
-        <span className="local-badge">● Local workspace</span>
+        <div className="session-actions">
+          <span className="local-badge">● Local workspace</span>
+          {sessionActions}
+        </div>
       </header>
       <div className="layout">
         <aside className="sidebar">

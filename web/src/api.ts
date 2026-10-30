@@ -81,12 +81,24 @@ export interface Credential {
   revoked: boolean;
 }
 export class APIError extends Error {
-  constructor(
-    message: string,
-    readonly status: number,
-  ) {
+  readonly status: number;
+  constructor(message: string, status: number) {
     super(message);
+    this.status = status;
   }
+}
+// Session CSRF state stays in memory. Provider tokens never enter this module.
+let csrfToken = "";
+export function setCSRFToken(value: string) {
+  csrfToken = value;
+}
+export const sessionExpiredEvent = "runnelix-session-expired";
+export interface BrowserSession {
+  mode: "development" | "oidc";
+  authenticated: boolean;
+  loginEnabled?: boolean;
+  csrfToken?: string;
+  expiresAt?: string;
 }
 export async function request<T>(
   path: string,
@@ -108,12 +120,25 @@ export async function requestJSON<T>(
   body?: string,
   headers: Record<string, string> = {},
 ): Promise<T> {
+  if (!path.startsWith("/v1/") || path.includes("\\"))
+    throw new Error("API requests require a local /v1/ path");
   const response = await fetch(path, {
     method,
-    headers: { "Content-Type": "application/json", ...headers },
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+      ...headers,
+      ...(csrfToken && method !== "GET" && method !== "HEAD"
+        ? { "X-CSRF-Token": csrfToken }
+        : {}),
+    },
     ...(body !== undefined ? { body } : {}),
     signal: AbortSignal.timeout(12000),
   });
+  if (response.status === 401 && path !== "/v1/auth/session") {
+    csrfToken = "";
+    window.dispatchEvent(new Event(sessionExpiredEvent));
+  }
   const data = await response.json();
   if (!response.ok)
     throw new APIError(

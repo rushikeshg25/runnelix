@@ -20,7 +20,7 @@ test:
 
 check:
 	python3 scripts/build-catalog.py --check
-	test -z "$$(gofmt -l cmd internal contracts/product tests/integration/phase1probe)"
+	test -z "$$(gofmt -l cmd internal contracts/product tests/integration)"
 	go vet ./...
 	pnpm check
 	pnpm check:web

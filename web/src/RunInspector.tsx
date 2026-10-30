@@ -2,6 +2,8 @@ import { ResolutionForm } from "./ResolutionForm";
 import { useEffect, useRef, useState } from "react";
 import {
   request,
+  APIError,
+  sessionExpiredEvent,
   root,
   type Attempt,
   type Run,
@@ -36,11 +38,12 @@ export function RunInspector({
     if (!runId) return;
     let active = true;
     let inFlight = false;
+    let denied = false;
     setEvents([]);
     setVersion(null);
     setPayload(undefined);
     async function inspect() {
-      if (inFlight) return;
+      if (inFlight || denied) return;
       inFlight = true;
       try {
         const r = await request<Run>(`${root}/runs/${runId}`);
@@ -52,8 +55,18 @@ export function RunInspector({
           );
           setAttempts(a);
         }
-      } catch {
-        if (active) setError("Run inspection disconnected. Retrying…");
+      } catch (error) {
+        if (
+          error instanceof APIError &&
+          (error.status === 401 || error.status === 403)
+        ) {
+          denied = true;
+          stream.close();
+          if (active)
+            setError(
+              "Run inspection requires a valid session and data access.",
+            );
+        } else if (active) setError("Run inspection disconnected. Retrying…");
       } finally {
         inFlight = false;
       }
@@ -70,10 +83,16 @@ export function RunInspector({
         );
       void inspect();
     };
+    const expire = () => {
+      denied = true;
+      stream.close();
+    };
+    window.addEventListener(sessionExpiredEvent, expire);
     const timer = setInterval(() => void inspect(), 2000);
     return () => {
       active = false;
       stream.close();
+      window.removeEventListener(sessionExpiredEvent, expire);
       clearInterval(timer);
     };
   }, [runId]);

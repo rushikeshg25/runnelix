@@ -629,3 +629,44 @@ pre {
     min-width: 150px;
   }
 }
+
+.session-panel {
+  max-width: 38rem;
+  margin: 3rem auto;
+  padding: 2rem;
+  background: white;
+  border: 1px solid #d8e1e8;
+  border-radius: 16px;
+}
+.session-panel h1 {
+  font-size: 1.7rem;
+}
+.session-panel p {
+  line-height: 1.6;
+}
+.session-login {
+  display: inline-block;
+  padding: 0.65rem 1rem;
+  margin-right: 0.75rem;
+  border-radius: 8px;
+  background: #193349;
+  color: white;
+  text-decoration: none;
+}
+.session-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+@media (max-width: 600px) {
+  .session-panel {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+  .session-actions {
+    gap: 0.5rem;
+  }
+  .session-actions .local-badge {
+    display: none;
+  }
+}

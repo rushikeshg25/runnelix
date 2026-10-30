@@ -32,7 +32,7 @@ func (a API) authenticate(w http.ResponseWriter, r *http.Request) (*http.Request
 		a.unauthenticated(w, r)
 		return r, false
 	}
-	if len(headers) == 0 && len(cookies) == 0 && r.Method == "GET" && r.URL.Path == "/v1/auth/session" {
+	if len(headers) == 0 && (len(cookies) == 0 || a.Browser == nil) && r.Method == "GET" && r.URL.Path == "/v1/auth/session" {
 		return r, true
 	}
 	if len(headers) == 0 && a.Browser != nil {

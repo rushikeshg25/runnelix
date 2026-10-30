@@ -300,3 +300,20 @@ func TestBrowserLoginSessionsAndCSRF(t *testing.T) {
 		t.Fatal("expired session accepted")
 	}
 }
+
+func TestDisabledBrowserLoginReportsStatusWithStaleCookie(t *testing.T) {
+	f := issuer(t)
+	handler := api.API{Store: &store.Store{}, Identity: f.verifier(t)}.Handler()
+	r := httptest.NewRequest("GET", "http://127.0.0.1:8787/v1/auth/session", nil)
+	r.AddCookie(&http.Cookie{Name: "runnelix_session", Value: strings.Repeat("a", 43)})
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, r)
+	var status struct {
+		Authenticated bool   `json:"authenticated"`
+		LoginEnabled  bool   `json:"loginEnabled"`
+		Mode          string `json:"mode"`
+	}
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &status) != nil || status.Authenticated || status.LoginEnabled || status.Mode != "oidc" {
+		t.Fatal("stale cookie hid disabled login status")
+	}
+}
