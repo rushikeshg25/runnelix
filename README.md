@@ -23,6 +23,7 @@ make integration-phase3
 make integration-phase4
 make integration-phase5
 make integration-operations
+make integration-phase6
 ```
 
 `make tools` downloads a checksum-pinned Temporal CLI into this checkout. `make integration` builds the programs, starts isolated loopback services, runs the twelve cases, and stops its own processes. It preserves fake provider/runtime state and reports under `artifacts/phase0/` for inspection.
@@ -71,7 +72,9 @@ The local Phase 5 scope is complete. See the [retention commands](docs/implement
 
 `make package-local` creates a versioned source archive from a clean tracked tree. Backups keep keys separate, and restores always create a new state directory. Migration **013** is required. Dependency security updates change the node bundle digest; retain matching artifacts for unfinished older runs and republish new revisions before new admissions.
 
-Phase 6 is the pilot. Production provider/hosting selection, accountable ownership, independent acceptance, representative load, external redistribution licensing, and rollout approval remain open. Local fixture results do not satisfy those gates.
+Phase 6 local preparation includes five [portable training workflows](examples/pilot/README.md), an automated import/publish/run check (`make integration-phase6`), and a [pilot kit](docs/pilot/README.md) with installation, participant, usage, incident, and release records. See the [Phase 6 evidence](docs/implementation/phase-6.md).
+
+The real pilot has not started. Production provider/hosting selection, accountable ownership, independent acceptance, representative load, two weeks of teammate usage, external redistribution licensing, and rollout approval remain open. Local fixture results do not satisfy those gates.
 
 ## About the name
 
