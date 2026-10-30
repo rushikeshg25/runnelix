@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"errors"
 )
 
 // Lists use a stable ID cursor and a fixed page size to bound database work.
@@ -23,36 +22,20 @@ func (s *Store) Workflows(ctx context.Context, workspace, after string) ([]Workf
 	return result, rows.Err()
 }
 func (s *Store) Runs(ctx context.Context, workspace, workflow, after string) ([]Run, error) {
-	rows, err := s.Pool.Query(ctx, "SELECT id FROM runs WHERE workspace_id=$1 AND workflow_id=$2 AND id>$3 AND history_expired_at IS NULL ORDER BY id LIMIT 50", workspace, workflow, after)
+	rows, err := s.Pool.Query(ctx, runSelect+" WHERE r.workspace_id=$1 AND r.workflow_id=$2 AND r.id>$3 AND r.history_expired_at IS NULL ORDER BY r.id LIMIT 50", workspace, workflow, after)
 	if err != nil {
 		return nil, err
 	}
-	ids := []string{}
-	for rows.Next() {
-		var id string
-		if err = rows.Scan(&id); err != nil {
-			rows.Close()
-			return nil, err
-		}
-		ids = append(ids, id)
-	}
-	err = rows.Err()
-	rows.Close()
-	if err != nil {
-		return nil, err
-	}
+	defer rows.Close()
 	result := []Run{}
-	for _, id := range ids {
-		r, err := s.GetRun(ctx, workspace, id)
-		if errors.Is(err, ErrExpired) {
-			continue
-		}
+	for rows.Next() {
+		r, err := scanRun(rows)
 		if err != nil {
 			return nil, err
 		}
 		result = append(result, r)
 	}
-	return result, nil
+	return result, rows.Err()
 }
 func (s *Store) PendingCancellations(ctx context.Context) ([]StartRequest, error) {
 	rows, err := s.Pool.Query(ctx, "SELECT workspace_id,id FROM runs WHERE execution_mode='execute' AND cancel_requested AND state NOT IN ('succeeded','failed','cancelled') ORDER BY updated_at,id LIMIT 100")

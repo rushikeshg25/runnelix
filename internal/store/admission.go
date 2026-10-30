@@ -154,14 +154,19 @@ func (s *Store) admitTx(ctx context.Context, tx pgx.Tx, workspace, workflow, key
 	}
 	return run, nil
 }
-func getRun(ctx context.Context, q querier, workspace, id string) (Run, error) {
-	var run Run
-	err := q.QueryRow(ctx, `SELECT r.id,r.workflow_id,r.version_id,r.state,r.accepted_at,receipt.runtime_id,
+
+const runSelect = `SELECT r.id,r.workflow_id,r.version_id,r.state,r.accepted_at,receipt.runtime_id,
  CASE WHEN o.dispatched_at IS NOT NULL THEN 'acknowledged' WHEN receipt.run_id IS NOT NULL THEN 'receipt_recorded' ELSE 'pending' END, r.execution_mode,r.cancel_requested,r.checkpoint,r.updated_at,r.retention_hold,r.payloads_expired_at,r.history_expired_at
  FROM runs r JOIN start_outbox o ON (o.workspace_id,o.run_id)=(r.workspace_id,r.id)
- LEFT JOIN runtime_receipts receipt ON (receipt.workspace_id,receipt.run_id)=(r.workspace_id,r.id)
- WHERE r.workspace_id=$1 AND r.id=$2`, workspace, id).Scan(&run.ID, &run.WorkflowID, &run.VersionID, &run.State, &run.AcceptedAt, &run.RuntimeID, &run.DispatchState, &run.ExecutionMode, &run.CancelRequested, &run.Checkpoint, &run.UpdatedAt, &run.RetentionHold, &run.PayloadsExpiredAt, &run.HistoryExpiredAt)
+ LEFT JOIN runtime_receipts receipt ON (receipt.workspace_id,receipt.run_id)=(r.workspace_id,r.id)`
+
+func scanRun(row pgx.Row) (Run, error) {
+	var run Run
+	err := row.Scan(&run.ID, &run.WorkflowID, &run.VersionID, &run.State, &run.AcceptedAt, &run.RuntimeID, &run.DispatchState, &run.ExecutionMode, &run.CancelRequested, &run.Checkpoint, &run.UpdatedAt, &run.RetentionHold, &run.PayloadsExpiredAt, &run.HistoryExpiredAt)
 	return run, notFound(err)
+}
+func getRun(ctx context.Context, q querier, workspace, id string) (Run, error) {
+	return scanRun(q.QueryRow(ctx, runSelect+" WHERE r.workspace_id=$1 AND r.id=$2", workspace, id))
 }
 func (s *Store) GetRun(ctx context.Context, workspace, id string) (Run, error) {
 	run, err := getRun(ctx, s.Pool, workspace, id)

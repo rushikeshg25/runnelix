@@ -82,7 +82,7 @@ func (s *Store) OperationalMetrics(ctx context.Context, workspace string) (Opera
  (SELECT coalesce(greatest(extract(epoch FROM now()-min(r.accepted_at)),0),0)::float8 FROM start_outbox o JOIN runs r ON (r.workspace_id,r.id)=(o.workspace_id,o.run_id) WHERE o.workspace_id=$1 AND o.dispatched_at IS NULL),
  (SELECT count(*) FROM uncertain_invocations WHERE workspace_id=$1 AND resolved_at IS NULL),
  (SELECT count(*) FROM runs WHERE workspace_id=$1 AND retention_hold),
- (SELECT coalesce(sum(octet_length(data::text)),0) FROM payloads WHERE workspace_id=$1 AND expired_at IS NULL),
+ (SELECT coalesce(sum(payload_bytes),0) FROM runs WHERE workspace_id=$1 AND payloads_expired_at IS NULL),
  (SELECT count(*) FROM runs WHERE workspace_id=$1 AND history_expired_at IS NOT NULL)`, workspace).Scan(&m.PendingStarts, &m.OldestPendingSeconds, &m.UnresolvedInvocations, &m.RetentionHolds, &m.PayloadBytes, &m.ExpiredHistories)
 	return m, err
 }
