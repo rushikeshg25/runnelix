@@ -146,6 +146,9 @@ func (s *Store) admitTx(ctx context.Context, tx pgx.Tx, workspace, workflow, key
 	if err != nil {
 		return Run{}, err
 	}
+	if err = appendAudit(ctx, tx, workspace, "run.admitted", id, AuditDetails{WorkflowID: workflow, VersionID: run.VersionID, Mode: mode, Source: source}); err != nil {
+		return Run{}, err
+	}
 	return run, nil
 }
 func getRun(ctx context.Context, q querier, workspace, id string) (Run, error) {

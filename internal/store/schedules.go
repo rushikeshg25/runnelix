@@ -97,6 +97,9 @@ func (s *Store) SaveSchedule(ctx context.Context, schedule Schedule, expected in
 	if err != nil {
 		return schedule, err
 	}
+	if err = appendAudit(ctx, tx, schedule.WorkspaceID, "schedule.saved", schedule.ID, AuditDetails{WorkflowID: schedule.WorkflowID, Revision: schedule.Revision, Enabled: &schedule.Spec.Enabled}); err != nil {
+		return schedule, err
+	}
 	return schedule, tx.Commit(ctx)
 }
 func scanSchedule(row pgx.Row) (Schedule, error) {

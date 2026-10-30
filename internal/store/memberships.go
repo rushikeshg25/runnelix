@@ -141,6 +141,20 @@ func (s *Store) changeMembership(ctx context.Context, workspace string, actor *i
 	if err != nil {
 		return err
 	}
+	action := "membership.set"
+	details := AuditDetails{Role: m.Role, PreviousRole: old, Grants: &AuditGrants{Publish: m.Publish, Execute: m.Execute, DataRead: m.DataRead}}
+	if actor == nil {
+		action = "membership.provisioned"
+	} else {
+		ctx = WithAuditContext(ctx, PrincipalActor(*actor), auditRequestID(ctx))
+	}
+	if remove {
+		action = "membership.removed"
+		details = AuditDetails{PreviousRole: old}
+	}
+	if err = appendAudit(ctx, tx, workspace, action, PrincipalActor(identity.Principal{Issuer: m.Issuer, Subject: m.Subject}), details); err != nil {
+		return err
+	}
 	return tx.Commit(ctx)
 }
 

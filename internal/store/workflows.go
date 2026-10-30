@@ -62,6 +62,9 @@ func (s *Store) CreateWorkflow(ctx context.Context, workspace, name string, grap
 	if _, err = tx.Exec(ctx, "INSERT INTO workflow_drafts(workspace_id,workflow_id,graph) VALUES($1,$2,$3)", workspace, id, graph); err != nil {
 		return Workflow{}, err
 	}
+	if err = appendAudit(ctx, tx, workspace, "workflow.created", id, AuditDetails{Revision: 1}); err != nil {
+		return Workflow{}, err
+	}
 	if err = tx.Commit(ctx); err != nil {
 		return Workflow{}, err
 	}
@@ -110,6 +113,9 @@ func (s *Store) SaveDraft(ctx context.Context, workspace, id string, revision in
 	var w Workflow
 	err = tx.QueryRow(ctx, `SELECT w.id,w.name,d.revision,d.graph,w.active_version_id FROM workflows w JOIN workflow_drafts d ON (d.workspace_id,d.workflow_id)=(w.workspace_id,w.id) WHERE w.workspace_id=$1 AND w.id=$2`, workspace, id).Scan(&w.ID, &w.Name, &w.Revision, &w.Graph, &w.ActiveVersionID)
 	if err != nil {
+		return Workflow{}, err
+	}
+	if err = appendAudit(ctx, tx, workspace, "workflow.draft_saved", id, AuditDetails{Revision: w.Revision}); err != nil {
 		return Workflow{}, err
 	}
 	return w, tx.Commit(ctx)
@@ -179,6 +185,9 @@ func (s *Store) Publish(ctx context.Context, workspace, id string, revision int6
 		return Version{}, err
 	}
 	if _, err = tx.Exec(ctx, "UPDATE workflows SET active_version_id=$3 WHERE workspace_id=$1 AND id=$2", workspace, id, v.ID); err != nil {
+		return Version{}, err
+	}
+	if err = appendAudit(ctx, tx, workspace, "workflow.published", id, AuditDetails{VersionID: v.ID, Revision: revision}); err != nil {
 		return Version{}, err
 	}
 	return v, tx.Commit(ctx)

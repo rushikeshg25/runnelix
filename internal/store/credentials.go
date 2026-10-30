@@ -33,12 +33,36 @@ func (s *Store) CreateCredential(ctx context.Context, workspace, name, kind, val
 	if err != nil {
 		return Credential{}, ErrInvalid
 	}
-	_, err = s.Pool.Exec(ctx, "INSERT INTO credentials(workspace_id,id,name,kind,ciphertext,key_id,destination) VALUES($1,$2,$3,$4,$5,$6,$7)", workspace, id, name, kind, encrypted, box.KeyID, destination)
-	return Credential{ID: id, Name: name, Kind: kind, Destination: destination}, err
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return Credential{}, err
+	}
+	defer tx.Rollback(ctx)
+	_, err = tx.Exec(ctx, "INSERT INTO credentials(workspace_id,id,name,kind,ciphertext,key_id,destination) VALUES($1,$2,$3,$4,$5,$6,$7)", workspace, id, name, kind, encrypted, box.KeyID, destination)
+	if err != nil {
+		return Credential{}, err
+	}
+	if err = appendAudit(ctx, tx, workspace, "credential.created", id, AuditDetails{}); err != nil {
+		return Credential{}, err
+	}
+	return Credential{ID: id, Name: name, Kind: kind, Destination: destination}, tx.Commit(ctx)
 }
 func (s *Store) GrantCredential(ctx context.Context, workspace, credential, workflow string) error {
-	_, err := s.Pool.Exec(ctx, "INSERT INTO credential_grants(workspace_id,credential_id,workflow_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING", workspace, credential, workflow)
-	return err
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	tag, err := tx.Exec(ctx, "INSERT INTO credential_grants(workspace_id,credential_id,workflow_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING", workspace, credential, workflow)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() > 0 {
+		if err = appendAudit(ctx, tx, workspace, "credential.granted", credential, AuditDetails{WorkflowID: workflow}); err != nil {
+			return err
+		}
+	}
+	return tx.Commit(ctx)
 }
 func (s *Store) CredentialAllowed(ctx context.Context, workspace, workflow, credential, kind string) error {
 	var allowed bool
@@ -93,24 +117,45 @@ func (s *Store) RotateCredential(ctx context.Context, workspace, id, value strin
 	if err != nil {
 		return ErrInvalid
 	}
-	tag, err := s.Pool.Exec(ctx, "UPDATE credentials SET ciphertext=$3,key_id=$4 WHERE workspace_id=$1 AND id=$2 AND NOT revoked", workspace, id, encrypted, box.KeyID)
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	tag, err := tx.Exec(ctx, "UPDATE credentials SET ciphertext=$3,key_id=$4 WHERE workspace_id=$1 AND id=$2 AND NOT revoked", workspace, id, encrypted, box.KeyID)
 	if err != nil {
 		return err
 	}
 	if tag.RowsAffected() != 1 {
 		return ErrNotFound
 	}
-	return nil
+	if err = appendAudit(ctx, tx, workspace, "credential.rotated", id, AuditDetails{}); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }
 
 // RevokeCredential prevents future resolutions, including from already-published versions.
 func (s *Store) RevokeCredential(ctx context.Context, workspace, id string) error {
-	tag, err := s.Pool.Exec(ctx, "UPDATE credentials SET revoked=true WHERE workspace_id=$1 AND id=$2", workspace, id)
+	tx, err := s.Pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	if tag.RowsAffected() != 1 {
-		return ErrNotFound
+	defer tx.Rollback(ctx)
+	tag, err := tx.Exec(ctx, "UPDATE credentials SET revoked=true WHERE workspace_id=$1 AND id=$2 AND NOT revoked", workspace, id)
+	if err != nil {
+		return err
 	}
-	return nil
+	if tag.RowsAffected() == 0 {
+		var exists bool
+		if err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM credentials WHERE workspace_id=$1 AND id=$2)", workspace, id).Scan(&exists); err != nil {
+			return err
+		}
+		if !exists {
+			return ErrNotFound
+		}
+	} else if err = appendAudit(ctx, tx, workspace, "credential.revoked", id, AuditDetails{}); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }

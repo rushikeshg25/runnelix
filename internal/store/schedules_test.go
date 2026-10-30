@@ -50,6 +50,18 @@ func TestScheduleAdmissionNoOverlapRevisionAndDST(t *testing.T) {
 	if _, err = s.SaveSchedule(ctx, schedule, 1); err != ErrConflict {
 		t.Fatal("stale update accepted", err)
 	}
+	admissions := 0
+	for _, record := range auditRows(t, s, ws) {
+		if record.Action == "run.admitted" && record.Details.Source == "schedule" {
+			admissions++
+			if record.Actor != "system" || record.RequestID != "" {
+				t.Fatal("scheduled admission claimed a human identity")
+			}
+		}
+	}
+	if admissions != 2 {
+		t.Fatal("scheduled admission audit missing or duplicated", admissions)
+	}
 }
 func TestScheduleValidationAndSyncReplay(t *testing.T) {
 	s := database(t)

@@ -304,21 +304,28 @@ func (s *Store) Events(ctx context.Context, workspace, run string, after int64) 
 	return result, rows.Err()
 }
 func (s *Store) RequestCancel(ctx context.Context, workspace, run string) (Run, error) {
-	tag, err := s.Pool.Exec(ctx, "UPDATE runs SET cancel_requested=true WHERE workspace_id=$1 AND id=$2 AND execution_mode='execute' AND state NOT IN ('succeeded','failed','cancelled')", workspace, run)
+	tx, err := s.Pool.Begin(ctx)
 	if err != nil {
 		return Run{}, err
 	}
-	if tag.RowsAffected() == 0 {
-		r, e := s.GetRun(ctx, workspace, run)
-		if e != nil {
-			return r, e
-		}
-		if r.ExecutionMode != "execute" {
-			return r, ErrConflict
-		}
-		return r, nil
+	defer tx.Rollback(ctx)
+	tag, err := tx.Exec(ctx, "UPDATE runs SET cancel_requested=true WHERE workspace_id=$1 AND id=$2 AND execution_mode='execute' AND NOT cancel_requested AND state NOT IN ('succeeded','failed','cancelled')", workspace, run)
+	if err != nil {
+		return Run{}, err
 	}
-	return s.GetRun(ctx, workspace, run)
+	result, err := getRun(ctx, tx, workspace, run)
+	if err != nil {
+		return Run{}, err
+	}
+	if result.ExecutionMode != "execute" {
+		return result, ErrConflict
+	}
+	if tag.RowsAffected() > 0 {
+		if err = appendAudit(ctx, tx, workspace, "run.cancel_requested", run, AuditDetails{WorkflowID: result.WorkflowID}); err != nil {
+			return Run{}, err
+		}
+	}
+	return result, tx.Commit(ctx)
 }
 func (s *Store) Attempts(ctx context.Context, workspace, run string) ([]Attempt, error) {
 	if _, err := s.GetRun(ctx, workspace, run); err != nil {

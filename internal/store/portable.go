@@ -38,8 +38,21 @@ func (s *Store) ImportWorkflow(ctx context.Context, workspace string, bundle def
 	if _, err = tx.Exec(ctx, "INSERT INTO workflow_drafts(workspace_id,workflow_id,graph) VALUES($1,$2,$3)", workspace, id, graph); err != nil {
 		return Workflow{}, err
 	}
+	granted := []string{}
 	for _, slot := range bundle.CredentialSlots {
-		if _, err = tx.Exec(ctx, "INSERT INTO credential_grants(workspace_id,credential_id,workflow_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING", workspace, bindings[slot.Slot], id); err != nil {
+		tag, err := tx.Exec(ctx, "INSERT INTO credential_grants(workspace_id,credential_id,workflow_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING", workspace, bindings[slot.Slot], id)
+		if err != nil {
+			return Workflow{}, err
+		}
+		if tag.RowsAffected() > 0 {
+			granted = append(granted, bindings[slot.Slot])
+		}
+	}
+	if err = appendAudit(ctx, tx, workspace, "workflow.imported", id, AuditDetails{Revision: 1}); err != nil {
+		return Workflow{}, err
+	}
+	for _, credential := range granted {
+		if err = appendAudit(ctx, tx, workspace, "credential.granted", credential, AuditDetails{WorkflowID: id}); err != nil {
 			return Workflow{}, err
 		}
 	}

@@ -56,6 +56,18 @@ func TestPortableImportAtomicScopedAndUnpublished(t *testing.T) {
 	if err = s.CredentialAllowed(ctx, target, imported.ID, c.ID, "bearer"); err != nil {
 		t.Fatal(err)
 	}
+	importedAudit, grantAudit := false, false
+	for _, record := range auditRows(t, s, target) {
+		if record.Action == "workflow.imported" && record.TargetID == imported.ID {
+			importedAudit = true
+		}
+		if record.Action == "credential.granted" && record.TargetID == c.ID && record.Details.WorkflowID == imported.ID {
+			grantAudit = true
+		}
+	}
+	if !importedAudit || !grantAudit {
+		t.Fatal("bound import missing audit records")
+	}
 	if _, err = s.Publish(ctx, target, imported.ID, 1); err != nil {
 		t.Fatal(err)
 	}

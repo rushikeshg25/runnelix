@@ -82,6 +82,11 @@ func (s *Store) ResolveUncertain(ctx context.Context, res Resolution, output any
 			return res, ErrConflict
 		}
 	}
+	if tag.RowsAffected() > 0 {
+		if err = appendAudit(ctx, tx, res.WorkspaceID, "run.resolved", res.InvocationID, AuditDetails{RunID: res.RunID, Decision: res.Action}); err != nil {
+			return res, err
+		}
+	}
 	return res, tx.Commit(ctx)
 }
 func (s *Store) Resolution(ctx context.Context, e definition.Envelope) (Resolution, error) {
