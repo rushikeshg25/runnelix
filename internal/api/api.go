@@ -44,6 +44,8 @@ func (a API) Handler() http.Handler {
 	})
 	mux.HandleFunc("GET /v1/node-types", func(w http.ResponseWriter, r *http.Request) { respond(w, 200, a.Store.Catalog) })
 	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows", a.create)
+	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows/import", a.importWorkflow)
+	mux.HandleFunc("GET /v1/workspaces/{workspace}/workflows/{workflow}/export", a.exportWorkflow)
 	mux.HandleFunc("GET /v1/workspaces/{workspace}/workflows/{workflow}", a.read)
 	mux.HandleFunc("PUT /v1/workspaces/{workspace}/workflows/{workflow}/draft", a.save)
 	mux.HandleFunc("POST /v1/workspaces/{workspace}/workflows/{workflow}/validate", a.validate)

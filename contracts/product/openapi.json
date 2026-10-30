@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Runnelix development API",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "description": "Local development API. Literal loopback Host required; browser Origin must equal configured RUNNELIX_BROWSER_ORIGIN. Workspace paths scope data but are not user authentication. The runs POST route remains admission-only; execute POST runs the pinned graph. Requests <=256 KiB; run inputs and node payloads <=8 KiB. Lists have a stable ID cursor and 50-row pages. Credentials are write-only and encrypted; metadata includes destination and grants are explicit."
   },
   "servers": [
@@ -2628,6 +2628,329 @@
           }
         }
       }
+    },
+    "/v1/workspaces/{workspace}/workflows/{workflow}/export": {
+      "get": {
+        "operationId": "exportWorkflow",
+        "description": "Export the saved, valid draft with credential slots. Literal configuration remains present.",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "workflow",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortableWorkflow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspace}/workflows/import": {
+      "post": {
+        "operationId": "importWorkflow",
+        "description": "Create an unpublished draft and explicit credential grants atomically. All slots require scoped, destination-matched credentials.",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bundle",
+                  "bindings"
+                ],
+                "properties": {
+                  "bundle": {
+                    "$ref": "#/components/schemas/PortableWorkflow"
+                  },
+                  "bindings": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "maxLength": 128
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspace}/credentials/{credential}/value": {
+      "put": {
+        "operationId": "rotateCredential",
+        "description": "Replace the encrypted value without changing grants. Revoked credentials cannot rotate.",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "credential",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rotated"
+                  ],
+                  "properties": {
+                    "rotated": {
+                      "const": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "value"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "writeOnly": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/workspaces/{workspace}/credentials/{credential}/revoke": {
+      "post": {
+        "operationId": "revokeCredential",
+        "description": "Block future credential resolutions. Does not cancel requests already in flight or revoke provider tokens.",
+        "parameters": [
+          {
+            "name": "workspace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "credential",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "revoked"
+                  ],
+                  "properties": {
+                    "revoked": {
+                      "const": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2976,6 +3299,53 @@
           "actor",
           "note"
         ]
+      },
+      "PortableWorkflow": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "formatVersion",
+          "name",
+          "graph",
+          "credentialSlots"
+        ],
+        "properties": {
+          "formatVersion": {
+            "const": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "graph": {
+            "$ref": "#/components/schemas/Graph"
+          },
+          "credentialSlots": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "slot",
+                "kind",
+                "destination"
+              ],
+              "properties": {
+                "slot": {
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "bearer"
+                },
+                "destination": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
