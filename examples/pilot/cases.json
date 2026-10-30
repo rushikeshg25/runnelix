@@ -1,0 +1,141 @@
+[
+  {
+    "file": "echo.json",
+    "cases": [
+      {
+        "name": "baseline",
+        "input": {
+          "message": "pilot fixture"
+        },
+        "node": "echo",
+        "output": {
+          "message": "pilot fixture"
+        }
+      }
+    ]
+  },
+  {
+    "file": "transform.json",
+    "cases": [
+      {
+        "name": "increment",
+        "input": {
+          "priority": 5
+        },
+        "node": "map",
+        "output": {
+          "value": 6
+        }
+      }
+    ]
+  },
+  {
+    "file": "branch.json",
+    "cases": [
+      {
+        "name": "high",
+        "input": {
+          "value": 6
+        },
+        "node": "yes",
+        "output": {
+          "value": 6
+        },
+        "skipped": "no"
+      },
+      {
+        "name": "low",
+        "input": {
+          "value": 5
+        },
+        "node": "no",
+        "output": {
+          "value": 5
+        },
+        "skipped": "yes"
+      }
+    ]
+  },
+  {
+    "file": "wait.json",
+    "cases": [
+      {
+        "name": "resume",
+        "input": {
+          "message": "after wait"
+        },
+        "node": "echo",
+        "output": {
+          "message": "after wait"
+        }
+      }
+    ]
+  },
+  {
+    "file": "map.json",
+    "cases": [
+      {
+        "name": "ordered",
+        "input": {
+          "items": [
+            {
+              "index": 0
+            },
+            {
+              "index": 1
+            },
+            {
+              "index": 2
+            }
+          ]
+        },
+        "node": "map",
+        "output": {
+          "items": [
+            {
+              "index": 0
+            },
+            {
+              "index": 1
+            },
+            {
+              "index": 2
+            }
+          ]
+        },
+        "attempts": 3
+      },
+      {
+        "name": "empty",
+        "input": {
+          "items": []
+        },
+        "node": "map",
+        "output": {
+          "items": []
+        },
+        "attempts": 0
+      },
+      {
+        "name": "oversized",
+        "input": {
+          "items": [
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ]
+        },
+        "state": "failed",
+        "attempts": 0
+      }
+    ]
+  }
+]

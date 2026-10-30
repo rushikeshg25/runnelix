@@ -45,6 +45,8 @@ jobs:
         run: make integration-phase5
       - name: Local paired backup and restore drill
         run: make integration-operations
+      - name: Portable pilot fixture execution
+        run: make integration-phase6
       - name: Dependency advisory checks
         run: |
           pnpm audit

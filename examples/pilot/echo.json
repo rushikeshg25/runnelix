@@ -1,0 +1,34 @@
+{
+  "formatVersion": 1,
+  "name": "Pilot: Echo baseline",
+  "graph": {
+    "formatVersion": 1,
+    "nodes": [
+      {
+        "id": "start",
+        "type": "trigger.manual",
+        "version": 1,
+        "config": {}
+      },
+      {
+        "id": "echo",
+        "type": "mock.echo",
+        "version": 1,
+        "config": {}
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "start",
+          "port": "out"
+        },
+        "to": {
+          "node": "echo",
+          "port": "in"
+        }
+      }
+    ]
+  },
+  "credentialSlots": []
+}

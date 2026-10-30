@@ -77,3 +77,7 @@ package-local:
 
 integration-operations: build-phase2
 	python3 tests/integration/operations.py
+
+.PHONY: integration-phase6
+integration-phase6: build-phase2
+	python3 tests/integration/phase6.py

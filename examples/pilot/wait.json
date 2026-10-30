@@ -1,0 +1,52 @@
+{
+  "formatVersion": 1,
+  "name": "Pilot: Durable wait",
+  "graph": {
+    "formatVersion": 1,
+    "nodes": [
+      {
+        "id": "start",
+        "type": "trigger.manual",
+        "version": 1,
+        "config": {}
+      },
+      {
+        "id": "wait",
+        "type": "control.wait",
+        "version": 1,
+        "config": {
+          "seconds": 1
+        }
+      },
+      {
+        "id": "echo",
+        "type": "mock.echo",
+        "version": 1,
+        "config": {}
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "start",
+          "port": "out"
+        },
+        "to": {
+          "node": "wait",
+          "port": "in"
+        }
+      },
+      {
+        "from": {
+          "node": "wait",
+          "port": "out"
+        },
+        "to": {
+          "node": "echo",
+          "port": "in"
+        }
+      }
+    ]
+  },
+  "credentialSlots": []
+}

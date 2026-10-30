@@ -1,0 +1,41 @@
+{
+  "formatVersion": 1,
+  "name": "Pilot: Bounded item processing",
+  "graph": {
+    "formatVersion": 1,
+    "nodes": [
+      {
+        "id": "start",
+        "type": "trigger.manual",
+        "version": 1,
+        "config": {}
+      },
+      {
+        "id": "map",
+        "type": "control.map",
+        "version": 1,
+        "config": {
+          "collectionExpression": "input.items",
+          "bodyType": "mock.echo",
+          "bodyVersion": 1,
+          "bodyConfig": {},
+          "maxItems": 10,
+          "concurrency": 3
+        }
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "start",
+          "port": "out"
+        },
+        "to": {
+          "node": "map",
+          "port": "in"
+        }
+      }
+    ]
+  },
+  "credentialSlots": []
+}

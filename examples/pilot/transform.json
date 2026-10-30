@@ -1,0 +1,36 @@
+{
+  "formatVersion": 1,
+  "name": "Pilot: Priority transformation",
+  "graph": {
+    "formatVersion": 1,
+    "nodes": [
+      {
+        "id": "start",
+        "type": "trigger.manual",
+        "version": 1,
+        "config": {}
+      },
+      {
+        "id": "map",
+        "type": "transform.map",
+        "version": 1,
+        "config": {
+          "expression": "{\"value\": input.priority + 1}"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "start",
+          "port": "out"
+        },
+        "to": {
+          "node": "map",
+          "port": "in"
+        }
+      }
+    ]
+  },
+  "credentialSlots": []
+}

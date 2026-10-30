@@ -1,0 +1,68 @@
+{
+  "formatVersion": 1,
+  "name": "Pilot: Priority routing",
+  "graph": {
+    "formatVersion": 1,
+    "nodes": [
+      {
+        "id": "start",
+        "type": "trigger.manual",
+        "version": 1,
+        "config": {}
+      },
+      {
+        "id": "condition",
+        "type": "control.condition",
+        "version": 1,
+        "config": {
+          "expression": "input.value > 5"
+        }
+      },
+      {
+        "id": "yes",
+        "type": "mock.echo",
+        "version": 1,
+        "config": {}
+      },
+      {
+        "id": "no",
+        "type": "mock.echo",
+        "version": 1,
+        "config": {}
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "start",
+          "port": "out"
+        },
+        "to": {
+          "node": "condition",
+          "port": "in"
+        }
+      },
+      {
+        "from": {
+          "node": "condition",
+          "port": "true"
+        },
+        "to": {
+          "node": "yes",
+          "port": "in"
+        }
+      },
+      {
+        "from": {
+          "node": "condition",
+          "port": "false"
+        },
+        "to": {
+          "node": "no",
+          "port": "in"
+        }
+      }
+    ]
+  },
+  "credentialSlots": []
+}
