@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Owned local development services. Keep data and keys across shutdowns."""
+import argparse
 import fcntl
 import json
 import os
@@ -23,7 +24,7 @@ def wait(check,processes,label):
     deadline=time.monotonic()+45
     while time.monotonic()<deadline:
         for name,p in processes:
-            if p.poll() is not None:raise RuntimeError(f'{name} exited; inspect .local/dev/{name}.log')
+            if p.poll() is not None:raise RuntimeError(f'{name} exited; inspect its log in the selected state directory')
         try:
             if check():return
         except (OSError,ValueError,subprocess.SubprocessError):pass
@@ -31,6 +32,10 @@ def wait(check,processes,label):
     raise RuntimeError(f'{label} did not become ready')
 
 def main():
+    global STATE
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--state",type=Path,default=STATE,help="local state directory; never overwritten")
+    STATE=parser.parse_args().state.resolve()
     os.umask(0o077);STATE.mkdir(parents=True,exist_ok=True);os.chmod(STATE,0o700)
     lock=(STATE/'owner.lock').open('w')
     try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
@@ -73,7 +78,7 @@ def main():
         for name,args in [('api',['api']),('node-service',['node-service','--address','127.0.0.1:8788']),('engine',['engine']),('admission',['worker']),('dispatcher',['dispatcher'])]:start(name,[APP,*args])
         start('nodes',['node','dist/node-worker/product-main.js'],worker=True);start('editor',['pnpm','dev:web'],worker=True)
         wait(lambda:urllib.request.urlopen('http://127.0.0.1:5173',timeout=2).status==200,processes,'Editor')
-        print('Runnelix ready: http://127.0.0.1:5173\nLocal fixture-data mode. Ctrl+C stops owned services and preserves .local/dev.',flush=True)
+        print('Runnelix ready: http://127.0.0.1:5173\nLocal fixture-data mode. Ctrl+C stops owned services and preserves the selected state directory.',flush=True)
         while not stopping:
             for name,p in processes:
                 if p.poll() is not None:raise RuntimeError(f'{name} exited; inspect its local log')

@@ -69,3 +69,10 @@ integration-phase4: build-phase2
 .PHONY: integration-phase5
 integration-phase5:
 	python3 tests/integration/postgres.py go test -race -p 1 ./internal/store ./internal/identity
+
+.PHONY: package-local integration-operations
+package-local:
+	python3 scripts/package-local.py
+
+integration-operations: build-phase2
+	python3 tests/integration/operations.py

@@ -43,6 +43,12 @@ jobs:
         run: make integration-phase4
       - name: Signed identity and workspace permission checks
         run: make integration-phase5
+      - name: Local paired backup and restore drill
+        run: make integration-operations
+      - name: Dependency advisory checks
+        run: |
+          pnpm audit
+          go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
       - name: Preserve fake-data evidence
         if: always()
         uses: actions/upload-artifact@v4
