@@ -356,3 +356,10 @@ Per-step reasoning lives in `logs/YYYY-MM-DD.md`; this history records milestone
 - **What:** added five portable training workflows, eight live execution cases, CI coverage, and participant/usage/incident/release templates. Updated the README and phase ledger.
 - **Evidence:** commits `c2c5d81` and `75d76ab`; [Phase 6 implementation](docs/implementation/phase-6.md), [live fixture report](docs/implementation/evidence/phase-6-fixtures.json), [pilot kit](docs/pilot/README.md).
 - **Limit:** local preparation is implemented. No real pilot participants, useful-workflow adoption, independent acceptance, or two-week usage have been recorded. These external gates remain open.
+
+## 2026-10-31 — local burst capacity measured
+
+- **What:** added an opt-in 20-offered-starts/second, sixty-second diagnostic with ten sequential Echo actions per run, backlog/resource sampling, and queued-work recovery after a worker outage.
+- **Evidence:** implementation `c3b4351`; [workload, results, and limitations](docs/implementation/local-capacity.md), [source-hashed report](docs/implementation/evidence/local-capacity.json). `make integration-capacity`, `make check`, and Python compilation passed.
+- **Result:** 267 of 1,200 requests were accepted; 933 received HTTP 429. All accepted runs completed. First scheduling p95 was 41.512 seconds; twenty queued runs drained 5.497 seconds after worker restart. Sources stayed unchanged and cleanup succeeded.
+- **Limit:** the proposed burst and dispatch-latency targets did not pass on this local configuration. Correctness under backpressure is verified; the bottleneck is not yet isolated. No quotas or production settings changed.
