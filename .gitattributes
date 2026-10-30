@@ -1,0 +1,2 @@
+# Local decision logs are development records, not release contents.
+logs export-ignore
