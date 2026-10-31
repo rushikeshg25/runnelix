@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -8,6 +8,7 @@ import {
   type NodeProps,
   type Node,
   type Connection,
+  type NodeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { Descriptor, Graph } from "./api";
@@ -15,7 +16,7 @@ type StepNode = Node<
   { title: string; inputs: string[]; outputs: string[]; kind: string },
   "step"
 >;
-function Step({ data, selected }: NodeProps<StepNode>) {
+const Step = memo(function Step({ data, selected }: NodeProps<StepNode>) {
   return (
     <div className={`flow-step ${selected ? "focused" : ""}`}>
       <div className="flow-kind">{data.kind}</div>
@@ -43,7 +44,7 @@ function Step({ data, selected }: NodeProps<StepNode>) {
       <small>{data.outputs.join(" / ")}</small>
     </div>
   );
-}
+});
 const nodeTypes = { step: Step };
 export function Canvas({
   graph,
@@ -70,6 +71,28 @@ export function Canvas({
       return {};
     }
   });
+  const savedPositions = useRef(positions);
+  const [dragging, setDragging] = useState(false);
+  useEffect(() => {
+    if (dragging || positions === savedPositions.current) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(positions));
+      savedPositions.current = positions;
+    } catch {
+      // Layout storage is optional; graph edits remain in memory.
+    }
+  }, [dragging, positions, storageKey]);
+  const moveNodes = useCallback((changes: NodeChange<StepNode>[]) => {
+    const moves = changes.filter((c) => c.type === "position" && c.position);
+    if (!moves.length) return;
+    setPositions((previous) => {
+      const next = { ...previous };
+      for (const move of moves)
+        if (move.type === "position" && move.position)
+          next[move.id] = move.position;
+      return next;
+    });
+  }, []);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   // React Flow selects on drag start. Keep the controlled selection in sync
@@ -78,15 +101,14 @@ export function Canvas({
     (_event: unknown, node: StepNode) => select(node.id),
     [select],
   );
-  const nodes = useMemo<StepNode[]>(
+  const definitions = useMemo<StepNode[]>(
     () =>
       graph.nodes.map((n, i) => {
         const d = catalog.find((d) => d.type === n.type);
         return {
           id: n.id,
           type: "step",
-          selected: n.id === selected,
-          position: positions[n.id] ?? {
+          position: {
             x: (i % 3) * 260 + 30,
             y: Math.floor(i / 3) * 130 + 60,
           },
@@ -98,7 +120,28 @@ export function Canvas({
           },
         };
       }),
-    [graph.nodes, catalog, selected, positions],
+    [graph.nodes, catalog],
+  );
+  const nodes = useMemo(
+    () =>
+      definitions.map((node) => ({
+        ...node,
+        selected: node.id === selected,
+        position: positions[node.id] ?? node.position,
+      })),
+    [definitions, selected, positions],
+  );
+  const edges = useMemo(
+    () =>
+      graph.edges.map((edge) => ({
+        id: `${edge.from.node}/${edge.from.port}/${edge.to.node}/${edge.to.port}`,
+        source: edge.from.node,
+        sourceHandle: edge.from.port,
+        target: edge.to.node,
+        targetHandle: edge.to.port,
+        label: edge.from.port,
+      })),
+    [graph.edges],
   );
   function connect(c: Connection) {
     if (!c.sourceHandle || !c.targetHandle || c.source === c.target) return;
@@ -126,40 +169,20 @@ export function Canvas({
       <div className="canvas" aria-label="Workflow canvas">
         <ReactFlow
           nodes={nodes}
-          edges={graph.edges.map((e, i) => ({
-            id: String(i),
-            source: e.from.node,
-            sourceHandle: e.from.port,
-            target: e.to.node,
-            targetHandle: e.to.port,
-            label: e.from.port,
-            animated: false,
-          }))}
+          edges={edges}
           nodeTypes={nodeTypes}
           onNodeClick={selectNode}
-          onNodeDragStart={selectNode}
+          onNodeDragStart={(event, node) => {
+            setDragging(true);
+            selectNode(event, node);
+          }}
+          onNodeDragStop={() => setDragging(false)}
           onConnect={connect}
           fitView
           minZoom={0.2}
           maxZoom={1.8}
           deleteKeyCode={null}
-          onNodesChange={(changes) => {
-            const next = { ...positions };
-            let changed = false;
-            for (const c of changes)
-              if (c.type === "position" && c.position) {
-                next[c.id] = c.position;
-                changed = true;
-              }
-            if (changed) {
-              setPositions(next);
-              try {
-                localStorage.setItem(storageKey, JSON.stringify(next));
-              } catch {
-                /* Layout storage is optional; graph edits remain in memory. */
-              }
-            }
-          }}
+          onNodesChange={moveNodes}
         >
           <Background gap={20} color="#d7e0e5" />
           <Controls showInteractive={false} />
