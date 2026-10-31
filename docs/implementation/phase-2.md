@@ -86,3 +86,37 @@ Before changing the worker bundle, stop local services, rebuild, and restart. Ex
 - `.tools/openapi/bin/python -m openapi_spec_validator contracts/product/openapi.json`: OpenAPI 3.1 validation after installing validator 0.7.2 in that environment.
 
 See [live evidence](evidence/phase-2-full.json) and [browser evidence](evidence/phase-2-browser.json). Browser verification covered creation/publication/execution, an invalid disconnected node, repaired validation, pinned inspection after draft edits, keyboard connection controls, and desktop/narrow layouts. The browser session was agent-driven; it does not satisfy the independent teammate gate.
+
+## Editor interaction regression checks
+
+With dependencies installed, start the isolated frontend fixture:
+
+```sh
+pnpm exec vite . --config web/vite.config.ts --port 5174
+```
+
+Open <http://127.0.0.1:5174/tests/web/canvas.html>. This page imports the real
+`Canvas` and React Flow components, uses fixture data, and makes no backend
+requests. It only clears its own `runnelix.positions.canvas-regression-fixture`
+layout key between checks.
+
+- **Check drag stability** drives 16 pointer movements. It asserts stable
+  selection and node height, forward movement, drag completion, and one layout
+  storage write after release, with no React Flow warnings. The previous
+  implementation lost selection, discarded measured node sizes, and wrote
+  layout storage on every movement.
+- **Check keyboard movement** selects a node with Enter and moves it with three
+  arrow presses. It asserts that selection and movement persist across presses.
+- Run both checks in light and dark mode using the sun/moon button.
+- Expand **Connections**, remove the fixture edge, then reconnect the ports by
+  dragging. Repeat with the connection form and keyboard submission.
+
+For layout checks, use desktop and narrow browser widths (1280, 768, 390, and
+320 pixels). The settings panel moves below the canvas on narrow screens;
+workflow navigation scrolls within its own row. Use **Fit View** after resizing
+a canvas that was already open. Verify no horizontal page overflow, usable
+forms, visible focus, and theme persistence after reload.
+
+`make test check` includes theme parsing and blocked-storage tests. The browser
+fixture is an additional interaction check, not part of that command. No new
+browser-testing dependency is required.

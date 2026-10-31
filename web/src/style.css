@@ -104,7 +104,8 @@ button {
   cursor: pointer;
   border: 1px solid var(--border);
   border-radius: 7px;
-  padding: 9px 14px;
+  padding: 8px 12px;
+  min-height: 36px;
   background: var(--surface);
   color: var(--text);
   font-weight: 600;
@@ -388,8 +389,11 @@ main {
 }
 @media (max-width: 700px) {
   .topbar {
-    padding: 0 16px;
-    height: 66px;
+    padding: 10px 12px;
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
   .brand {
     font-size: 23px;
@@ -399,9 +403,10 @@ main {
   }
   .layout {
     grid-template-columns: minmax(0, 1fr);
+    align-content: start;
   }
   .sidebar {
-    padding: 20px;
+    padding: 12px;
     border-right: 0;
     border-bottom: 1px solid var(--border);
     gap: 5px;
@@ -416,23 +421,20 @@ main {
     max-width: 220px;
   }
   main {
-    padding: 18px;
+    padding: 12px;
   }
   .welcome {
-    margin: 10px 0;
-    padding: 26px;
+    margin: 0;
+    padding: 24px 12px;
   }
   .welcome h2 {
-    font-size: 34px;
+    font-size: 24px;
   }
   .editor-grid {
     grid-template-columns: minmax(0, 1fr);
   }
   .panel {
-    padding: 16px;
-  }
-  .panel-title {
-    flex-direction: column;
+    padding: 12px;
   }
   .workflow-header h2 {
     overflow-wrap: anywhere;
@@ -604,7 +606,18 @@ pre {
 }
 @media (max-width: 700px) {
   .canvas {
-    height: 280px;
+    height: 300px;
+    margin-inline: -12px;
+  }
+  button,
+  input,
+  select {
+    min-height: 44px;
+  }
+  input,
+  select,
+  textarea {
+    font-size: 16px;
   }
   .connections {
     flex-direction: column;
@@ -727,22 +740,24 @@ summary:focus-visible {
   overflow-wrap: anywhere;
 }
 
-.theme-control {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
   color: var(--muted);
+  flex-shrink: 0;
 }
-.theme-control select {
-  width: auto;
-  padding: 6px 8px;
+.theme-toggle:hover {
   color: var(--text);
+  background: var(--hover);
 }
-.session-panel > .theme-control {
-  justify-content: flex-end;
-  margin-bottom: 16px;
+.session-panel > .theme-toggle {
+  float: right;
+  margin: 0 0 8px 12px;
 }
 
 .react-flow {
@@ -767,4 +782,76 @@ summary:focus-visible {
 ::selection {
   background: var(--accent);
   color: var(--on-accent);
+}
+
+.sidebar h1 {
+  font-size: 20px;
+}
+.new-workflow {
+  border-bottom: 1px solid var(--divider);
+  padding-bottom: 12px;
+}
+.new-workflow summary {
+  font-size: 13px;
+  color: var(--accent);
+  padding-block: 6px;
+}
+.new-workflow .wide {
+  margin-top: 0;
+}
+.sidebar nav {
+  min-width: 0;
+}
+.workflow-item[aria-current="page"] {
+  border-inline-start: 3px solid var(--accent);
+  padding-inline-start: 10px;
+}
+@media (max-width: 700px) {
+  .sidebar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    align-content: start;
+    column-gap: 12px;
+  }
+  .sidebar nav,
+  .sidebar > button {
+    grid-column: 1 / -1;
+  }
+  .new-workflow {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .new-workflow[open] {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .workflow-item {
+    margin: 4px 0;
+    padding: 8px 10px;
+  }
+  .workflow-item[aria-current="page"] {
+    padding-inline-start: 8px;
+  }
+  .sidebar h1 {
+    font-size: 18px;
+    align-self: center;
+  }
+  .workflow-header {
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .workflow-header h2 {
+    font-size: 21px;
+  }
+  .session-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 700px) {
+  .theme-toggle {
+    width: 44px;
+    height: 44px;
+  }
 }

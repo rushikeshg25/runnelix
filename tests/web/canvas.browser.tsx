@@ -20,9 +20,44 @@ function Checks() {
   const [graph, setGraph] = useState(emptyGraph);
   const [selected, setSelected] = useState("start");
   const [result, setResult] = useState("Ready");
-  async function checkDrag() {
+  const [generation, setGeneration] = useState(0);
+  async function reset() {
+    localStorage.removeItem("runnelix.positions.canvas-regression-fixture");
+    setGraph(emptyGraph());
+    setSelected("start");
+    setGeneration((value) => value + 1);
     setResult("Running");
     await settled();
+    await settled();
+  }
+  async function checkKeyboard() {
+    await reset();
+    const node = document.querySelector<HTMLElement>(
+      '.react-flow__node[data-id="echo"]',
+    )!;
+    const before = node.getBoundingClientRect().x;
+    node.focus();
+    for (const key of ["Enter", "ArrowRight", "ArrowRight", "ArrowRight"]) {
+      node.dispatchEvent(
+        new KeyboardEvent("keydown", { key, code: key, bubbles: true }),
+      );
+      await settled();
+    }
+    const failures: string[] = [];
+    if (!node.classList.contains("selected"))
+      failures.push("Keyboard selection is lost on movement");
+    if (node.getBoundingClientRect().x <= before + 5)
+      failures.push("Repeated arrow keys stop moving the node");
+    setResult(
+      JSON.stringify(
+        { status: failures.length ? "FAIL" : "PASS", failures },
+        null,
+        2,
+      ),
+    );
+  }
+  async function checkDrag() {
+    await reset();
     const node = document.querySelector<HTMLElement>(
       '.react-flow__node[data-id="echo"]',
     )!;
@@ -49,28 +84,40 @@ function Checks() {
         }),
       );
     const originalSetItem = Storage.prototype.setItem;
+    const originalWarn = console.warn;
+    const flowWarnings: string[] = [];
+    console.warn = (...args: unknown[]) => {
+      if (args.some((value) => String(value).includes("[React Flow]")))
+        flowWarnings.push(args.map(String).join(" "));
+      originalWarn(...args);
+    };
     let layoutWrites = 0;
     Storage.prototype.setItem = function (key, value) {
       if (key === "runnelix.positions.canvas-regression-fixture")
         layoutWrites++;
       return originalSetItem.call(this, key, value);
     };
-    mouse(node, "mousedown", 0);
-    for (let i = 1; i <= 16; i++) {
-      mouse(window, "mousemove", i * 4);
+    try {
+      mouse(node, "mousedown", 0);
+      for (let i = 1; i <= 16; i++) {
+        mouse(window, "mousemove", i * 4);
+        await settled();
+        samples.push({
+          x: node.getBoundingClientRect().x,
+          width: node.getBoundingClientRect().width,
+          height: node.getBoundingClientRect().height,
+          dragging: node.classList.contains("dragging"),
+          selected: node.classList.contains("selected"),
+        });
+      }
+      mouse(window, "mouseup", 64);
       await settled();
-      samples.push({
-        x: node.getBoundingClientRect().x,
-        width: node.getBoundingClientRect().width,
-        height: node.getBoundingClientRect().height,
-        dragging: node.classList.contains("dragging"),
-        selected: node.classList.contains("selected"),
-      });
+    } finally {
+      Storage.prototype.setItem = originalSetItem;
+      console.warn = originalWarn;
     }
-    mouse(window, "mouseup", 64);
-    await settled();
-    Storage.prototype.setItem = originalSetItem;
     const failures: string[] = [];
+    if (flowWarnings.length) failures.push(...flowWarnings);
     if (layoutWrites !== 1)
       failures.push(
         `Expected one layout write after release, received ${layoutWrites}`,
@@ -105,8 +152,12 @@ function Checks() {
       <h1>Canvas regression checks</h1>
       <ThemePicker />
       <button onClick={() => void checkDrag()}>Check drag stability</button>
+      <button onClick={() => void checkKeyboard()}>
+        Check keyboard movement
+      </button>
       <pre aria-label="Check result">{result}</pre>
       <Canvas
+        key={generation}
         workflowId="canvas-regression-fixture"
         graph={graph}
         catalog={catalog as Descriptor[]}

@@ -78,6 +78,9 @@ export function Canvas({
   });
   const savedPositions = useRef(positions);
   const [dragging, setDragging] = useState(false);
+  const [measurements, setMeasurements] = useState<
+    Record<string, { width: number; height: number }>
+  >({});
   useEffect(() => {
     if (dragging || positions === savedPositions.current) return;
     try {
@@ -87,17 +90,41 @@ export function Canvas({
       // Layout storage is optional; graph edits remain in memory.
     }
   }, [dragging, positions, storageKey]);
-  const moveNodes = useCallback((changes: NodeChange<StepNode>[]) => {
-    const moves = changes.filter((c) => c.type === "position" && c.position);
-    if (!moves.length) return;
-    setPositions((previous) => {
-      const next = { ...previous };
-      for (const move of moves)
-        if (move.type === "position" && move.position)
-          next[move.id] = move.position;
-      return next;
-    });
-  }, []);
+  const moveNodes = useCallback(
+    (changes: NodeChange<StepNode>[]) => {
+      for (const change of changes)
+        if (change.type === "select" && change.selected) select(change.id);
+      const sizes = changes.filter(
+        (c) => c.type === "dimensions" && c.dimensions,
+      );
+      if (sizes.length)
+        setMeasurements((previous) => {
+          let next = previous;
+          for (const size of sizes) {
+            if (size.type !== "dimensions" || !size.dimensions) continue;
+            const before = previous[size.id];
+            if (
+              before?.width === size.dimensions.width &&
+              before?.height === size.dimensions.height
+            )
+              continue;
+            if (next === previous) next = { ...previous };
+            next[size.id] = size.dimensions;
+          }
+          return next;
+        });
+      const moves = changes.filter((c) => c.type === "position" && c.position);
+      if (!moves.length) return;
+      setPositions((previous) => {
+        const next = { ...previous };
+        for (const move of moves)
+          if (move.type === "position" && move.position)
+            next[move.id] = move.position;
+        return next;
+      });
+    },
+    [select],
+  );
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   // React Flow selects on drag start. Keep the controlled selection in sync
@@ -133,8 +160,9 @@ export function Canvas({
         ...node,
         selected: node.id === selected,
         position: positions[node.id] ?? node.position,
+        measured: measurements[node.id],
       })),
-    [definitions, selected, positions],
+    [definitions, selected, positions, measurements],
   );
   const edges = useMemo(
     () =>

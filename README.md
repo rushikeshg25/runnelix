@@ -34,6 +34,8 @@ See the [CI guide](docs/implementation/ci.md) for test coverage, workflow lintin
 
 Start the local editor with `make dev`, then open <http://127.0.0.1:5173>. The launcher owns a separate PostgreSQL cluster and Temporal development server. It preserves local data and keys in `.local/dev` on shutdown. Use fixture data. It does not touch an existing system database.
 
+The sun/moon button switches between light and dark mode. The editor follows your system theme until you choose a mode, then remembers your choice in this browser. Canvas positions are also browser-local and save when you release a dragged step. Expand **Connections** for keyboard-accessible connection controls.
+
 Read the [Phase 4 integrations and portability guide](docs/implementation/phase-4.md), [Phase 3 controls and recovery guide](docs/implementation/phase-3.md), [Phase 2 guide](docs/implementation/phase-2.md), [Phase 1 setup and API examples](docs/implementation/phase-1.md), [Phase 0 runtime proof](docs/implementation/phase-0.md), [implementation status](docs/implementation/README.md), [history](HISTORY.md), and [runtime decision](docs/decisions/0001-temporal-development-runtime.md).
 
 ## Enable local browser login

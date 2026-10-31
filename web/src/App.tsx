@@ -142,30 +142,34 @@ export default function App({
       <div className="layout">
         <aside className="sidebar">
           <h1>Workflows</h1>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void perform(create);
-            }}
-          >
-            <label>
-              Workflow name
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={120}
-                required
-              />
-            </label>
-            <button className="primary wide" disabled={busy || dirty}>
-              + Create workflow
-            </button>
-          </form>
+          <details className="new-workflow">
+            <summary>New workflow</summary>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void perform(create);
+              }}
+            >
+              <label>
+                Workflow name
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  maxLength={120}
+                  required
+                />
+              </label>
+              <button className="primary wide" disabled={busy || dirty}>
+                + Create workflow
+              </button>
+            </form>
+          </details>
           <nav aria-label="Workflows">
             {workflows.map((w) => (
               <button
                 className={`workflow-item ${current?.id === w.id ? "active" : ""}`}
                 key={w.id}
+                aria-current={current?.id === w.id ? "page" : undefined}
                 disabled={busy}
                 onClick={() => open(w)}
               >
