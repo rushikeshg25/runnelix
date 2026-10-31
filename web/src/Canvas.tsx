@@ -48,6 +48,7 @@ const Step = memo(function Step({ data, selected }: NodeProps<StepNode>) {
   );
 });
 const nodeTypes = { step: Step };
+const fitViewOptions = { padding: 0.2, maxZoom: 1 };
 export function Canvas({
   graph,
   catalog,
@@ -163,10 +164,8 @@ export function Canvas({
   return (
     <section className="panel canvas-panel">
       <div className="panel-title">
-        <h3>Workflow canvas</h3>
-        <span className="muted">
-          Drag between ports, or use the connection form below.
-        </span>
+        <h3>Canvas</h3>
+        <span className="muted">{graph.nodes.length} steps</span>
       </div>
       <div className="canvas" aria-label="Workflow canvas">
         <ReactFlow
@@ -181,81 +180,87 @@ export function Canvas({
           onNodeDragStop={() => setDragging(false)}
           onConnect={connect}
           fitView
+          fitViewOptions={fitViewOptions}
           minZoom={0.2}
           maxZoom={1.8}
           deleteKeyCode={null}
           onNodesChange={moveNodes}
         >
           <Background gap={20} color="#d7e0e5" />
-          <Controls showInteractive={false} />
+          <Controls showInteractive={false} fitViewOptions={fitViewOptions} />
         </ReactFlow>
       </div>
-      <form
-        className="connections"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const [source, sourceHandle] = from.split("/");
-          const [target, targetHandle] = to.split("/");
-          if (source && target && sourceHandle && targetHandle)
-            connect({ source, sourceHandle, target, targetHandle });
-        }}
-      >
-        <label>
-          From output
-          <select
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            required
-          >
-            <option value="">Choose output…</option>
-            {graph.nodes.flatMap((n) =>
-              (catalog.find((d) => d.type === n.type)?.outputs ?? []).map(
-                (p) => (
-                  <option key={`${n.id}/${p}`} value={`${n.id}/${p}`}>
-                    {n.id} → {p}
-                  </option>
-                ),
-              ),
-            )}
-          </select>
-        </label>
-        <label>
-          To input
-          <select value={to} onChange={(e) => setTo(e.target.value)} required>
-            <option value="">Choose input…</option>
-            {graph.nodes.flatMap((n) =>
-              (catalog.find((d) => d.type === n.type)?.inputs ?? []).map(
-                (p) => (
-                  <option key={`${n.id}/${p}`} value={`${n.id}/${p}`}>
-                    {n.id} ← {p}
-                  </option>
-                ),
-              ),
-            )}
-          </select>
-        </label>
-        <button>Connect</button>
-      </form>
-      <ul className="edge-list">
-        {graph.edges.map((e, i) => (
-          <li key={`${e.from.node}/${e.from.port}/${e.to.node}/${e.to.port}`}>
-            <span>
-              {e.from.node}.{e.from.port} → {e.to.node}.{e.to.port}
-            </span>
-            <button
-              aria-label={`Remove connection ${e.from.node} to ${e.to.node}`}
-              onClick={() =>
-                change({
-                  ...graph,
-                  edges: graph.edges.filter((_, j) => i !== j),
-                })
-              }
+      <details className="connection-tools">
+        <summary>
+          Connections <span className="muted">({graph.edges.length})</span>
+        </summary>
+        <form
+          className="connections"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const [source, sourceHandle] = from.split("/");
+            const [target, targetHandle] = to.split("/");
+            if (source && target && sourceHandle && targetHandle)
+              connect({ source, sourceHandle, target, targetHandle });
+          }}
+        >
+          <label>
+            From output
+            <select
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              required
             >
-              Remove
-            </button>
-          </li>
-        ))}
-      </ul>
+              <option value="">Choose output…</option>
+              {graph.nodes.flatMap((n) =>
+                (catalog.find((d) => d.type === n.type)?.outputs ?? []).map(
+                  (p) => (
+                    <option key={`${n.id}/${p}`} value={`${n.id}/${p}`}>
+                      {n.id} → {p}
+                    </option>
+                  ),
+                ),
+              )}
+            </select>
+          </label>
+          <label>
+            To input
+            <select value={to} onChange={(e) => setTo(e.target.value)} required>
+              <option value="">Choose input…</option>
+              {graph.nodes.flatMap((n) =>
+                (catalog.find((d) => d.type === n.type)?.inputs ?? []).map(
+                  (p) => (
+                    <option key={`${n.id}/${p}`} value={`${n.id}/${p}`}>
+                      {n.id} ← {p}
+                    </option>
+                  ),
+                ),
+              )}
+            </select>
+          </label>
+          <button>Connect</button>
+        </form>
+        <ul className="edge-list">
+          {graph.edges.map((e, i) => (
+            <li key={`${e.from.node}/${e.from.port}/${e.to.node}/${e.to.port}`}>
+              <span>
+                {e.from.node}.{e.from.port} → {e.to.node}.{e.to.port}
+              </span>
+              <button
+                aria-label={`Remove connection ${e.from.node} to ${e.to.node}`}
+                onClick={() =>
+                  change({
+                    ...graph,
+                    edges: graph.edges.filter((_, j) => i !== j),
+                  })
+                }
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      </details>
     </section>
   );
 }

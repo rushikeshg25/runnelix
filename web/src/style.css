@@ -396,9 +396,10 @@ main {
   margin-bottom: 12px;
 }
 .canvas {
-  height: 350px;
+  height: 390px;
   background: #f9fbfc;
-  margin: 12px -12px;
+  margin: 10px -14px 0;
+  border-block: 1px solid #dce3e9;
 }
 .flow-step {
   min-width: 180px;
@@ -633,4 +634,19 @@ pre {
 }
 .workflow-header h2 {
   overflow-wrap: anywhere;
+}
+
+.connection-tools > summary {
+  padding-top: 12px;
+  font-size: 12px;
+}
+.connection-tools[open] > summary {
+  margin-bottom: 12px;
+}
+summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+summary:focus-visible {
+  outline: 3px solid #357cb2;
 }
