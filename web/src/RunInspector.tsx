@@ -158,8 +158,7 @@ export function RunInspector({
   return (
     <section className="panel inspector">
       <div className="panel-title">
-        <h3>Run & inspect</h3>
-        <span className="muted">Runs use a published version.</span>
+        <h3>Runs</h3>
       </div>
       <div className="run-start">
         <label>
@@ -184,7 +183,7 @@ export function RunInspector({
               ? "Save and publish your edits first."
               : !workflow.activeVersionId
                 ? "Publish this workflow first."
-                : "This starts the published workflow’s actions."}
+                : ""}
           </small>
         </div>
       </div>

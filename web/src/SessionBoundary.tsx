@@ -95,7 +95,6 @@ export function SessionBoundary() {
           className="session-panel"
           aria-label="Account access"
         >
-          <div className="eyebrow">RUNNELIX</div>
           <h1>
             {session?.authenticated
               ? "Session check unavailable"

@@ -101,10 +101,9 @@ export function PortableWorkflows({
   }
   return (
     <details className="panel portable">
-      <summary>Import or export a workflow</summary>
+      <summary>Import / export</summary>
       <p className="muted">
-        Import creates a new draft. Select local credentials, then review and
-        publish the workflow separately.
+        Imports create a new draft. Review before publishing.
       </p>
       {disabled && (
         <p>Save or discard pending edits before importing or exporting.</p>
@@ -203,7 +202,7 @@ export function PortableWorkflows({
                 edit("");
                 await imported();
                 setMessage(
-                  "Workflow imported as a new draft. Select it from the workflow list to review before publishing.",
+                  "Workflow imported. Open it from the sidebar to review.",
                 );
               })
             }

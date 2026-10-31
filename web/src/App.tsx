@@ -253,74 +253,73 @@ export default function App({
                   </button>
                 </div>
               </section>
-              <Canvas
-                key={`canvas-${current.id}`}
-                workflowId={current.id}
-                graph={graph}
-                catalog={catalog}
-                selected={selected}
-                select={setSelected}
-                change={setGraph}
-              />
               <section className="editor-grid">
-                <div className="panel">
-                  <div className="panel-title">
-                    <h3>Workflow steps</h3>
-                    <span className="muted">Select a step to configure</span>
-                  </div>
-                  <div className="node-list">
-                    {graph.nodes.map((n) => (
-                      <button
-                        key={n.id}
-                        onClick={() => setSelected(n.id)}
-                        aria-pressed={selected === n.id}
-                        className={selected === n.id ? "selected" : ""}
-                      >
-                        <span className="node-symbol">
-                          {n.type.startsWith("trigger.")
-                            ? "↳"
-                            : n.type.startsWith("control.")
-                              ? "◇"
-                              : "▤"}
-                        </span>
-                        <span>
-                          <strong>
-                            {catalog.find((d) => d.type === n.type)?.title ??
-                              n.type}
-                          </strong>
-                          <small>{n.id}</small>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="add-node">
-                    <label>
-                      Add a node
-                      <select
-                        value={addType}
-                        onChange={(e) => setAddType(e.target.value)}
-                      >
-                        {catalog
-                          .filter((d) => d.kind !== "trigger")
-                          .map((d) => (
-                            <option key={d.type} value={d.type}>
-                              {d.title}
-                            </option>
-                          ))}
-                      </select>
-                    </label>
-                    <button onClick={addNode}>Add step</button>
+                <div className="canvas-column">
+                  <Canvas
+                    key={`canvas-${current.id}`}
+                    workflowId={current.id}
+                    graph={graph}
+                    catalog={catalog}
+                    selected={selected}
+                    select={setSelected}
+                    change={setGraph}
+                  />
+                  <div className="panel steps-panel">
+                    <div className="panel-title">
+                      <h3>Steps</h3>
+                    </div>
+                    <div className="node-list">
+                      {graph.nodes.map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => setSelected(n.id)}
+                          aria-pressed={selected === n.id}
+                          className={selected === n.id ? "selected" : ""}
+                        >
+                          <span className="node-symbol">
+                            {n.type.startsWith("trigger.")
+                              ? "↳"
+                              : n.type.startsWith("control.")
+                                ? "◇"
+                                : "▤"}
+                          </span>
+                          <span>
+                            <strong>
+                              {catalog.find((d) => d.type === n.type)?.title ??
+                                n.type}
+                            </strong>
+                            <small>{n.id}</small>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="add-node">
+                      <label>
+                        Step type
+                        <select
+                          value={addType}
+                          onChange={(e) => setAddType(e.target.value)}
+                        >
+                          {catalog
+                            .filter((d) => d.kind !== "trigger")
+                            .map((d) => (
+                              <option key={d.type} value={d.type}>
+                                {d.title}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                      <button onClick={addNode}>Add step</button>
+                    </div>
                   </div>
                 </div>
                 <div className="panel configuration">
                   <div className="panel-title">
-                    <h3>Configuration</h3>
+                    <h3>{descriptor?.title ?? "Step settings"}</h3>
                     <span className="muted">{node?.id}</span>
                   </div>
                   {node && descriptor && (
                     <>
-                      <h4>{descriptor.title}</h4>
-                      <span className="chip">{descriptor.retrySafety}</span>
                       <SchemaForm
                         descriptor={descriptor}
                         node={node}
@@ -336,6 +335,14 @@ export default function App({
                       {typeof node.config.expression === "string" && (
                         <MappingPreview expression={node.config.expression} />
                       )}
+                      <details className="step-details">
+                        <summary>Step details</summary>
+                        <p className="muted">
+                          Type: {node.type} v{node.version}
+                          <br />
+                          Retry safety: {descriptor.retrySafety}
+                        </p>
+                      </details>
                       {descriptor.kind !== "trigger" && (
                         <button
                           className="danger"

@@ -10,8 +10,7 @@ export function SchemaForm({
   change: (config: Record<string, unknown>) => void;
 }) {
   const fields = Object.entries(descriptor.configSchema.properties ?? {});
-  if (!fields.length)
-    return <p className="muted">This node needs no configuration.</p>;
+  if (!fields.length) return <p className="muted">No settings required.</p>;
   return (
     <div className="fields">
       {fields.map(([name, schema]) => {
