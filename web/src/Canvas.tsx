@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -72,6 +72,12 @@ export function Canvas({
   });
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  // React Flow selects on drag start. Keep the controlled selection in sync
+  // before position updates feed nodes back into the canvas.
+  const selectNode = useCallback(
+    (_event: unknown, node: StepNode) => select(node.id),
+    [select],
+  );
   const nodes = useMemo<StepNode[]>(
     () =>
       graph.nodes.map((n, i) => {
@@ -130,7 +136,8 @@ export function Canvas({
             animated: false,
           }))}
           nodeTypes={nodeTypes}
-          onNodeClick={(_, node) => select(node.id)}
+          onNodeClick={selectNode}
+          onNodeDragStart={selectNode}
           onConnect={connect}
           fitView
           minZoom={0.2}
