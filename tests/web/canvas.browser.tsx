@@ -33,6 +33,7 @@ function Checks() {
       dragging: boolean;
       selected: boolean;
       width: number;
+      height: number;
     }[] = [];
     const mouse = (target: EventTarget, type: string, dx: number) =>
       target.dispatchEvent(
@@ -60,6 +61,7 @@ function Checks() {
       samples.push({
         x: node.getBoundingClientRect().x,
         width: node.getBoundingClientRect().width,
+        height: node.getBoundingClientRect().height,
         dragging: node.classList.contains("dragging"),
         selected: node.classList.contains("selected"),
       });
@@ -72,6 +74,8 @@ function Checks() {
       failures.push(
         `Expected one layout write after release, received ${layoutWrites}`,
       );
+    if (samples.some((s) => Math.abs(s.height - box.height) > 0.5))
+      failures.push("Selection changes node height and moves its ports");
     if (samples.some((s) => !s.dragging))
       failures.push("Drag state resets during pointer movement");
     if (samples.some((s) => !s.selected))

@@ -29,6 +29,7 @@ const Step = memo(function Step({ data, selected }: NodeProps<StepNode>) {
           position={Position.Left}
           style={{ top: `${((i + 1) * 100) / (data.inputs.length + 1)}%` }}
           aria-label={`Input ${port}`}
+          title={`Input: ${port}`}
         />
       ))}
       {data.outputs.map((port, i) => (
@@ -39,9 +40,10 @@ const Step = memo(function Step({ data, selected }: NodeProps<StepNode>) {
           position={Position.Right}
           style={{ top: `${((i + 1) * 100) / (data.outputs.length + 1)}%` }}
           aria-label={`Output ${port}`}
+          title={`Output: ${port}`}
         />
       ))}
-      <small>{data.outputs.join(" / ")}</small>
+      {data.outputs.length > 1 && <small>{data.outputs.join(" / ")}</small>}
     </div>
   );
 });
