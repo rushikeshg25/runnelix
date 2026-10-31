@@ -74,7 +74,7 @@ export default function App({
     });
     open(w);
     await refresh();
-    setMessage("Workflow created. Connect nodes, then save and publish.");
+    setMessage("");
   }
   async function save() {
     if (!current) return;
@@ -88,7 +88,7 @@ export default function App({
       setCurrent(w);
       setGraph(w.graph);
       await refresh();
-      setMessage(`Draft revision ${w.revision} saved.`);
+      setMessage("");
     } catch (e) {
       if (e instanceof APIError && e.status === 409)
         throw new Error(
@@ -131,7 +131,6 @@ export default function App({
       <header className="topbar">
         <a className="brand" href="/" aria-label="Runnelix home">
           <span className="brand-icon">↝</span>runnelix
-          <span className="brand-tag">WORKFLOW STUDIO</span>
         </a>
         <div className="session-actions">
           <span className="local-badge">● Local workspace</span>
@@ -140,9 +139,7 @@ export default function App({
       </header>
       <div className="layout">
         <aside className="sidebar">
-          <div className="eyebrow">YOUR AUTOMATIONS</div>
           <h1>Workflows</h1>
-          <p className="muted">Small steps. Reliable outcomes.</p>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -193,10 +190,6 @@ export default function App({
               Load more
             </button>
           )}
-          <div className="sidebar-note">
-            Your workflow versions stay fixed after publication. New edits
-            become a new version.
-          </div>
         </aside>
         <main>
           <div role="alert" className={error ? "notice error" : "hidden"}>
@@ -205,42 +198,22 @@ export default function App({
           <div role="status" className={message ? "notice success" : "hidden"}>
             {message}
           </div>
-          <PortableWorkflows
-            workflow={current}
-            disabled={busy || dirty}
-            imported={refresh}
-          />
           {!current ? (
             <section className="welcome">
-              <div className="eyebrow">MAKE WORK FLOW</div>
-              <h2>
-                A clear path from
-                <br />
-                idea to execution.
-              </h2>
+              <h2>Choose a workflow</h2>
               <p>
-                Create a workflow to start with a manual trigger and a safe echo
-                node. Add actions when you are ready.
+                Open a workflow from the sidebar, or create one to get started.
               </p>
-              <div className="welcome-flow">
-                <span>01 · Trigger</span>
-                <b>→</b>
-                <span>02 · Action</span>
-                <b>→</b>
-                <span>03 · Inspect</span>
-              </div>
             </section>
           ) : (
             <>
               <section className="workflow-header">
                 <div>
-                  <div className="eyebrow">
-                    WORKFLOW / DRAFT {current.revision}
-                  </div>
                   <h2>{current.name}</h2>
                   <span className="muted">
-                    {dirty ? "Unsaved changes" : "Draft saved"} ·{" "}
-                    {graph.nodes.length} nodes
+                    {dirty
+                      ? "Unsaved changes"
+                      : `Draft ${current.revision} saved`}
                   </span>
                 </div>
                 <div className="actions">
@@ -272,9 +245,7 @@ export default function App({
                         const w = await request<Workflow>(path);
                         setCurrent(w);
                         await refresh();
-                        setMessage(
-                          "Version published. Future runs use this fixed version.",
-                        );
+                        setMessage("Workflow published.");
                       })
                     }
                   >
@@ -407,12 +378,13 @@ export default function App({
               </details>
             </>
           )}
+          <PortableWorkflows
+            workflow={current}
+            disabled={busy || dirty}
+            imported={refresh}
+          />
         </main>
       </div>
-      <footer>
-        Runnelix · Local development · Use fixture data until production
-        controls are configured.
-      </footer>
     </div>
   );
 }

@@ -67,16 +67,16 @@ button:disabled {
   margin-top: 10px;
 }
 .topbar {
-  height: 76px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
+  padding: 0 16px;
   border-bottom: 1px solid #dce3e9;
   background: white;
 }
 .brand {
-  font-size: 27px;
+  font-size: 23px;
   font-weight: 750;
   letter-spacing: -1px;
   display: flex;
@@ -90,17 +90,9 @@ button:disabled {
   border-radius: 11px;
   color: #76ded0;
   padding: 0 9px;
-  font-size: 33px;
+  font-size: 27px;
 }
-.brand-tag {
-  font-size: 9px;
-  letter-spacing: 1.9px;
-  font-weight: 600;
-  color: #748492;
-  margin-left: 15px;
-  border-left: 1px solid #d3dde4;
-  padding-left: 22px;
-}
+
 .local-badge {
   font-size: 12px;
   color: #2f746b;
@@ -110,14 +102,14 @@ button:disabled {
 }
 .layout {
   display: grid;
-  grid-template-columns: 265px minmax(0, 1fr);
-  min-height: calc(100vh - 110px);
+  grid-template-columns: 224px minmax(0, 1fr);
+  min-height: calc(100vh - 56px);
 }
 .sidebar {
   min-width: 0;
   background: #fff;
   border-right: 1px solid #dce3e9;
-  padding: 30px 23px;
+  padding: 18px 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -134,9 +126,9 @@ h1 {
   margin: 0;
 }
 h2 {
-  font-size: 27px;
-  letter-spacing: -0.8px;
-  margin: 6px 0 8px;
+  font-size: 23px;
+  letter-spacing: -0.5px;
+  margin: 0 0 4px;
 }
 h3 {
   font-size: 14px;
@@ -197,59 +189,30 @@ small {
   border-color: #9ccac7;
   background: #edf8f5;
 }
-.sidebar-note {
-  margin-top: auto;
-  padding-top: 40px;
-  line-height: 1.7;
-  font-size: 11px;
-  color: #728491;
-}
+
 main {
-  padding: 30px;
+  padding: 16px;
   min-width: 0;
 }
 .welcome {
-  max-width: 850px;
-  margin: 80px auto;
-  padding: 60px;
-  background: #e9f1f1;
-  border: 1px solid #d7e4e4;
-  border-radius: 16px;
+  padding: 40px 20px;
+  text-align: center;
 }
 .welcome h2 {
-  font-size: 45px;
-  line-height: 1.12;
-  letter-spacing: -1.8px;
-  margin: 20px 0;
+  font-size: 24px;
+  margin: 0 0 10px;
 }
 .welcome p {
-  max-width: 450px;
   color: #5c737f;
-  line-height: 1.8;
-}
-.welcome-flow {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-top: 40px;
-  flex-wrap: wrap;
-}
-.welcome-flow span {
-  background: white;
-  border: 1px solid #d0dfdf;
-  padding: 15px;
-  border-radius: 8px;
-  font-size: 12px;
-}
-.welcome-flow b {
-  color: #45827f;
+  line-height: 1.6;
 }
 .workflow-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 20px;
   align-items: center;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 .actions {
   display: flex;
@@ -259,13 +222,13 @@ main {
 .editor-grid {
   display: grid;
   grid-template-columns: minmax(300px, 1fr) 300px;
-  gap: 18px;
+  gap: 12px;
 }
 .panel {
   background: white;
   border: 1px solid #dbe3e9;
-  border-radius: 10px;
-  padding: 20px;
+  border-radius: 8px;
+  padding: 14px;
   min-width: 0;
 }
 .panel-title {
@@ -273,20 +236,20 @@ main {
   justify-content: space-between;
   gap: 10px;
   border-bottom: 1px solid #edf0f3;
-  padding-bottom: 16px;
+  padding-bottom: 10px;
 }
 .node-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin: 20px 0;
+  margin: 12px 0;
 }
 .node-list button {
   display: flex;
   gap: 13px;
   align-items: center;
   text-align: left;
-  padding: 14px;
+  padding: 10px;
 }
 .node-list button > span:last-child,
 .panel-title .muted {
@@ -331,7 +294,7 @@ main {
   margin-top: 20px;
 }
 .raw {
-  margin-top: 18px;
+  margin-top: 12px;
 }
 .raw summary {
   cursor: pointer;
@@ -365,23 +328,10 @@ main {
 .hidden {
   display: none;
 }
-footer {
-  padding: 10px 28px;
-  background: #edf1f4;
-  color: #657b8b;
-  font-size: 10px;
-  border-top: 1px solid #dce3e9;
-}
+
 @media (max-width: 1100px) {
   .editor-grid {
     grid-template-columns: 1fr;
-  }
-  .workflow-header {
-    align-items: start;
-    flex-direction: column;
-  }
-  .brand-tag {
-    display: none;
   }
 }
 @media (max-width: 700px) {
@@ -403,9 +353,6 @@ footer {
     border-right: 0;
     border-bottom: 1px solid #dce3e9;
     gap: 5px;
-  }
-  .sidebar-note {
-    display: none;
   }
   .sidebar nav {
     display: flex;
@@ -444,12 +391,9 @@ footer {
   .actions button {
     flex: 1;
   }
-  footer {
-    line-height: 1.7;
-  }
 }
 .canvas-panel {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 .canvas {
   height: 350px;
@@ -516,7 +460,7 @@ footer {
   overflow-wrap: anywhere;
 }
 .inspector {
-  margin-top: 18px;
+  margin-top: 12px;
 }
 .run-start {
   display: grid;
@@ -679,4 +623,14 @@ pre {
 .react-flow__handle:hover,
 .react-flow__handle.connectingto {
   box-shadow: 0 0 0 4px #247a7c33;
+}
+
+.portable {
+  margin-top: 12px;
+}
+.workflow-header > div:first-child {
+  min-width: 0;
+}
+.workflow-header h2 {
+  overflow-wrap: anywhere;
 }
