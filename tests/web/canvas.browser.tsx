@@ -3,6 +3,7 @@
 // React Flow event handlers, with fixture data and no backend requests.
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
+import { ThemeProvider, ThemePicker } from "../../web/src/Theme";
 import { Canvas } from "../../web/src/Canvas";
 import { emptyGraph, type Descriptor } from "../../web/src/api";
 import catalog from "../../contracts/product/catalog.json";
@@ -102,6 +103,7 @@ function Checks() {
   return (
     <main style={{ maxWidth: 1000, margin: "auto" }}>
       <h1>Canvas regression checks</h1>
+      <ThemePicker />
       <button onClick={() => void checkDrag()}>Check drag stability</button>
       <pre aria-label="Check result">{result}</pre>
       <Canvas
@@ -115,4 +117,8 @@ function Checks() {
     </main>
   );
 }
-createRoot(document.getElementById("root")!).render(<Checks />);
+createRoot(document.getElementById("root")!).render(
+  <ThemeProvider>
+    <Checks />
+  </ThemeProvider>,
+);

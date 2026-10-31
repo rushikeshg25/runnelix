@@ -3,6 +3,8 @@
   --page: #f4f6f8;
   --surface: #ffffff;
   --canvas: #f9fbfc;
+  --canvas-grid: #d7e0e5;
+  --edge: #6d8795;
   --subtle: #edf1f5;
   --hover: #eaf1f5;
   --text: #193349;
@@ -44,6 +46,8 @@
   --page: #141c25;
   --surface: #1c2834;
   --canvas: #17212c;
+  --canvas-grid: #354858;
+  --edge: #9ab0bd;
   --subtle: #253442;
   --hover: #2c3e4e;
   --text: #e0e8ed;
@@ -739,4 +743,28 @@ summary:focus-visible {
 .session-panel > .theme-control {
   justify-content: flex-end;
   margin-bottom: 16px;
+}
+
+.react-flow {
+  --xy-background-color: var(--canvas);
+  --xy-edge-stroke: var(--edge);
+  --xy-edge-stroke-selected: var(--accent);
+  --xy-edge-stroke-width: 1.5;
+  --xy-connectionline-stroke: var(--accent);
+  --xy-connectionline-stroke-width: 2;
+  --xy-edge-label-color: var(--muted);
+  --xy-edge-label-background-color: var(--canvas);
+  --xy-controls-button-background-color: var(--surface);
+  --xy-controls-button-background-color-hover: var(--hover);
+  --xy-controls-button-color: var(--text);
+  --xy-controls-button-color-hover: var(--text);
+  --xy-controls-button-border-color: var(--border);
+  --xy-attribution-background-color: var(--canvas);
+}
+.react-flow__attribution a {
+  color: var(--muted);
+}
+::selection {
+  background: var(--accent);
+  color: var(--on-accent);
 }

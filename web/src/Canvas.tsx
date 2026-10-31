@@ -11,6 +11,7 @@ import {
   type NodeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { useTheme } from "./Theme";
 import type { Descriptor, Graph } from "./api";
 type StepNode = Node<
   { title: string; inputs: string[]; outputs: string[]; kind: string },
@@ -64,6 +65,7 @@ export function Canvas({
   change: (graph: Graph) => void;
   workflowId: string;
 }) {
+  const { resolved: colorMode } = useTheme();
   const storageKey = `runnelix.positions.${workflowId}`;
   const [positions, setPositions] = useState<
     Record<string, { x: number; y: number }>
@@ -169,6 +171,7 @@ export function Canvas({
       </div>
       <div className="canvas" aria-label="Workflow canvas">
         <ReactFlow
+          colorMode={colorMode}
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
@@ -186,7 +189,7 @@ export function Canvas({
           deleteKeyCode={null}
           onNodesChange={moveNodes}
         >
-          <Background gap={20} color="#d7e0e5" />
+          <Background gap={20} color="var(--canvas-grid)" />
           <Controls showInteractive={false} fitViewOptions={fitViewOptions} />
         </ReactFlow>
       </div>
