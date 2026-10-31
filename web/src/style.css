@@ -1,4 +1,32 @@
 :root {
+  color-scheme: light;
+  --page: #f4f6f8;
+  --surface: #ffffff;
+  --canvas: #f9fbfc;
+  --subtle: #edf1f5;
+  --hover: #eaf1f5;
+  --text: #193349;
+  --muted: #5c7080;
+  --border: #d5dfe6;
+  --divider: #e5ebef;
+  --accent: #136f70;
+  --accent-hover: #0e5a5b;
+  --on-accent: #ffffff;
+  --selected: #edf8f5;
+  --selected-border: #6daba5;
+  --focus: #357cb2;
+  --danger: #a64242;
+  --error-bg: #fff0ec;
+  --error-border: #e8b8aa;
+  --error-text: #8d3424;
+  --success-bg: #e9f6ef;
+  --success-border: #b2d5c4;
+  --success-text: #205b40;
+  --brand-bg: #14384b;
+  --brand-ink: #76ded0;
+  --shadow: #1234490b;
+  --handle-ring: #247a7c33;
+
   font-family:
     Inter,
     ui-sans-serif,
@@ -6,11 +34,41 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  color: #193349;
-  background: #f4f6f8;
+  color: var(--text);
+  background: var(--page);
   font-synthesis: none;
   font-size: 14px;
 }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #141c25;
+  --surface: #1c2834;
+  --canvas: #17212c;
+  --subtle: #253442;
+  --hover: #2c3e4e;
+  --text: #e0e8ed;
+  --muted: #a4b6c4;
+  --border: #405364;
+  --divider: #324352;
+  --accent: #6ccfc4;
+  --accent-hover: #8cdfd6;
+  --on-accent: #102b2a;
+  --selected: #203e40;
+  --selected-border: #5baca5;
+  --focus: #89bfff;
+  --danger: #ffac9e;
+  --error-bg: #432b2b;
+  --error-border: #8f5752;
+  --error-text: #ffbdad;
+  --success-bg: #203d34;
+  --success-border: #4a7b66;
+  --success-text: #a2dfbf;
+  --brand-bg: #244652;
+  --brand-ink: #96e9df;
+  --shadow: #00000029;
+  --handle-ring: #6ccfc433;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -36,31 +94,31 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid #357cb2;
+  outline: 3px solid var(--focus);
 }
 button {
   cursor: pointer;
-  border: 1px solid #cad4dd;
+  border: 1px solid var(--border);
   border-radius: 7px;
   padding: 9px 14px;
-  background: white;
-  color: #243c50;
+  background: var(--surface);
+  color: var(--text);
   font-weight: 600;
 }
 button:hover {
-  background: #eaf1f5;
+  background: var(--hover);
 }
 button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 .primary {
-  background: #136f70;
-  color: white;
-  border-color: #136f70;
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
 }
 .primary:hover {
-  background: #0e5a5b;
+  background: var(--accent-hover);
 }
 .wide {
   width: 100%;
@@ -72,8 +130,8 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  border-bottom: 1px solid #dce3e9;
-  background: white;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
 }
 .brand {
   font-size: 23px;
@@ -82,21 +140,21 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #17374c;
+  color: var(--text);
   text-decoration: none;
 }
 .brand-icon {
-  background: #14384b;
+  background: var(--brand-bg);
   border-radius: 11px;
-  color: #76ded0;
+  color: var(--brand-ink);
   padding: 0 9px;
   font-size: 27px;
 }
 
 .local-badge {
   font-size: 12px;
-  color: #2f746b;
-  background: #e8f4ee;
+  color: var(--success-text);
+  background: var(--success-bg);
   padding: 7px 12px;
   border-radius: 20px;
 }
@@ -107,8 +165,8 @@ button:disabled {
 }
 .sidebar {
   min-width: 0;
-  background: #fff;
-  border-right: 1px solid #dce3e9;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   padding: 18px 14px;
   display: flex;
   flex-direction: column;
@@ -134,7 +192,7 @@ h4 {
   margin: 22px 0 12px;
 }
 .muted {
-  color: #637786;
+  color: var(--muted);
   font-size: 12px;
   line-height: 1.6;
   margin: 0;
@@ -150,11 +208,11 @@ label {
 input,
 select,
 textarea {
-  background: #fff;
-  border: 1px solid #cbd5df;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 10px;
-  color: #163248;
+  color: var(--text);
   min-width: 0;
   width: 100%;
 }
@@ -169,7 +227,7 @@ small {
   font-size: 11px;
   font-weight: 400;
   line-height: 1.6;
-  color: #667c8b;
+  color: var(--muted);
 }
 .workflow-item {
   width: 100%;
@@ -181,8 +239,8 @@ small {
   overflow-wrap: anywhere;
 }
 .workflow-item.active {
-  border-color: #9ccac7;
-  background: #edf8f5;
+  border-color: var(--selected-border);
+  background: var(--selected);
 }
 
 main {
@@ -198,7 +256,7 @@ main {
   margin: 0 0 10px;
 }
 .welcome p {
-  color: #5c737f;
+  color: var(--muted);
   line-height: 1.6;
 }
 .workflow-header {
@@ -222,8 +280,8 @@ main {
   gap: 12px;
 }
 .panel {
-  background: white;
-  border: 1px solid #dbe3e9;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 14px;
   min-width: 0;
@@ -232,7 +290,7 @@ main {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  border-bottom: 1px solid #edf0f3;
+  border-bottom: 1px solid var(--divider);
   padding-bottom: 10px;
 }
 .node-list {
@@ -254,15 +312,15 @@ main {
   overflow-wrap: anywhere;
 }
 .node-list .selected {
-  border-color: #238880;
-  background: #f0f9f6;
-  box-shadow: 0 0 0 1px #238880;
+  border-color: var(--accent);
+  background: var(--selected);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 .node-symbol {
   padding: 8px 11px;
   border-radius: 7px;
-  background: #e6eeef;
-  color: #2d7879;
+  background: var(--subtle);
+  color: var(--accent);
   font-size: 20px;
 }
 .add-node {
@@ -279,7 +337,7 @@ main {
   margin: 12px 0;
 }
 .danger {
-  color: #a64242;
+  color: var(--danger);
   font-size: 12px;
   margin-top: 20px;
 }
@@ -289,7 +347,7 @@ main {
 .raw summary {
   cursor: pointer;
   font-size: 12px;
-  color: #556d80;
+  color: var(--muted);
 }
 .raw textarea {
   margin-top: 12px;
@@ -306,14 +364,14 @@ main {
   overflow-wrap: anywhere;
 }
 .error {
-  background: #fff0ec;
-  border: 1px solid #e8b8aa;
-  color: #8d3424;
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
 }
 .success {
-  background: #e9f6ef;
-  border: 1px solid #b2d5c4;
-  color: #205b40;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
 }
 .hidden {
   display: none;
@@ -341,7 +399,7 @@ main {
   .sidebar {
     padding: 20px;
     border-right: 0;
-    border-bottom: 1px solid #dce3e9;
+    border-bottom: 1px solid var(--border);
     gap: 5px;
   }
   .sidebar nav {
@@ -387,27 +445,27 @@ main {
 }
 .canvas {
   height: 390px;
-  background: #f9fbfc;
+  background: var(--canvas);
   margin: 10px -14px 0;
-  border-block: 1px solid #dce3e9;
+  border-block: 1px solid var(--border);
 }
 .flow-step {
   min-width: 180px;
   max-width: 230px;
-  background: white;
-  border: 1px solid #bed0d9;
+  background: var(--surface);
+  border: 1px solid var(--border);
   padding: 12px 16px;
   border-radius: 8px;
-  box-shadow: 0 4px 12px #1234490b;
+  box-shadow: 0 4px 12px var(--shadow);
 }
 .flow-step.focused {
-  border-color: #167d78;
-  box-shadow: 0 0 0 2px #167d78;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 .flow-kind {
   font-size: 9px;
   text-transform: capitalize;
-  color: #728492;
+  color: var(--muted);
   margin-bottom: 6px;
 }
 .flow-step strong {
@@ -416,8 +474,8 @@ main {
 .react-flow__handle {
   width: 12px;
   height: 12px;
-  border: 2px solid white;
-  background: #247a7c;
+  border: 2px solid var(--surface);
+  background: var(--accent);
 }
 .connections {
   display: flex;
@@ -437,7 +495,7 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #edf1f3;
+  border-top: 1px solid var(--divider);
   padding: 8px 0;
   gap: 10px;
   font-size: 12px;
@@ -476,18 +534,18 @@ main {
 .state {
   padding: 5px 10px;
   border-radius: 5px;
-  background: #edf1f5;
+  background: var(--subtle);
   font-size: 12px;
   font-weight: 700;
 }
 .state-succeeded {
-  background: #dff4e8;
-  color: #24633d;
+  background: var(--success-bg);
+  color: var(--success-text);
 }
 .state-failed,
 .state-needs_attention {
-  background: #ffeae1;
-  color: #8d3a23;
+  background: var(--error-bg);
+  color: var(--error-text);
 }
 .inspection-columns {
   display: grid;
@@ -516,16 +574,16 @@ main {
   margin-top: 4px;
 }
 .event-number {
-  background: #edf3f4;
+  background: var(--subtle);
   border-radius: 50%;
   padding: 4px 8px;
-  color: #5e8189;
+  color: var(--muted);
   font-size: 10px;
 }
 pre {
   font-size: 11px;
   line-height: 1.6;
-  background: #f3f6f8;
+  background: var(--subtle);
   padding: 12px;
   border-radius: 6px;
   overflow: auto;
@@ -570,8 +628,8 @@ pre {
   max-width: 38rem;
   margin: 3rem auto;
   padding: 2rem;
-  background: white;
-  border: 1px solid #d8e1e8;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
 }
 .session-panel h1 {
@@ -585,8 +643,8 @@ pre {
   padding: 0.65rem 1rem;
   margin-right: 0.75rem;
   border-radius: 8px;
-  background: #193349;
-  color: white;
+  background: var(--accent);
+  color: var(--on-accent);
   text-decoration: none;
 }
 .session-actions {
@@ -608,12 +666,12 @@ pre {
 }
 
 .react-flow__node:focus-visible .flow-step {
-  outline: 3px solid #357cb2;
+  outline: 3px solid var(--focus);
   outline-offset: 4px;
 }
 .react-flow__handle:hover,
 .react-flow__handle.connectingto {
-  box-shadow: 0 0 0 4px #247a7c33;
+  box-shadow: 0 0 0 4px var(--handle-ring);
 }
 
 .portable {
@@ -638,7 +696,7 @@ summary {
   font-weight: 600;
 }
 summary:focus-visible {
-  outline: 3px solid #357cb2;
+  outline: 3px solid var(--focus);
 }
 
 .canvas-column {
@@ -663,4 +721,22 @@ summary:focus-visible {
 .step-details p {
   margin: 8px 0 0;
   overflow-wrap: anywhere;
+}
+
+.theme-control {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--muted);
+}
+.theme-control select {
+  width: auto;
+  padding: 6px 8px;
+  color: var(--text);
+}
+.session-panel > .theme-control {
+  justify-content: flex-end;
+  margin-bottom: 16px;
 }

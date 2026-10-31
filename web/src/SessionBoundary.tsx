@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import App from "./App";
+import { ThemePicker } from "./Theme";
 import {
   APIError,
   request,
@@ -95,6 +96,7 @@ export function SessionBoundary() {
           className="session-panel"
           aria-label="Account access"
         >
+          <ThemePicker />
           <h1>
             {session?.authenticated
               ? "Session check unavailable"

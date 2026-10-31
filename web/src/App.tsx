@@ -13,6 +13,7 @@ import { Canvas } from "./Canvas";
 import { RunInspector } from "./RunInspector";
 import { PortableWorkflows } from "./PortableWorkflows";
 import { Schedules } from "./Schedules";
+import { ThemePicker } from "./Theme";
 import { MappingPreview } from "./MappingPreview";
 export default function App({
   sessionActions,
@@ -134,6 +135,7 @@ export default function App({
         </a>
         <div className="session-actions">
           <span className="local-badge">● Local workspace</span>
+          <ThemePicker />
           {sessionActions}
         </div>
       </header>
